@@ -1,1 +1,34 @@
-MfPortfolios Main View
+{% if portfolio['id'] is defined %}
+    {% set portfolioId = portfolio['id'] %}
+    {% set title = 'Portfolio (' ~ portfolio['name'] ~ ')' %}
+{% else %}
+    {% set portfolioId = '' %}
+    {% set title = 'New Portfolio' %}
+{% endif %}
+{{adminltetags.useTag('content',
+    [
+        'component'                     : component,
+        'componentName'                 : componentName,
+        'componentId'                   : componentId,
+        'parentComponentId'             : parent,
+        'sectionId'                     : 'main',
+        'contentType'                   : 'sectionWithForm',
+        'cardHeader'                    : true,
+        'cardFooter'                    : true,
+        'cardType'                      : 'primary',
+        'cardIcon'                      : 'address-book',
+        'cardTitle'                     : title,
+        'cardAdditionalClass'           : 'rounded-0',
+        'cardBodyInclude'               : 'portfolios/form',
+        'formButtons'                   :
+        [
+            'updateButtonId'                : portfolioId,
+            'addActionUrl'                  : 'mf/portfolios/add',
+            'addSuccessRedirectUrl'         : 'mf/portfolios',
+            'updateActionUrl'               : 'mf/portfolios/update',
+            'updateSuccessRedirectUrl'      : 'mf/portfolios',
+            'cancelActionUrl'               : 'mf/portfolios',
+            'closeActionUrl'                : 'mf/portfolios'
+        ]
+    ]
+)}}
