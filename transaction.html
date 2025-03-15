@@ -22,80 +22,61 @@
         )}}
     </div>
 </div>
-<div class="row">
-    {% set types =
-        [
-            'debit_fund' :
+{% if transactionMode == 'buy' %}
+    <div class="row">
+        <div class="col">
+            {{adminltetags.useTag('fields',
                 [
-                    'id'    : 'debit_fund',
-                    'name'  : 'TRANSFER FROM USER EQUITY'
-                ],
-            'credit_fund' :
-                [
-                    'id'    : 'credit_fund',
-                    'name'  : 'TRANSFER TO USER EQUITY'
-                ],
-            'buy' :
-                [
-                    'id'    : 'buy',
-                    'name'  : 'BUY'
-                ],
-            'sell' :
-                [
-                    'id'    : 'sell',
-                    'name'  : 'SELL'
+                    'component'                      : component,
+                    'componentName'                  : componentName,
+                    'componentId'                    : componentId,
+                    'sectionId'                      : sectionId,
+                    'fieldId'                        : 'amc_id',
+                    'fieldLabel'                     : 'AMC',
+                    'fieldType'                      : 'select2',
+                    'fieldHelp'                      : true,
+                    'fieldHelpTooltipContent'        : 'Select AMC to search scheme',
+                    'fieldRequired'                  : true,
+                    'fieldBazScan'                   : true,
+                    'fieldBazPostOnCreate'           : false,
+                    'fieldBazPostOnUpdate'           : false,
+                    'fieldDataSelect2Options'        : amcs,
+                    'fieldDataSelect2OptionsKey'     : 'id',
+                    'fieldDataSelect2OptionsValue'   : 'name',
+                    'fieldDataSelect2OptionsArray'   : true,
+                    'fieldDataSelect2OptionsSelected': ''
                 ]
-        ]
-    %}
-    <div class="col">
-        {{adminltetags.useTag('fields',
-            [
-                'component'                      : component,
-                'componentName'                  : componentName,
-                'componentId'                    : componentId,
-                'sectionId'                      : sectionId,
-                'fieldId'                        : 'type',
-                'fieldLabel'                     : 'Transaction Type',
-                'fieldType'                      : 'select2',
-                'fieldHelp'                      : true,
-                'fieldHelpTooltipContent'        : 'Transaction Type',
-                'fieldRequired'                  : true,
-                'fieldBazScan'                   : true,
-                'fieldBazPostOnCreate'           : false,
-                'fieldBazPostOnUpdate'           : false,
-                'fieldDataSelect2Options'        : types,
-                'fieldDataSelect2OptionsKey'     : 'id',
-                'fieldDataSelect2OptionsValue'   : 'name',
-                'fieldDataSelect2OptionsArray'   : true,
-                'fieldDataSelect2OptionsSelected': 'buy'
-            ]
-        )}}
+            )}}
+        </div>
     </div>
-    <div class="col">
-        {{adminltetags.useTag('fields',
-            [
-                'component'                      : component,
-                'componentName'                  : componentName,
-                'componentId'                    : componentId,
-                'sectionId'                      : sectionId,
-                'fieldId'                        : 'amc_id',
-                'fieldLabel'                     : 'AMC',
-                'fieldType'                      : 'select2',
-                'fieldHelp'                      : true,
-                'fieldHelpTooltipContent'        : 'Select AMC to search scheme',
-                'fieldRequired'                  : true,
-                'fieldBazScan'                   : true,
-                'fieldBazPostOnCreate'           : false,
-                'fieldBazPostOnUpdate'           : false,
-                'fieldDataSelect2Options'        : amcs,
-                'fieldDataSelect2OptionsKey'     : 'id',
-                'fieldDataSelect2OptionsValue'   : 'name',
-                'fieldDataSelect2OptionsArray'   : true,
-                'fieldDataSelect2OptionsSelected': ''
-            ]
-        )}}
+    <div class="row">
+        <div class="col">
+            {{adminltetags.useTag('fields',
+                [
+                    'component'                      : component,
+                    'componentName'                  : componentName,
+                    'componentId'                    : componentId,
+                    'sectionId'                      : sectionId,
+                    'fieldId'                        : 'amfi_code',
+                    'fieldLabel'                     : 'Scheme',
+                    'fieldType'                      : 'select2',
+                    'fieldHelp'                      : true,
+                    'fieldHelpTooltipContent'        : 'Select Scheme',
+                    'fieldRequired'                  : true,
+                    'fieldDisabled'                  : true,
+                    'fieldBazScan'                   : true,
+                    'fieldBazPostOnCreate'           : false,
+                    'fieldBazPostOnUpdate'           : false,
+                    'fieldDataSelect2Options'        : [],
+                    'fieldDataSelect2OptionsKey'     : 'id',
+                    'fieldDataSelect2OptionsValue'   : 'name',
+                    'fieldDataSelect2OptionsArray'   : true,
+                    'fieldDataSelect2OptionsSelected': ''
+                ]
+            )}}
+        </div>
     </div>
-</div>
+{% endif %}
 <div class="row">
     <div class="col">
         {{adminltetags.useTag('fields',
@@ -104,34 +85,7 @@
                 'componentName'                  : componentName,
                 'componentId'                    : componentId,
                 'sectionId'                      : sectionId,
-                'fieldId'                        : 'amfi_code',
-                'fieldLabel'                     : 'Scheme',
-                'fieldType'                      : 'select2',
-                'fieldHelp'                      : true,
-                'fieldHelpTooltipContent'        : 'Select Scheme',
-                'fieldRequired'                  : true,
-                'fieldDisabled'                  : true,
-                'fieldBazScan'                   : true,
-                'fieldBazPostOnCreate'           : false,
-                'fieldBazPostOnUpdate'           : false,
-                'fieldDataSelect2Options'        : [],
-                'fieldDataSelect2OptionsKey'     : 'id',
-                'fieldDataSelect2OptionsValue'   : 'name',
-                'fieldDataSelect2OptionsArray'   : true,
-                'fieldDataSelect2OptionsSelected': ''
-            ]
-        )}}
-    </div>
-</div>
-<div class="row">
-    <div class="col">
-        {{adminltetags.useTag('fields',
-            [
-                'component'                      : component,
-                'componentName'                  : componentName,
-                'componentId'                    : componentId,
-                'sectionId'                      : sectionId,
-                'fieldId'                        : 'date',
+                'fieldId'                        : transactionMode ~ '-date',
                 'fieldLabel'                     : 'Date',
                 'fieldType'                      : 'flatpickr',
                 'fieldFlatpickrClearButton'      : true,
@@ -152,7 +106,7 @@
                 'componentName'                  : componentName,
                 'componentId'                    : componentId,
                 'sectionId'                      : sectionId,
-                'fieldId'                        : 'amount',
+                'fieldId'                        : transactionMode ~ '-amount',
                 'fieldLabel'                     : 'Amount',
                 'fieldType'                      : 'input',
                 'fieldGroupPreAddonText'         : currencySymbol,

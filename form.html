@@ -4,7 +4,7 @@
     {% set portfolioName = portfolio['name'] %}
     {% set portfolioUser = portfolio['user_id'] %}
     {% set portfolioDescription = portfolio['description'] %}
-    {% set portfolioEquityBalance = portfolio['equity_balance'] %}
+    {% set portfolioUserEquityBalance = portfolio['user_equity_balance'] %}
     {% set portfolioInvestedAmount = portfolio['invested_amount'] %}
     {% set portfolioTotalValue = portfolio['total_value'] %}
     {% set portfolioProfitLoss = portfolio['profit_loss'] %}
@@ -15,7 +15,7 @@
     {% set portfolioName = '' %}
     {% set portfolioUser = '' %}
     {% set portfolioDescription = '' %}
-    {% set portfolioEquityBalance = '0.00' %}
+    {% set portfolioUserEquityBalance = '0.00' %}
     {% set portfolioInvestedAmount = '0.00' %}
     {% set portfolioTotalValue = '0.00' %}
     {% set portfolioProfitLoss = '0.00' %}
@@ -154,11 +154,11 @@
                 'componentName'                  : componentName,
                 'componentId'                    : componentId,
                 'sectionId'                      : sectionId,
-                'fieldId'                        : 'equity_balance',
-                'fieldLabel'                     : 'Equity Balance',
+                'fieldId'                        : 'user_equity_balance',
+                'fieldLabel'                     : 'User Equity Balance',
                 'fieldType'                      : 'input',
                 'fieldHelp'                      : true,
-                'fieldHelpTooltipContent'        : 'Equity Balance',
+                'fieldHelpTooltipContent'        : 'User Equity Balance',
                 'fieldGroupPreAddonText'         : currencySymbol,
                 'fieldRequired'                  : false,
                 'fieldDisabled'                  : true,
@@ -168,7 +168,7 @@
                 'fieldBazPostOnUpdate'           : false,
                 'fieldDataInputMinLength'        : 1,
                 'fieldDataInputMaxLength'        : 50,
-                'fieldValue'                     : portfolioEquityBalance
+                'fieldValue'                     : portfolioUserEquityBalance
             ]
         )}}
     </div>
@@ -254,6 +254,10 @@
     <hr>
     <div class="row">
         <div class="col">
+            {% set url = links.url('mf/portfolios/q/id/' ~ portfolio['id']) %}
+            {% if mode == 'timeline' %}
+                {% set url = links.url('mf/portfolios/q/mode/timeline/id/' ~ portfolio['id']) %}
+            {% endif %}
             {{adminltetags.useTag('buttons',
                 [
                     'component'                      : component,
@@ -268,7 +272,7 @@
                                 'size'                    : 'xs',
                                 'disabled'                : true,
                                 'hidden'                  : true,
-                                'url'                     : links.url('accounts/portfolios/q/id/' ~ portfolio['id'])
+                                'url'                     : url
                             ]
                         ]
                 ]
@@ -285,10 +289,17 @@
                 'buttonType'                    : 'button',
                 'buttons'                       :
                         [
-                            'transaction' : [
-                                'title'                   : 'Add Portfolio Transaction',
+                            'sell' : [
+                                'title'                   : 'Sell',
                                 'size'                    : 'xs',
-                                'type'                    : 'primary',
+                                'type'                    : 'warning',
+                                'position'                : 'right',
+                                'icon'                    : 'minus'
+                            ],
+                            'buy' : [
+                                'title'                   : 'Buy',
+                                'size'                    : 'xs',
+                                'type'                    : 'success',
                                 'position'                : 'right',
                                 'icon'                    : 'plus'
                             ]
@@ -375,14 +386,15 @@
                 'componentName'             : componentName,
                 'componentId'               : componentId,
                 'sectionId'                 : sectionId,
-                'modalId'                   : 'transaction-modal',
-                'modalBodyInclude'          : 'portfolios/transaction',
+                'modalId'                   : 'buy-modal',
+                'modalBodyInclude'          : 'portfolios/transaction/buy',
                 'modalSize'                 : 'xl',
+                'modalType'                 : 'success',
                 'modalHeader'               : true,
                 'modalFooter'               : true,
                 'modalHeaderCloseButton'    : true,
                 'modalEscClose'             : true,
-                'modalTitle'                : currencySymbol ~ ' PORTFOLIO TRANSACTION',
+                'modalTitle'                : currencySymbol ~ ' BUY TRANSACTION',
                 'modalFooterButtons'        :
                     [
                     'component'                     : component,
@@ -393,7 +405,82 @@
                     'buttonType'                    : 'button',
                     'buttons'                       :
                             [
-                                'modal-button-save' : [
+                                'buy-modal-button-save' : [
+                                    'title'                   : 'save',
+                                    'type'                    : 'primary',
+                                    'position'                : 'right',
+                                    'icon'                    : 'cog fa-spin',
+                                    'iconHidden'              : true
+                                ]
+                            ]
+                    ]
+            ]
+        )}}
+    </div>
+    <div>
+        {{adminltetags.useTag('modal',
+            [
+                'component'                 : component,
+                'componentName'             : componentName,
+                'componentId'               : componentId,
+                'sectionId'                 : sectionId,
+                'modalId'                   : 'sell-modal',
+                'modalBodyInclude'          : 'portfolios/transaction/sell',
+                'modalSize'                 : 'xl',
+                'modalType'                 : 'warning',
+                'modalHeader'               : true,
+                'modalFooter'               : true,
+                'modalHeaderCloseButton'    : true,
+                'modalEscClose'             : true,
+                'modalTitle'                : currencySymbol ~ ' SELL TRANSACTION',
+                'modalFooterButtons'        :
+                    [
+                    'component'                     : component,
+                    'componentName'                 : componentName,
+                    'componentId'                   : componentId,
+                    'parentComponentId'             : parent,
+                    'sectionId'                     : sectionId,
+                    'buttonType'                    : 'button',
+                    'buttons'                       :
+                            [
+                                'sell-modal-button-save' : [
+                                    'title'                   : 'save',
+                                    'type'                    : 'primary',
+                                    'position'                : 'right',
+                                    'icon'                    : 'cog fa-spin',
+                                    'iconHidden'              : true
+                                ]
+                            ]
+                    ]
+            ]
+        )}}
+    </div>
+    <div>
+        {{adminltetags.useTag('modal',
+            [
+                'component'                 : component,
+                'componentName'             : componentName,
+                'componentId'               : componentId,
+                'sectionId'                 : sectionId,
+                'modalId'                   : 'transfer-modal',
+                'modalBodyInclude'          : 'portfolios/transaction/transfer',
+                'modalSize'                 : 'xl',
+                'modalHeader'               : true,
+                'modalFooter'               : true,
+                'modalHeaderCloseButton'    : true,
+                'modalEscClose'             : true,
+                'modalTitle'                : currencySymbol ~ ' TRANSFER TRANSACTION',
+                'modalFooterButtons'        :
+                    [
+                    'component'                     : component,
+                    'componentName'                 : componentName,
+                    'componentId'                   : componentId,
+                    'parentComponentId'             : parent,
+                    'sectionId'                     : sectionId,
+                    'buttonType'                    : 'button',
+                    'buttons'                       :
+                            [
+                                'transfer-modal-button-save' : [
                                     'title'                   : 'save',
                                     'type'                    : 'primary',
                                     'position'                : 'right',
@@ -441,21 +528,16 @@ dataCollectionSection =
         '{{componentId}}-{{sectionId}}-user_id'                     : {
             placeholder: "SELECT USER"
         },
-        '{{componentId}}-{{sectionId}}-equity_balance'              : { },
+        '{{componentId}}-{{sectionId}}-user_equity_balance'         : { },
         '{{componentId}}-{{sectionId}}-invested_amount'             : { },
         '{{componentId}}-{{sectionId}}-total_value'                 : { },
         '{{componentId}}-{{sectionId}}-profit_loss'                 : { },
         '{{componentId}}-{{sectionId}}-description'                 : { },
         '{{componentId}}-{{sectionId}}-transaction_id'              : { },
         '{{componentId}}-{{sectionId}}-type'                        : {
+            placeholder: "SELECT TRANSACTION TYPE",
             afterInit: function() {
-                if (dataCollectionSectionForm['vars']['portfolio']['equity_balance'] === '0.00') {
-                    $('#{{componentId}}-{{sectionId}}-type option[value="credit_fund"]').attr('disabled', true);
-                    $('#{{componentId}}-{{sectionId}}-type option[value="buy"]').attr('disabled', true);
-                    $('#{{componentId}}-{{sectionId}}-type option[value="sell"]').attr('disabled', true);
-                    $('#{{componentId}}-{{sectionId}}-type').val('debit_fund').trigger('change');
-                    $('#{{componentId}}-{{sectionId}}-amc_id').attr('disabled', true);
-                }
+                //
             }
         },
         '{{componentId}}-{{sectionId}}-amc_id'                      : {
@@ -531,12 +613,24 @@ dataCollectionSection =
                 });
             }
         },
-        '{{componentId}}-{{sectionId}}-date'                        : {
+        '{{componentId}}-{{sectionId}}-buy-date'                    : {
             dateFormat          : "Y-m-d",
             altFormat           : "Y-m-d",
             static              : true
         },
-        '{{componentId}}-{{sectionId}}-amount'                      : { },
+        '{{componentId}}-{{sectionId}}-sell-date'                   : {
+            dateFormat          : "Y-m-d",
+            altFormat           : "Y-m-d",
+            static              : true
+        },
+        '{{componentId}}-{{sectionId}}-transfer-date'               : {
+            dateFormat          : "Y-m-d",
+            altFormat           : "Y-m-d",
+            static              : true
+        },
+        '{{componentId}}-{{sectionId}}-buy-amount'                  : { },
+        '{{componentId}}-{{sectionId}}-sell-amount'                 : { },
+        '{{componentId}}-{{sectionId}}-transfer-amount'             : { },
         '{{componentId}}-{{sectionId}}-details'                     : { },
         '{{componentId}}-{{sectionId}}-form' : {
             rules: {
@@ -557,26 +651,28 @@ dataCollectionSectionForm['funcs'] = { };
 dataCollectionSectionForm['funcs']['init'] = function() {
     var swalSound = window['dataCollection'].env.sounds.swalSound;
 
-    if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#{{componentId}}-{{sectionId}}-transactions-table')) {
-        $('#{{componentId}}-{{sectionId}}-transactions-table').DataTable({
-            columns: [
-                {visible: false},
-                null,
-                null,
-                null,
-                null,
-                null,
-                {orderable: false}
-            ],
-            order: [
-                [1, 'desc']
-            ],
-            lengthMenu: [
-                [50, 100, -1],
-                [50, 100, 'All']
-            ]
-        });
-    }
+    setTimeout(function(){
+        if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#{{componentId}}-{{sectionId}}-transactions-table')) {
+            $('#{{componentId}}-{{sectionId}}-transactions-table').DataTable({
+                columns: [
+                    {visible: false},
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    {orderable: false}
+                ],
+                order: [
+                    [0, 'desc']
+                ],
+                lengthMenu: [
+                    [50, 100, -1],
+                    [50, 100, 'All']
+                ]
+            });
+        }
+    }, 1000);
 
     $('#{{componentId}}-{{sectionId}}-recalculate').off();
     $('#{{componentId}}-{{sectionId}}-recalculate').click(function(e) {
@@ -623,22 +719,59 @@ dataCollectionSectionForm['funcs']['init'] = function() {
         }, 'json');
     });
 
-    $('#{{componentId}}-{{sectionId}}-transaction').off();
-    $('#{{componentId}}-{{sectionId}}-transaction').click(function(e) {
+    if (dataCollectionSectionForm['vars']['portfolio']['equity_balance'] === '0.00') {
+        $('#{{componentId}}-{{sectionId}}-buy, #{{componentId}}-{{sectionId}}-sell').attr('disabled', true);
+        $('#{{componentId}}-{{sectionId}}-type option[value="credit"]').attr('disabled', true);
+        $('#{{componentId}}-{{sectionId}}-type').val('debit').trigger('change');
+    } else if (dataCollectionSectionForm['vars']['portfolio']['invested_amount'] === '0.00') {
+        $('#{{componentId}}-{{sectionId}}-buy, #{{componentId}}-{{sectionId}}-transfer').attr('disabled', false);
+        $('#{{componentId}}-{{sectionId}}-sell').attr('disabled', true);
+        $('#{{componentId}}-{{sectionId}}-type').val('debit').trigger('change');
+    }
+
+    $('#{{componentId}}-{{sectionId}}-buy,' +
+      '#{{componentId}}-{{sectionId}}-sell,' +
+      '#{{componentId}}-{{sectionId}}-transfer'
+    ).off();
+    $('#{{componentId}}-{{sectionId}}-buy,' +
+      '#{{componentId}}-{{sectionId}}-sell,' +
+      '#{{componentId}}-{{sectionId}}-transfer'
+    ).click(function(e) {
         e.preventDefault();
 
-        $('#{{componentId}}-{{sectionId}}-transaction-modal').modal('show');
+        if ($(this)[0].id === '{{componentId}}-{{sectionId}}-buy') {
+            $('#{{componentId}}-{{sectionId}}-buy-modal').modal('show');
 
-        $('#{{componentId}}-{{sectionId}}-modal-button-save').off();
-        $('#{{componentId}}-{{sectionId}}-modal-button-save').click(function(e) {
-            e.preventDefault();
+            $('#{{componentId}}-{{sectionId}}-buy-modal-button-save').off();
+            $('#{{componentId}}-{{sectionId}}-buy-modal-button-save').click(function(e) {
+                e.preventDefault();
 
-            processTransaction();
-        });
+                processTransaction('buy');
+            });
+        } else if ($(this)[0].id === '{{componentId}}-{{sectionId}}-sell') {
+            $('#{{componentId}}-{{sectionId}}-sell-modal').modal('show');
+
+            $('#{{componentId}}-{{sectionId}}-sell-modal-button-save').off();
+            $('#{{componentId}}-{{sectionId}}-sell-modal-button-save').click(function(e) {
+                e.preventDefault();
+
+                processTransaction('sell');
+            });
+        } else if ($(this)[0].id === '{{componentId}}-{{sectionId}}-transfer') {
+            $('#{{componentId}}-{{sectionId}}-transfer-modal').modal('show');
+
+            $('#{{componentId}}-{{sectionId}}-transfer-modal-button-save').off();
+            $('#{{componentId}}-{{sectionId}}-transfer-modal-button-save').click(function(e) {
+                e.preventDefault();
+
+                processTransaction('transfer');
+            });
+        }
     });
 
-    function processTransaction(update = false, remove = false) {
+    function processTransaction(task = '', update = false, remove = false) {
         var postData = { };
+
         postData[$('#security-token').attr('name')] = $('#security-token').val();
         if (remove) {
             postData['id'] = $('#{{componentId}}-{{sectionId}}-transaction_id').val();
@@ -648,9 +781,11 @@ dataCollectionSectionForm['funcs']['init'] = function() {
             }
             postData['portfolio_id'] = $('#{{componentId}}-{{sectionId}}-id').val();
             postData['user_id'] = $('#{{componentId}}-{{sectionId}}-user_id').val();
-            postData['date'] = $('#{{componentId}}-{{sectionId}}-date').val();
-            postData['amount'] = $('#{{componentId}}-{{sectionId}}-amount').val();
-            postData['type'] = $('#{{componentId}}-{{sectionId}}-type').val();
+            postData['date'] = $('#{{componentId}}-{{sectionId}}-' + task + '-date').val();
+            postData['amount'] = $('#{{componentId}}-{{sectionId}}-' + task + '-amount').val();
+            if (task === 'transfer') {
+                postData['type'] = $('#{{componentId}}-{{sectionId}}-type').val();
+            }
             postData['details'] = $('#{{componentId}}-{{sectionId}}-details').val();
         }
 
@@ -715,15 +850,26 @@ dataCollectionSectionForm['funcs']['init'] = function() {
 
             if (dataCollectionSectionForm['vars']['transactions'][id]) {
                 $('#{{componentId}}-{{sectionId}}-transaction_id').val(dataCollectionSectionForm['vars']['transactions'][id]['id']);
-                $('#{{componentId}}-{{sectionId}}-date').val(dataCollectionSectionForm['vars']['transactions'][id]['date']);
-                dataCollectionSection["{{componentId}}-{{sectionId}}-date"]['flatpickr'].setDate(dataCollectionSectionForm['vars']['transactions'][id]['date'])
-                $('#{{componentId}}-{{sectionId}}-amount').val(dataCollectionSectionForm['vars']['transactions'][id]['amount']);
-                $('#{{componentId}}-{{sectionId}}-type').val(dataCollectionSectionForm['vars']['transactions'][id]['type']).trigger('change');
+                if (dataCollectionSectionForm['vars']['transactions'][id]['type'] === 'debit' ||
+                    dataCollectionSectionForm['vars']['transactions'][id]['type'] === 'credit'
+                ) {
+                    $('#{{componentId}}-{{sectionId}}-transfer-date').val(dataCollectionSectionForm['vars']['transactions'][id]['date']);
+                    dataCollectionSection["{{componentId}}-{{sectionId}}-transfer-date"]['flatpickr'].setDate(dataCollectionSectionForm['vars']['transactions'][id]['date'])
+                    $('#{{componentId}}-{{sectionId}}-transfer-amount').val(dataCollectionSectionForm['vars']['transactions'][id]['amount']);
+                    $('#{{componentId}}-{{sectionId}}-type').val(dataCollectionSectionForm['vars']['transactions'][id]['type']).trigger('change');
+
+                    $('#{{componentId}}-{{sectionId}}-transfer-modal-button-save').attr('hidden', true);
+                    $('#{{componentId}}-{{sectionId}}-transfer-modal').modal('show');
+                } else if (dataCollectionSectionForm['vars']['transactions'][id]['type'] === 'buy') {
+                    $('#{{componentId}}-{{sectionId}}-buy-modal-button-save').attr('hidden', true);
+                    $('#{{componentId}}-{{sectionId}}-buy-modal').modal('show');
+                } else if (dataCollectionSectionForm['vars']['transactions'][id]['type'] === 'sell') {
+                    $('#{{componentId}}-{{sectionId}}-sell-modal-button-save').attr('hidden', true);
+                    $('#{{componentId}}-{{sectionId}}-sell-modal').modal('show');
+                }
+
                 $('#{{componentId}}-{{sectionId}}-details').val(dataCollectionSectionForm['vars']['transactions'][id]['details']);
             }
-
-            $('#{{componentId}}-{{sectionId}}-modal-button-save').attr('hidden', true);
-            $('#{{componentId}}-{{sectionId}}-transaction-modal').modal('show');
         });
     });
 
@@ -738,22 +884,56 @@ dataCollectionSectionForm['funcs']['init'] = function() {
 
             if (dataCollectionSectionForm['vars']['transactions'][id]) {
                 $('#{{componentId}}-{{sectionId}}-transaction_id').val(dataCollectionSectionForm['vars']['transactions'][id]['id']);
-                $('#{{componentId}}-{{sectionId}}-date').val(dataCollectionSectionForm['vars']['transactions'][id]['date']);
-                dataCollectionSection["{{componentId}}-{{sectionId}}-date"]['flatpickr'].setDate(dataCollectionSectionForm['vars']['transactions'][id]['date'])
-                $('#{{componentId}}-{{sectionId}}-amount').val(dataCollectionSectionForm['vars']['transactions'][id]['amount']);
-                $('#{{componentId}}-{{sectionId}}-type').val(dataCollectionSectionForm['vars']['transactions'][id]['type']).trigger('change');
-                $('#{{componentId}}-{{sectionId}}-type').attr('disabled', true);
+                if (dataCollectionSectionForm['vars']['transactions'][id]['type'] === 'debit' ||
+                    dataCollectionSectionForm['vars']['transactions'][id]['type'] === 'credit'
+                ) {
+                    $('#{{componentId}}-{{sectionId}}-transfer-date').val(dataCollectionSectionForm['vars']['transactions'][id]['date']);
+                    dataCollectionSection["{{componentId}}-{{sectionId}}-transfer-date"]['flatpickr'].setDate(dataCollectionSectionForm['vars']['transactions'][id]['date'])
+                    $('#{{componentId}}-{{sectionId}}-transfer-amount').val(dataCollectionSectionForm['vars']['transactions'][id]['amount']);
+                    $('#{{componentId}}-{{sectionId}}-type').val(dataCollectionSectionForm['vars']['transactions'][id]['type']).trigger('change');
+
+                    $('#{{componentId}}-{{sectionId}}-transfer-modal-button-save').attr('hidden', false);
+                    $('#{{componentId}}-{{sectionId}}-transfer-modal').modal('show');
+
+                    $('#{{componentId}}-{{sectionId}}-transfer-modal-button-save').off();
+                    $('#{{componentId}}-{{sectionId}}-transfer-modal-button-save').click(function(e) {
+                        e.preventDefault();
+
+                        processTransaction('transfer', true);
+                    });
+                } else if (dataCollectionSectionForm['vars']['transactions'][id]['type'] === 'buy') {
+                    $('#{{componentId}}-{{sectionId}}-transfer-date').val(dataCollectionSectionForm['vars']['transactions'][id]['date']);
+                    dataCollectionSection["{{componentId}}-{{sectionId}}-transfer-date"]['flatpickr'].setDate(dataCollectionSectionForm['vars']['transactions'][id]['date'])
+                    $('#{{componentId}}-{{sectionId}}-transfer-amount').val(dataCollectionSectionForm['vars']['transactions'][id]['amount']);
+
+                    $('#{{componentId}}-{{sectionId}}-buy-modal-button-save').attr('hidden', false);
+                    $('#{{componentId}}-{{sectionId}}-buy-modal').modal('show');
+
+                    $('#{{componentId}}-{{sectionId}}-buy-modal-button-save').off();
+                    $('#{{componentId}}-{{sectionId}}-buy-modal-button-save').click(function(e) {
+                        e.preventDefault();
+
+                        processTransaction('buy', true);
+                    });
+                } else if (dataCollectionSectionForm['vars']['transactions'][id]['type'] === 'sell') {
+                    $('#{{componentId}}-{{sectionId}}-transfer-date').val(dataCollectionSectionForm['vars']['transactions'][id]['date']);
+                    dataCollectionSection["{{componentId}}-{{sectionId}}-transfer-date"]['flatpickr'].setDate(dataCollectionSectionForm['vars']['transactions'][id]['date'])
+                    $('#{{componentId}}-{{sectionId}}-transfer-amount').val(dataCollectionSectionForm['vars']['transactions'][id]['amount']);
+
+                    $('#{{componentId}}-{{sectionId}}-sell-modal-button-save').attr('hidden', false);
+                    $('#{{componentId}}-{{sectionId}}-sell-modal').modal('show');
+
+                    $('#{{componentId}}-{{sectionId}}-sell-modal-button-save').off();
+                    $('#{{componentId}}-{{sectionId}}-sell-modal-button-save').click(function(e) {
+                        e.preventDefault();
+
+                        processTransaction('sell', true);
+                    });
+                }
+
                 $('#{{componentId}}-{{sectionId}}-details').val(dataCollectionSectionForm['vars']['transactions'][id]['details']);
             }
 
-            $('#{{componentId}}-{{sectionId}}-modal-button-save').attr('hidden', false);
-            $('#{{componentId}}-{{sectionId}}-transaction-modal').modal('show');
-            $('#{{componentId}}-{{sectionId}}-modal-button-save').off();
-            $('#{{componentId}}-{{sectionId}}-modal-button-save').click(function(e) {
-                e.preventDefault();
-
-                processTransaction(true);
-            });
         });
     });
 
@@ -788,14 +968,9 @@ dataCollectionSectionForm['funcs']['init'] = function() {
 
                     if (dataCollectionSectionForm['vars']['transactions'][id]) {
                         $('#{{componentId}}-{{sectionId}}-transaction_id').val(dataCollectionSectionForm['vars']['transactions'][id]['id']);
-                        $('#{{componentId}}-{{sectionId}}-date').val(dataCollectionSectionForm['vars']['transactions'][id]['date']);
-                        dataCollectionSection["{{componentId}}-{{sectionId}}-date"]['flatpickr'].setDate(dataCollectionSectionForm['vars']['transactions'][id]['date'])
-                        $('#{{componentId}}-{{sectionId}}-value').val(dataCollectionSectionForm['vars']['transactions'][id]['value']);
-                        $('#{{componentId}}-{{sectionId}}-type').val(dataCollectionSectionForm['vars']['transactions'][id]['type']).trigger('change');
-                        $('#{{componentId}}-{{sectionId}}-details').val(dataCollectionSectionForm['vars']['transactions'][id]['details']);
                     }
 
-                    processTransaction(false, true);
+                    processTransaction('', false, true);
                 }
             });
         });
@@ -803,7 +978,7 @@ dataCollectionSectionForm['funcs']['init'] = function() {
 }
 
 dataCollectionSectionForm['funcs']['browse'] = function() {
-    BazContentLoader.loadAjax($('#{{componentId}}-{{sectionId}}-users-link'), {
+    BazContentLoader.loadAjax($('#{{componentId}}-{{sectionId}}-portfolios-link'), {
         ajaxBefore                      : function () {
                                             Pace.restart();
                                             $("#baz-content").empty();
@@ -820,9 +995,8 @@ dataCollectionSectionForm['funcs']['browse'] = function() {
     });
 }
 
-setTimeout(function(){
-    $(document).ready(function() {
-        dataCollectionSectionForm['funcs']['init']();
-    });
-}, 500);
+
+$(document).ready(function() {
+    dataCollectionSectionForm['funcs']['init']();
+});
 </script>
