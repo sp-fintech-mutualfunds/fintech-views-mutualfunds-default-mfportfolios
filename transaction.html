@@ -76,7 +76,136 @@
             )}}
         </div>
     </div>
+    <div class="row">
+        <div class="col">
+            {{adminltetags.useTag('buttons',
+                [
+                    'componentId'           : componentId,
+                    'sectionId'             : sectionId,
+                    'buttonType'            : 'button',
+                    'buttons'               :
+                        [
+                            'import' : [
+                                'title'                   : 'Import Navs',
+                                'position'                : 'right',
+                                'size'                    : 'sm',
+                                'icon'                    : 'cog fa-spin',
+                                'iconHidden'              : true
+                            ]
+                        ]
+                ]
+            )}}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            {{adminltetags.useTag('fields',
+                [
+                    'component'                      : component,
+                    'componentName'                  : componentName,
+                    'componentId'                    : componentId,
+                    'sectionId'                      : sectionId,
+                    'fieldId'                        : 'scheme_id',
+                    'fieldLabel'                     : 'ID',
+                    'fieldType'                      : 'input',
+                    'fieldHelp'                      : true,
+                    'fieldDisabled'                  : true,
+                    'fieldHidden'                    : true,
+                    'fieldHelpTooltipContent'        : 'ID for the scheme',
+                    'fieldBazScan'                   : true,
+                    'fieldBazPostOnCreate'           : false,
+                    'fieldBazPostOnUpdate'           : false,
+                    'fieldValue'                     : ''
+                ]
+            )}}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            {{adminltetags.useTag('fields',
+                [
+                    'component'                      : component,
+                    'componentName'                  : componentName,
+                    'componentId'                    : componentId,
+                    'sectionId'                      : sectionId,
+                    'fieldId'                        : 'isin',
+                    'fieldLabel'                     : 'ISIN',
+                    'fieldType'                      : 'input',
+                    'fieldHelp'                      : true,
+                    'fieldDisabled'                  : true,
+                    'fieldHelpTooltipContent'        : 'ISIN for the scheme',
+                    'fieldBazScan'                   : true,
+                    'fieldBazPostOnCreate'           : false,
+                    'fieldBazPostOnUpdate'           : false,
+                    'fieldValue'                     : ''
+                ]
+            )}}
+        </div>
+        <div class="col">
+            {{adminltetags.useTag('fields',
+                [
+                    'component'                      : component,
+                    'componentName'                  : componentName,
+                    'componentId'                    : componentId,
+                    'sectionId'                      : sectionId,
+                    'fieldId'                        : 'latest_nav',
+                    'fieldLabel'                     : 'Latest NAV',
+                    'fieldType'                      : 'input',
+                    'fieldDisabled'                  : true,
+                    'fieldGroupPreAddonText'         : currencySymbol,
+                    'fieldInputTypeTextFilter'       : 'positiveCurrency',
+                    'fieldHelp'                      : true,
+                    'fieldHelpTooltipContent'        : 'Latest NAV for the scheme',
+                    'fieldBazScan'                   : true,
+                    'fieldBazPostOnCreate'           : false,
+                    'fieldBazPostOnUpdate'           : false,
+                    'fieldValue'                     : ''
+                ]
+            )}}
+        </div>
+        <div class="col">
+            {{adminltetags.useTag('fields',
+                [
+                    'component'                      : component,
+                    'componentName'                  : componentName,
+                    'componentId'                    : componentId,
+                    'sectionId'                      : sectionId,
+                    'fieldId'                        : 'latest_nav_date',
+                    'fieldLabel'                     : 'Latest NAV date',
+                    'fieldType'                      : 'input',
+                    'fieldHelp'                      : true,
+                    'fieldDisabled'                  : true,
+                    'fieldHelpTooltipContent'        : 'Latest NAV date for the scheme',
+                    'fieldBazScan'                   : true,
+                    'fieldBazPostOnCreate'           : false,
+                    'fieldBazPostOnUpdate'           : false,
+                    'fieldValue'                     : ''
+                ]
+            )}}
+        </div>
+        <div class="col">
+            {{adminltetags.useTag('fields',
+                [
+                    'component'                      : component,
+                    'componentName'                  : componentName,
+                    'componentId'                    : componentId,
+                    'sectionId'                      : sectionId,
+                    'fieldId'                        : 'first_nav_date',
+                    'fieldLabel'                     : 'First NAV date',
+                    'fieldType'                      : 'input',
+                    'fieldHelp'                      : true,
+                    'fieldDisabled'                  : true,
+                    'fieldHelpTooltipContent'        : 'First NAV date for the scheme',
+                    'fieldBazScan'                   : true,
+                    'fieldBazPostOnCreate'           : false,
+                    'fieldBazPostOnUpdate'           : false,
+                    'fieldValue'                     : ''
+                ]
+            )}}
+        </div>
+    </div>
 {% endif %}
+<hr>
 <div class="row">
     <div class="col">
         {{adminltetags.useTag('fields',
@@ -106,6 +235,28 @@
                 'componentName'                  : componentName,
                 'componentId'                    : componentId,
                 'sectionId'                      : sectionId,
+                'fieldId'                        : transactionMode ~ '-selected-nav',
+                'fieldLabel'                     : 'selected day nav',
+                'fieldType'                      : 'input',
+                'fieldGroupPreAddonText'         : currencySymbol,
+                'fieldInputTypeTextFilter'       : 'positiveCurrency',
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'Nav on selected date',
+                'fieldDisabled'                  : true,
+                'fieldBazScan'                   : true,
+                'fieldBazPostOnCreate'           : false,
+                'fieldBazPostOnUpdate'           : false,
+                'fieldValue'                     : ''
+            ]
+        )}}
+    </div>
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
                 'fieldId'                        : transactionMode ~ '-amount',
                 'fieldLabel'                     : 'Amount',
                 'fieldType'                      : 'input',
@@ -114,6 +265,29 @@
                 'fieldHelp'                      : true,
                 'fieldHelpTooltipContent'        : 'Transaction Amount',
                 'fieldRequired'                  : true,
+                'fieldDisabled'                  : true,
+                'fieldBazScan'                   : true,
+                'fieldBazPostOnCreate'           : false,
+                'fieldBazPostOnUpdate'           : false,
+                'fieldValue'                     : ''
+            ]
+        )}}
+    </div>
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : transactionMode ~ '-tx_units',
+                'fieldLabel'                     : 'Units',
+                'fieldType'                      : 'input',
+                'fieldInputTypeTextFilter'       : 'positiveFloat',
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'Calculated units',
+                'fieldRequired'                  : true,
+                'fieldDisabled'                  : true,
                 'fieldBazScan'                   : true,
                 'fieldBazPostOnCreate'           : false,
                 'fieldBazPostOnUpdate'           : false,
@@ -124,7 +298,42 @@
 </div>
 <div class="row">
     <div class="col">
-
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : transactionMode ~ '-folio_no',
+                'fieldLabel'                     : 'Folio Number',
+                'fieldType'                      : 'input',
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'Enter Folio Number. Can be an folio number from the AMC',
+                'fieldBazScan'                   : true,
+                'fieldBazPostOnCreate'           : false,
+                'fieldBazPostOnUpdate'           : false,
+                'fieldValue'                     : ''
+            ]
+        )}}
+    </div>
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : transactionMode ~ '-tx_id',
+                'fieldLabel'                     : 'Transaction ID',
+                'fieldType'                      : 'input',
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'Enter transaction id. Can me an ID from the AMC',
+                'fieldBazScan'                   : true,
+                'fieldBazPostOnCreate'           : false,
+                'fieldBazPostOnUpdate'           : false,
+                'fieldValue'                     : ''
+            ]
+        )}}
     </div>
 </div>
 <div class="row">
