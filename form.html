@@ -6,7 +6,7 @@
     {% set portfolioDescription = portfolio['description'] %}
     {% set portfolioInvestedAmount = portfolio['invested_amount'] %}
     {% set portfolioTotalValue = portfolio['total_value'] %}
-    {% set portfolioProfitLoss = portfolio['profit_loss'] %}
+    {% set portfolioXirr = portfolio['xirr'] %}
     {% set disableUser = true %}
 {% else %}
     {% set portfolio = [] %}
@@ -16,7 +16,7 @@
     {% set portfolioDescription = '' %}
     {% set portfolioInvestedAmount = '0.00' %}
     {% set portfolioTotalValue = '0.00' %}
-    {% set portfolioProfitLoss = '0.00' %}
+    {% set portfolioXirr = '0%' %}
 {% endif %}
 
 <div class="row">
@@ -203,12 +203,11 @@
                 'componentName'                  : componentName,
                 'componentId'                    : componentId,
                 'sectionId'                      : sectionId,
-                'fieldId'                        : 'profit_loss',
-                'fieldLabel'                     : 'Profit/Loss',
+                'fieldId'                        : 'xirr',
+                'fieldLabel'                     : 'Xirr',
                 'fieldType'                      : 'input',
                 'fieldHelp'                      : true,
-                'fieldHelpTooltipContent'        : 'Profit/Loss',
-                'fieldGroupPreAddonText'         : currencySymbol,
+                'fieldHelpTooltipContent'        : 'Xirr',
                 'fieldRequired'                  : false,
                 'fieldDisabled'                  : true,
                 'fieldBazScan'                   : true,
@@ -217,7 +216,7 @@
                 'fieldBazPostOnUpdate'           : false,
                 'fieldDataInputMinLength'        : 1,
                 'fieldDataInputMaxLength'        : 50,
-                'fieldValue'                     : portfolioProfitLoss
+                'fieldValue'                     : portfolioXirr
             ]
         )}}
     </div>
@@ -285,13 +284,19 @@
     {% set transactionsHtml = '' %}
     {% if portfolio['transactions'] is defined and portfolio['transactions']|length > 0 %}
         {% for transaction in portfolio['transactions'] %}
+            {% set textColor = 'success' %}
+            {% if str_contains(transaction['cagr'], '-') %}
+                {% set textColor = 'danger' %}
+            {% endif %}
             {% set transactionsHtml = transactionsHtml ~ '<tr>' ~
             '           <td>' ~ transaction['id'] ~ '</td>' ~
             '           <td>' ~ transaction['date'] ~ '</td>' ~
             '           <td>' ~ strtoupper(transaction['type']) ~ '</td>' ~
             '           <td>' ~ transaction['amfi_code'] ~ '</td>' ~
-            '           <td>' ~ transaction['tx_units'] ~ '</td>' ~
+            '           <td>' ~ transaction['units_bought'] ~ ' (' ~ transaction['units_sold'] ~ ')</td>' ~
             '           <td>' ~ transaction['amount'] ~ '</td>' ~
+            '           <td>' ~ transaction['latest_value_date'] ~ '</td>' ~
+            '           <td><span class="text-' ~textColor ~ '">' ~ transaction['latest_value'] ~ ' (' ~ transaction['diff'] ~ '/' ~ transaction['cagr'] ~ '%)</span></td>' ~
             '           <td>' %}
                 {% set dropdowns = [] %}
                 {% set dropdowns['edit-' ~ transaction['id']] = [
@@ -342,8 +347,10 @@
                         <th class="text-uppercase">DATE</th>
                         <th class="text-uppercase">TYPE</th>
                         <th class="text-uppercase">SCHEME</th>
-                        <th class="text-uppercase">UNITS</th>
-                        <th class="text-uppercase">AMOUNT ({{ currencySymbol }})</th>
+                        <th class="text-uppercase">UNITS (Sold)</th>
+                        <th class="text-uppercase">{{ currencySymbol }} AMOUNT</th>
+                        <th class="text-uppercase">Latest Value Date</th>
+                        <th class="text-uppercase">{{ currencySymbol }} Latest Value (Diff/CAGR)</th>
                         <th class="text-uppercase">ACTIONS</th>
                     </tr>
                 </thead>
@@ -467,7 +474,7 @@ dataCollectionSection =
         },
         '{{componentId}}-{{sectionId}}-invested_amount'             : { },
         '{{componentId}}-{{sectionId}}-total_value'                 : { },
-        '{{componentId}}-{{sectionId}}-profit_loss'                 : { },
+        '{{componentId}}-{{sectionId}}-xirr'                        : { },
         '{{componentId}}-{{sectionId}}-description'                 : { },
         '{{componentId}}-{{sectionId}}-transaction_id'              : { },
         '{{componentId}}-{{sectionId}}-type'                        : {
@@ -480,13 +487,13 @@ dataCollectionSection =
             placeholder: "SELECT AMC",
             afterInit: function() {
                 $('#{{componentId}}-{{sectionId}}-amc_id').on('select2:select', function(e) {
-                    $('#{{componentId}}-{{sectionId}}-amfi_code').empty().trigger('change');
-                    $('#{{componentId}}-{{sectionId}}-amfi_code').attr('disabled', false);
+                    $('#{{componentId}}-{{sectionId}}-scheme_id').empty().trigger('change');
+                    $('#{{componentId}}-{{sectionId}}-scheme_id').attr('disabled', false);
                     dataCollectionSectionForm['funcs']['cleanup']();
                 });
             }
         },
-        '{{componentId}}-{{sectionId}}-amfi_code'                   : {
+        '{{componentId}}-{{sectionId}}-scheme_id'                   : {
             placeholder: "SELECT SCHEME",
             "ajax"          : {
                 url         : "{{links.url('mf/schemes/searchSchemesForAMC')}}",
@@ -523,7 +530,7 @@ dataCollectionSection =
             },
             minimumInputLength : 3,
             afterInit: function() {
-                $('#{{componentId}}-{{sectionId}}-amfi_code').on('select2:select', function(e) {
+                $('#{{componentId}}-{{sectionId}}-scheme_id').on('select2:select', function(e) {
                     var postData = { };
                     postData[$('#security-token').attr('name')] = $('#security-token').val();
                     postData['id'] = e.params.data.id;
@@ -534,40 +541,40 @@ dataCollectionSection =
                             $("#security-token").val(response.token);
                         }
 
-                        if (response.responseCode === 0) {
-                            if (response.responseData.scheme) {
-                                dataCollectionSectionForm['funcs']['cleanup']();
+                        if (response.responseData.scheme) {
+                            dataCollectionSectionForm['funcs']['cleanup']();
 
-                                dataCollectionSectionForm['vars']['scheme'] = response.responseData.scheme;
+                            dataCollectionSectionForm['vars']['scheme'] = response.responseData.scheme;
 
-                                if (response.responseData.scheme.id) {
-                                    $('#{{componentId}}-{{sectionId}}-scheme_id').val(response.responseData.scheme.id);
-                                }
-                                if (response.responseData.scheme.isin) {
-                                    $('#{{componentId}}-{{sectionId}}-isin').val(response.responseData.scheme.isin);
-                                }
-                                if (response.responseData.scheme.navs && response.responseData.scheme.navs.latest_nav) {
-                                    $('#{{componentId}}-{{sectionId}}-latest_nav').val(response.responseData.scheme.navs.latest_nav);
-                                }
-                                if (response.responseData.scheme.navs && response.responseData.scheme.navs.last_updated) {
-                                    $('#{{componentId}}-{{sectionId}}-latest_nav_date').val(response.responseData.scheme.navs.last_updated);
-                                }
-                                if (response.responseData.scheme.navs &&
-                                    response.responseData.scheme.navs.navs &&
-                                    Object.keys(response.responseData.scheme.navs.navs).length > 0
-                                ) {
-                                    $('#{{componentId}}-{{sectionId}}-first_nav_date').val(Object.keys(response.responseData.scheme.navs.navs)[0]);
-                                    dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.minDate = Object.keys(response.responseData.scheme.navs.navs)[0];
-                                    dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.maxDate = response.responseData.scheme.navs.last_updated;
-                                    $('#{{componentId}}-{{sectionId}}-import').attr('disabled', false);
-                                } else {
-                                    dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.minDate = '2000-01-01';
-                                    dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].setDate('today');
-                                    dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.maxDate = "today";
-                                    $('#{{componentId}}-{{sectionId}}-import').attr('disabled', true);
-                                }
+                            if (response.responseData.scheme.amfi_code) {
+                                $('#{{componentId}}-{{sectionId}}-amfi_code').val(response.responseData.scheme.amfi_code);
                             }
-                        } else if (response.responseCode === 1) {
+                            if (response.responseData.scheme.isin) {
+                                $('#{{componentId}}-{{sectionId}}-isin').val(response.responseData.scheme.isin);
+                            }
+                            if (response.responseData.scheme.navs && response.responseData.scheme.navs.latest_nav) {
+                                $('#{{componentId}}-{{sectionId}}-latest_nav').val(response.responseData.scheme.navs.latest_nav);
+                            }
+                            if (response.responseData.scheme.navs && response.responseData.scheme.navs.last_updated) {
+                                $('#{{componentId}}-{{sectionId}}-latest_nav_date').val(response.responseData.scheme.navs.last_updated);
+                            }
+                            if (response.responseData.scheme.navs &&
+                                response.responseData.scheme.navs.navs &&
+                                Object.keys(response.responseData.scheme.navs.navs).length > 0
+                            ) {
+                                $('#{{componentId}}-{{sectionId}}-first_nav_date').val(Object.keys(response.responseData.scheme.navs.navs)[0]);
+                                dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.minDate = Object.keys(response.responseData.scheme.navs.navs)[0];
+                                dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.maxDate = response.responseData.scheme.navs.last_updated;
+                                $('#{{componentId}}-{{sectionId}}-import').attr('disabled', false);
+                            } else {
+                                dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.minDate = '2000-01-01';
+                                dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].setDate('today');
+                                dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.maxDate = "today";
+                                $('#{{componentId}}-{{sectionId}}-import').attr('disabled', true);
+                            }
+                        }
+
+                        if (response.responseCode === 1) {
                             paginatedPNotify('error', {
                                 text : response.responseMessage
                             });
@@ -575,8 +582,8 @@ dataCollectionSection =
                             dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.minDate = '2000-01-01';
                             dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].setDate('today');
                             dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.maxDate = "today";
-                            $('#{{componentId}}-{{sectionId}}-amfi_code').empty().trigger('change');
                             dataCollectionSectionForm['funcs']['cleanup']();
+                            $('#{{componentId}}-{{sectionId}}-import').attr('disabled', false);
                         }
                     }, 'json');
                 });
@@ -610,13 +617,11 @@ dataCollectionSection =
         '{{componentId}}-{{sectionId}}-sell-selected-nav'           : { },
         '{{componentId}}-{{sectionId}}-buy-amount'                  : { },
         '{{componentId}}-{{sectionId}}-sell-amount'                 : { },
-        '{{componentId}}-{{sectionId}}-buy-tx_units'                : { },
-        '{{componentId}}-{{sectionId}}-sell-tx_units'               : { },
-        '{{componentId}}-{{sectionId}}-buy-tx_id'                   : { },
-        '{{componentId}}-{{sectionId}}-sell-tx_id'                  : { },
-        '{{componentId}}-{{sectionId}}-buy-folio_no'                : { },
-        '{{componentId}}-{{sectionId}}-sell-folio_no'               : { },
-        '{{componentId}}-{{sectionId}}-scheme_id'                   : { },
+        '{{componentId}}-{{sectionId}}-sell-units'                  : { },
+        '{{componentId}}-{{sectionId}}-buy-units'                   : { },
+        '{{componentId}}-{{sectionId}}-buy-amc_transaction_id'      : { },
+        '{{componentId}}-{{sectionId}}-sell-amc_transaction_id'     : { },
+        '{{componentId}}-{{sectionId}}-amfi_code'                   : { },
         '{{componentId}}-{{sectionId}}-isin'                        : { },
         '{{componentId}}-{{sectionId}}-latest_nav'                  : { },
         '{{componentId}}-{{sectionId}}-latest_nav_date'             : { },
@@ -646,9 +651,8 @@ dataCollectionSectionForm['funcs']['cleanup'] = function() {
     $('#{{componentId}}-{{sectionId}}-latest_nav_date').val('');
     $('#{{componentId}}-{{sectionId}}-first_nav_date').val('');
     $('#{{componentId}}-{{sectionId}}-buy-amount').val('');
-    $('#{{componentId}}-{{sectionId}}-buy-tx_units').val('');
-    $('#{{componentId}}-{{sectionId}}-buy-tx_id').val('');
-    $('#{{componentId}}-{{sectionId}}-buy-folio_no').val('');
+    $('#{{componentId}}-{{sectionId}}-buy-units').val('');
+    $('#{{componentId}}-{{sectionId}}-buy-amc_transaction_id').val('');
     dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.minDate = '2000-01-01';
     dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.maxDate = 'today';
     dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].clear();
@@ -662,6 +666,8 @@ dataCollectionSectionForm['funcs']['init'] = function() {
             $('#{{componentId}}-{{sectionId}}-transactions-table').DataTable({
                 columns: [
                     {visible: false},
+                    null,
+                    null,
                     null,
                     null,
                     null,
@@ -711,8 +717,8 @@ dataCollectionSectionForm['funcs']['init'] = function() {
                 if (response.responseData.total_value) {
                     $('#{{componentId}}-{{sectionId}}-total_value').val(response.responseData.total_value);
                 }
-                if (response.responseData.profit_loss) {
-                    $('#{{componentId}}-{{sectionId}}-profit_loss').val(response.responseData.profit_loss);
+                if (response.responseData.xirr) {
+                    $('#{{componentId}}-{{sectionId}}-xirr').val(response.responseData.xirr);
                 }
             } else if (response.responseCode === 1) {
                 paginatedPNotify('error', {
@@ -778,7 +784,7 @@ dataCollectionSectionForm['funcs']['init'] = function() {
                 paginatedPNotify('error', response.responseMessage);
             }
 
-            $('#{{componentId}}-{{sectionId}}-amfi_code').empty().trigger('change');
+            $('#{{componentId}}-{{sectionId}}-scheme_id').empty().trigger('change');
 
             dataCollectionSectionForm['funcs']['cleanup']();
 
@@ -802,14 +808,14 @@ dataCollectionSectionForm['funcs']['init'] = function() {
             postData['user_id'] = $('#{{componentId}}-{{sectionId}}-user_id').val();
             postData['portfolio_id'] = $('#{{componentId}}-{{sectionId}}-id').val();
             postData['amc_id'] = $('#{{componentId}}-{{sectionId}}-amc_id').val();
+            postData['scheme_id'] = $('#{{componentId}}-{{sectionId}}-scheme_id').val();
             postData['amfi_code'] = $('#{{componentId}}-{{sectionId}}-amfi_code').val();
-            postData['folio_no'] = $('#{{componentId}}-{{sectionId}}-buy-folio_no').val();
-            postData['tx_id'] = $('#{{componentId}}-{{sectionId}}-buy-tx_id').val();
             postData['date'] = $('#{{componentId}}-{{sectionId}}-' + task + '-date').val();
             postData['amount'] = $('#{{componentId}}-{{sectionId}}-' + task + '-amount').val();
+            postData['amc_transaction_id'] = $('#{{componentId}}-{{sectionId}}-buy-amc_transaction_id').val();
             postData['type'] = task;
             if (task === 'buy') {
-                postData['tx_status'] = 'open';
+                postData['status'] = 'open';
             }
             postData['details'] = $('#{{componentId}}-{{sectionId}}-details').val();
         }
@@ -975,8 +981,8 @@ dataCollectionSectionForm['funcs']['init'] = function() {
     });
 
     $('#{{componentId}}-{{sectionId}}-buy-modal, {{componentId}}-{{sectionId}}-sell-modal').on('hide.bs.modal', function (e) {
-        $('#{{componentId}}-{{sectionId}}-amfi_code').empty().trigger('change');
-        $('#{{componentId}}-{{sectionId}}-amfi_code').attr('disabled', true);
+        $('#{{componentId}}-{{sectionId}}-scheme_id').empty().trigger('change');
+        $('#{{componentId}}-{{sectionId}}-scheme_id').attr('disabled', true);
         $('#{{componentId}}-{{sectionId}}-amc_id').val(0).trigger('change');
         dataCollectionSectionForm['funcs']['cleanup']();
     });
@@ -985,9 +991,9 @@ dataCollectionSectionForm['funcs']['init'] = function() {
         if ($('#{{componentId}}-{{sectionId}}-buy-amount').val() !== '') {
             var nav = dataCollectionSectionForm['vars']['scheme']['navs']['navs'][$('#{{componentId}}-{{sectionId}}-buy-date').val()]['nav'];
             var units = $('#{{componentId}}-{{sectionId}}-buy-amount').val() / nav;
-            $('#{{componentId}}-{{sectionId}}-buy-tx_units').val(units);
+            $('#{{componentId}}-{{sectionId}}-buy-units').val(units);
         } else {
-            $('#{{componentId}}-{{sectionId}}-buy-tx_units').val('');
+            $('#{{componentId}}-{{sectionId}}-buy-units').val('');
         }
     });
 }

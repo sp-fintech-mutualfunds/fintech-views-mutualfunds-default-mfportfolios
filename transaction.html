@@ -57,7 +57,7 @@
                     'componentName'                  : componentName,
                     'componentId'                    : componentId,
                     'sectionId'                      : sectionId,
-                    'fieldId'                        : 'amfi_code',
+                    'fieldId'                        : 'scheme_id',
                     'fieldLabel'                     : 'Scheme',
                     'fieldType'                      : 'select2',
                     'fieldHelp'                      : true,
@@ -105,13 +105,13 @@
                     'componentName'                  : componentName,
                     'componentId'                    : componentId,
                     'sectionId'                      : sectionId,
-                    'fieldId'                        : 'scheme_id',
-                    'fieldLabel'                     : 'ID',
+                    'fieldId'                        : 'amfi_code',
+                    'fieldLabel'                     : 'AMFI Code',
                     'fieldType'                      : 'input',
                     'fieldHelp'                      : true,
                     'fieldDisabled'                  : true,
                     'fieldHidden'                    : true,
-                    'fieldHelpTooltipContent'        : 'ID for the scheme',
+                    'fieldHelpTooltipContent'        : 'AMFI Code for the scheme',
                     'fieldBazScan'                   : true,
                     'fieldBazPostOnCreate'           : false,
                     'fieldBazPostOnUpdate'           : false,
@@ -280,7 +280,7 @@
                 'componentName'                  : componentName,
                 'componentId'                    : componentId,
                 'sectionId'                      : sectionId,
-                'fieldId'                        : transactionMode ~ '-tx_units',
+                'fieldId'                        : transactionMode ~ '-units',
                 'fieldLabel'                     : 'Units',
                 'fieldType'                      : 'input',
                 'fieldInputTypeTextFilter'       : 'positiveFloat',
@@ -295,8 +295,6 @@
             ]
         )}}
     </div>
-</div>
-<div class="row">
     <div class="col">
         {{adminltetags.useTag('fields',
             [
@@ -304,30 +302,11 @@
                 'componentName'                  : componentName,
                 'componentId'                    : componentId,
                 'sectionId'                      : sectionId,
-                'fieldId'                        : transactionMode ~ '-folio_no',
-                'fieldLabel'                     : 'Folio Number',
+                'fieldId'                        : transactionMode ~ '-amc_transaction_id',
+                'fieldLabel'                     : 'AMC Transaction ID',
                 'fieldType'                      : 'input',
                 'fieldHelp'                      : true,
-                'fieldHelpTooltipContent'        : 'Enter Folio Number. Can be an folio number from the AMC',
-                'fieldBazScan'                   : true,
-                'fieldBazPostOnCreate'           : false,
-                'fieldBazPostOnUpdate'           : false,
-                'fieldValue'                     : ''
-            ]
-        )}}
-    </div>
-    <div class="col">
-        {{adminltetags.useTag('fields',
-            [
-                'component'                      : component,
-                'componentName'                  : componentName,
-                'componentId'                    : componentId,
-                'sectionId'                      : sectionId,
-                'fieldId'                        : transactionMode ~ '-tx_id',
-                'fieldLabel'                     : 'Transaction ID',
-                'fieldType'                      : 'input',
-                'fieldHelp'                      : true,
-                'fieldHelpTooltipContent'        : 'Enter transaction id. Can me an ID from the AMC',
+                'fieldHelpTooltipContent'        : 'AMC Transaction ID',
                 'fieldBazScan'                   : true,
                 'fieldBazPostOnCreate'           : false,
                 'fieldBazPostOnUpdate'           : false,
