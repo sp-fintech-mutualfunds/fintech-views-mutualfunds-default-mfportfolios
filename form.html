@@ -698,11 +698,16 @@ dataCollectionSection =
             onChange: function(selectedDates, dateStr, instance) {
                 if (dateStr !== '') {
                     $('#{{componentId}}-{{sectionId}}-buy-amount').attr('disabled', false);
-                    if (dataCollectionSectionForm['vars']['scheme']['navs']['navs'][$('#{{componentId}}-{{sectionId}}-buy-date').val()]['nav']) {
+
+                    if (dataCollectionSectionForm['vars']['scheme']['navs']['navs'][$('#{{componentId}}-{{sectionId}}-buy-date').val()] &&
+                        dataCollectionSectionForm['vars']['scheme']['navs']['navs'][$('#{{componentId}}-{{sectionId}}-buy-date').val()]['nav']
+                    ) {
                         $('#{{componentId}}-{{sectionId}}-buy-selected_nav')
                             .html(dataCollectionSectionForm['vars']['currencySymbol'] +
                                   dataCollectionSectionForm['vars']['scheme']['navs']['navs'][$('#{{componentId}}-{{sectionId}}-buy-date').val()]['nav']
                             );
+                    } else {
+                        $('#{{componentId}}-{{sectionId}}-buy-selected_nav').html('-');
                     }
                 } else {
                     $('#{{componentId}}-{{sectionId}}-buy-amount').attr('disabled', true);
@@ -810,7 +815,7 @@ dataCollectionSectionForm['funcs']['cleanup'] = function() {
     $('#{{componentId}}-{{sectionId}}-buy-latest_nav').html('-');
     $('#{{componentId}}-{{sectionId}}-buy-latest_nav_date').html('-');
     $('#{{componentId}}-{{sectionId}}-buy-first_nav_date').html('-');
-    $('#{{componentId}}-{{sectionId}}-buy-amount').html('-');
+    $('#{{componentId}}-{{sectionId}}-buy-amount').val('');
     $('#{{componentId}}-{{sectionId}}-buy-calculated_units').html('-');
     $('#{{componentId}}-{{sectionId}}-buy-amc_transaction_id').val('');
     dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.minDate = '2000-01-01';
@@ -825,6 +830,7 @@ dataCollectionSectionForm['funcs']['cleanup'] = function() {
     $('#{{componentId}}-{{sectionId}}-sell-available_amount').html('-');
     $('#{{componentId}}-{{sectionId}}-sell-available_units').html('-');
     $('#{{componentId}}-{{sectionId}}-sell-amc_transaction_id').val('');
+    $('#{{componentId}}-{{sectionId}}-sell_all')[0].checked = false;
     dataCollectionSection["{{componentId}}-{{sectionId}}-sell-date"]['flatpickr'].config.minDate = '2000-01-01';
     dataCollectionSection["{{componentId}}-{{sectionId}}-sell-date"]['flatpickr'].config.maxDate = 'today';
     dataCollectionSection["{{componentId}}-{{sectionId}}-sell-date"]['flatpickr'].clear();
@@ -838,20 +844,18 @@ dataCollectionSectionForm['funcs']['init'] = function() {
         if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#{{componentId}}-{{sectionId}}-transactions-table')) {
             $('#{{componentId}}-{{sectionId}}-transactions-table').DataTable({
                 columns: [
-                    {visible: false},
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
+                    {orderable: false, visible: false},
+                    {orderable: false},
+                    {orderable: false},
+                    {orderable: false},
+                    {orderable: false},
+                    {orderable: false},
+                    {orderable: false},
+                    {orderable: false},
+                    {orderable: false},
                     {orderable: false}
                 ],
-                order: [
-                    [0, 'desc']
-                ],
+                order: false,
                 lengthMenu: [
                     [50, 100, -1],
                     [50, 100, 'All']
