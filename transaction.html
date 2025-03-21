@@ -85,10 +85,11 @@
                     'buttonType'            : 'button',
                     'buttons'               :
                         [
-                            'import' : [
+                            'buy-import' : [
                                 'title'                   : 'Import Navs',
                                 'position'                : 'right',
                                 'size'                    : 'sm',
+                                'disabled'                : true,
                                 'icon'                    : 'cog fa-spin',
                                 'iconHidden'              : true
                             ]
@@ -101,6 +102,7 @@
     {% if canSellTransactions|length > 0 %}
         {% for canSellTransactionKey, canSellTransaction in canSellTransactions %}
             {% set canSellTransactions[canSellTransactionKey]['data']['amfi_code'] = canSellTransaction['amfi_code'] %}
+            {% set canSellTransactions[canSellTransactionKey]['data']['scheme_id'] = canSellTransaction['scheme']['id'] %}
         {% endfor %}
     {% endif %}
     <div class="row">
@@ -125,6 +127,28 @@
                     'fieldDataSelect2OptionsValue'   : 'scheme/name',
                     'fieldDataSelect2OptionsArray'   : true,
                     'fieldDataSelect2OptionsSelected': ''
+                ]
+            )}}
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col">
+            {{adminltetags.useTag('buttons',
+                [
+                    'componentId'           : componentId,
+                    'sectionId'             : sectionId,
+                    'buttonType'            : 'button',
+                    'buttons'               :
+                        [
+                            'sell-import' : [
+                                'title'                   : 'Import Navs',
+                                'position'                : 'right',
+                                'size'                    : 'sm',
+                                'disabled'                : true,
+                                'icon'                    : 'cog fa-spin',
+                                'iconHidden'              : true
+                            ]
+                        ]
                 ]
             )}}
         </div>
