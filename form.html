@@ -314,48 +314,70 @@
             '           <td>' ~ transaction['date'] ~ '</td>' ~
             '           <td>' ~ strtoupper(transaction['type']) ~ '</td>' ~
             '           <td>' ~ strtoupper(transaction['status']) ~ '</td>' ~
-            '           <td>' ~ transaction['amfi_code'] ~ '</td>' ~
+            '           <td>' ~ transaction['scheme']['name'] ~ '</td>' ~
             '           <td>' ~ transaction['units_bought'] ~ ' (' ~ transaction['units_sold'] ~ ')</td>' ~
             '           <td>' ~ transaction['amount'] ~ '</td>' ~
             '           <td>' ~ transaction['latest_value_date'] ~ '</td>' ~
             '           <td>' ~ latestValue ~ '</td>' ~
             '           <td>' %}
+            {% if transaction['type'] == 'buy' and transaction['status'] == 'open' and transaction['units_sold'] == 0 %}
                 {% set dropdowns = [] %}
-                {% set dropdowns['edit-' ~ transaction['id']] = [
-                        'title'             : 'edit',
-                        'size'              : 'xs',
-                        'type'              : 'warning',
-                        'additionalClass'   : 'editTransaction'
-                    ]
-                %}
                 {% set dropdowns['remove-' ~ transaction['id']] = [
                         'title'             : 'remove',
                         'size'              : 'xs',
-                        'type'              : 'warning',
+                        'type'              : 'danger',
                         'additionalClass'   : 'removeTransaction'
                     ]
                 %}
-            {% set transactionsHtml = transactionsHtml ~
-                adminltetags.useTag('buttons',
+                {% set transactionsHtml = transactionsHtml ~
+                    adminltetags.useTag('buttons',
+                        [
+                            'component'                     : component,
+                            'componentName'                 : componentName,
+                            'componentId'                   : componentId,
+                            'parentComponentId'             : parent,
+                            'sectionId'                     : sectionId,
+                            'buttonType'                    : 'DropdownSplitButtons',
+                            'dropdownSplitButtonsSplit'     : true,
+                            'dropdownAlign'                 : 'right',
+                            'splitMainButtonAdditionalClass': 'editTransaction',
+                            'splitMainButtonId'             : 'edit-' ~ transaction['id'],
+                            'splitMainButtonTitle'          : 'Edit',
+                            'buttonFlat'                    : true,
+                            'buttonSize'                    : 'xs',
+                            'splitMainButtonType'           : 'warning',
+                            'dropdowns'                     : dropdowns
+                        ]
+                    )
+                %}
+            {% elseif (transaction['type'] == 'buy' and transaction['units_sold'] > 0) or transaction['type'] == 'sell' %}
+                {% set viewButton = [] %}
+                {% set viewButton['view-' ~ transaction['id']]  =
                     [
-                        'component'                     : component,
-                        'componentName'                 : componentName,
-                        'componentId'                   : componentId,
-                        'parentComponentId'             : parent,
-                        'sectionId'                     : sectionId,
-                        'buttonType'                    : 'DropdownSplitButtons',
-                        'dropdownSplitButtonsSplit'     : true,
-                        'dropdownAlign'                 : 'right',
-                        'splitMainButtonAdditionalClass': 'viewTransaction',
-                        'splitMainButtonId'             : 'view-' ~ transaction['id'],
-                        'splitMainButtonTitle'          : 'View',
-                        'buttonFlat'                    : true,
-                        'splitMainButtonType'           : 'info',
-                        'dropdowns'                     : dropdowns
+                        'title'                   : 'View',
+                        'size'                    : 'xs',
+                        'type'                    : 'info',
+                        'buttonAdditionalClass'   : 'viewTransaction'
                     ]
-                )
-            ~ '</td>' ~
-            '       </tr>' %}
+                %}
+                {% set transactionsHtml = transactionsHtml ~
+                    adminltetags.useTag('buttons',
+                        [
+                            'component'                     : component,
+                            'componentName'                 : componentName,
+                            'componentId'                   : componentId,
+                            'parentComponentId'             : parent,
+                            'sectionId'                     : sectionId,
+                            'buttonType'                    : 'button',
+                            'buttons'                       : viewButton
+                        ]
+                    )
+                %}
+            {% endif %}
+            {% set transactionsHtml = transactionsHtml ~
+                '</td>' ~
+                '   </tr>'
+            %}
             {% set transactions[transaction['id']] = transaction %}
         {% endfor %}
     {% endif %}
@@ -463,6 +485,7 @@
 {% set portfolio = escaper.js(json_encode(portfolio, 16)) %}
 {% set transactions = escaper.js(json_encode(transactions, 16)) %}
 {% set canSellTransactions = escaper.js(json_encode(canSellTransactions, 16)) %}
+{% set amcs = escaper.js(json_encode(amcs, 16)) %}
 <script>
 /*global paginatedPNotify BazProgress BazContentFields BazHelpers BazContentLoader Pace BazCore dataCollection Swal */
 var dataCollectionComponent, dataCollectionSection, dataCollectionSectionForm;
@@ -519,79 +542,78 @@ dataCollectionSection =
             placeholder: "SELECT SCHEME TO SELL",
             afterInit: function() {
                 $('#{{componentId}}-{{sectionId}}-sell_transaction_id').on('select2:select', function(e) {
-                    var amfi_code = $(e.params.data.element).data()['amfi_code'];
+                    dataCollectionSectionForm['funcs']['getSchemeNav']($(e.params.data.element).data()['scheme_id'], 'sell');
+                    // var postData = { };
+                    // postData[$('#security-token').attr('name')] = $('#security-token').val();
+                    // postData['id'] = dataCollectionSectionForm['vars']['canSellTransactions'][amfi_code]['scheme']['id'];
 
-                    var postData = { };
-                    postData[$('#security-token').attr('name')] = $('#security-token').val();
-                    postData['id'] = dataCollectionSectionForm['vars']['canSellTransactions'][amfi_code]['scheme']['id'];
+                    // $.post('{{links.url("mf/schemes/getSchemeNav")}}', postData, function(response) {
+                    //     if (response.tokenKey && response.token) {
+                    //         $("#security-token").attr("name", response.tokenKey);
+                    //         $("#security-token").val(response.token);
+                    //     }
 
-                    $.post('{{links.url("mf/schemes/getSchemeNav")}}', postData, function(response) {
-                        if (response.tokenKey && response.token) {
-                            $("#security-token").attr("name", response.tokenKey);
-                            $("#security-token").val(response.token);
-                        }
+                    //     if (response.responseData.scheme) {
+                    //         dataCollectionSectionForm['funcs']['cleanup']();
 
-                        if (response.responseData.scheme) {
-                            dataCollectionSectionForm['funcs']['cleanup']();
+                    //         dataCollectionSectionForm['vars']['scheme'] = response.responseData.scheme;
 
-                            dataCollectionSectionForm['vars']['scheme'] = response.responseData.scheme;
+                    //         if (response.responseData.scheme.amfi_code) {
+                    //             $('#{{componentId}}-{{sectionId}}-sell-amfi_code').val(response.responseData.scheme.amfi_code);
+                    //             $('#{{componentId}}-{{sectionId}}-sell-available_amount').html(
+                    //                 dataCollectionSectionForm['vars']['currencySymbol'] +
+                    //                 dataCollectionSectionForm['vars']['canSellTransactions'][response.responseData.scheme.amfi_code]['available_amount']
+                    //             );
+                    //             $('#{{componentId}}-{{sectionId}}-sell-available_units').html(
+                    //                 dataCollectionSectionForm['vars']['canSellTransactions'][response.responseData.scheme.amfi_code]['available_units']
+                    //             );
+                    //         }
+                    //         if (response.responseData.scheme.isin) {
+                    //             $('#{{componentId}}-{{sectionId}}-sell-isin').html(response.responseData.scheme.isin);
+                    //         }
+                    //         if (response.responseData.scheme.navs && response.responseData.scheme.navs.latest_nav) {
+                    //             $('#{{componentId}}-{{sectionId}}-sell-latest_nav').html(
+                    //                 dataCollectionSectionForm['vars']['currencySymbol'] + response.responseData.scheme.navs.latest_nav
+                    //             );
+                    //             $('#{{componentId}}-{{sectionId}}-sell-selected_nav').html(
+                    //                 dataCollectionSectionForm['vars']['currencySymbol'] + response.responseData.scheme.navs.latest_nav
+                    //             );
+                    //         }
+                    //         if (response.responseData.scheme.navs && response.responseData.scheme.navs.last_updated) {
+                    //             $('#{{componentId}}-{{sectionId}}-sell-latest_nav_date').html(response.responseData.scheme.navs.last_updated);
+                    //         }
+                    //         if (response.responseData.scheme.navs &&
+                    //             response.responseData.scheme.navs.navs &&
+                    //             Object.keys(response.responseData.scheme.navs.navs).length > 0
+                    //         ) {
+                    //             $('#{{componentId}}-{{sectionId}}-sell-first_nav_date').html(Object.keys(response.responseData.scheme.navs.navs)[0]);
+                    //             dataCollectionSection['{{componentId}}-{{sectionId}}-sell-date']['flatpickr'].config.minDate = Object.keys(response.responseData.scheme.navs.navs)[0];
+                    //             dataCollectionSection['{{componentId}}-{{sectionId}}-sell-date']['flatpickr'].config.maxDate = response.responseData.scheme.navs.last_updated;
+                    //             dataCollectionSection['{{componentId}}-{{sectionId}}-sell-date']['flatpickr'].setDate(response.responseData.scheme.navs.last_updated);
+                    //             $('#{{componentId}}-{{sectionId}}-sell-import').attr('disabled', false);
+                    //         } else {
+                    //             dataCollectionSection['{{componentId}}-{{sectionId}}-sell-date']['flatpickr'].config.minDate = '2000-01-01';
+                    //             dataCollectionSection['{{componentId}}-{{sectionId}}-sell-date']['flatpickr'].setDate('today');
+                    //             dataCollectionSection['{{componentId}}-{{sectionId}}-sell-date']['flatpickr'].config.maxDate = "today";
+                    //             $('#{{componentId}}-{{sectionId}}-sell-import').attr('disabled', true);
+                    //         }
+                    //         $('#{{componentId}}-{{sectionId}}-sell-amount').attr('disabled', false);
+                    //         $('#{{componentId}}-{{sectionId}}-sell-units').attr('disabled', false);
+                    //         $('#{{componentId}}-{{sectionId}}-sell_all').attr('disabled', false);
+                    //     }
 
-                            if (response.responseData.scheme.amfi_code) {
-                                $('#{{componentId}}-{{sectionId}}-sell-amfi_code').val(response.responseData.scheme.amfi_code);
-                                $('#{{componentId}}-{{sectionId}}-sell-available_amount').html(
-                                    dataCollectionSectionForm['vars']['currencySymbol'] +
-                                    dataCollectionSectionForm['vars']['canSellTransactions'][response.responseData.scheme.amfi_code]['available_amount']
-                                );
-                                $('#{{componentId}}-{{sectionId}}-sell-available_units').html(
-                                    dataCollectionSectionForm['vars']['canSellTransactions'][response.responseData.scheme.amfi_code]['available_units']
-                                );
-                            }
-                            if (response.responseData.scheme.isin) {
-                                $('#{{componentId}}-{{sectionId}}-sell-isin').html(response.responseData.scheme.isin);
-                            }
-                            if (response.responseData.scheme.navs && response.responseData.scheme.navs.latest_nav) {
-                                $('#{{componentId}}-{{sectionId}}-sell-latest_nav').html(
-                                    dataCollectionSectionForm['vars']['currencySymbol'] + response.responseData.scheme.navs.latest_nav
-                                );
-                                $('#{{componentId}}-{{sectionId}}-sell-selected_nav').html(
-                                    dataCollectionSectionForm['vars']['currencySymbol'] + response.responseData.scheme.navs.latest_nav
-                                );
-                            }
-                            if (response.responseData.scheme.navs && response.responseData.scheme.navs.last_updated) {
-                                $('#{{componentId}}-{{sectionId}}-sell-latest_nav_date').html(response.responseData.scheme.navs.last_updated);
-                            }
-                            if (response.responseData.scheme.navs &&
-                                response.responseData.scheme.navs.navs &&
-                                Object.keys(response.responseData.scheme.navs.navs).length > 0
-                            ) {
-                                $('#{{componentId}}-{{sectionId}}-sell-first_nav_date').html(Object.keys(response.responseData.scheme.navs.navs)[0]);
-                                dataCollectionSection["{{componentId}}-{{sectionId}}-sell-date"]['flatpickr'].config.minDate = Object.keys(response.responseData.scheme.navs.navs)[0];
-                                dataCollectionSection["{{componentId}}-{{sectionId}}-sell-date"]['flatpickr'].config.maxDate = response.responseData.scheme.navs.last_updated;
-                                dataCollectionSection["{{componentId}}-{{sectionId}}-sell-date"]['flatpickr'].setDate(response.responseData.scheme.navs.last_updated);
-                                $('#{{componentId}}-{{sectionId}}-import').attr('disabled', false);
-                            } else {
-                                dataCollectionSection["{{componentId}}-{{sectionId}}-sell-date"]['flatpickr'].config.minDate = '2000-01-01';
-                                dataCollectionSection["{{componentId}}-{{sectionId}}-sell-date"]['flatpickr'].setDate('today');
-                                dataCollectionSection["{{componentId}}-{{sectionId}}-sell-date"]['flatpickr'].config.maxDate = "today";
-                                $('#{{componentId}}-{{sectionId}}-import').attr('disabled', true);
-                            }
-                            $('#{{componentId}}-{{sectionId}}-sell-amount').attr('disabled', false);
-                            $('#{{componentId}}-{{sectionId}}-sell-units').attr('disabled', false);
-                            $('#{{componentId}}-{{sectionId}}-sell_all').attr('disabled', false);
-                        }
+                    //     if (response.responseCode === 1) {
+                    //         paginatedPNotify('error', {
+                    //             text : response.responseMessage
+                    //         });
 
-                        if (response.responseCode === 1) {
-                            paginatedPNotify('error', {
-                                text : response.responseMessage
-                            });
-
-                            dataCollectionSection["{{componentId}}-{{sectionId}}-sell-date"]['flatpickr'].config.minDate = '2000-01-01';
-                            dataCollectionSection["{{componentId}}-{{sectionId}}-sell-date"]['flatpickr'].setDate('today');
-                            dataCollectionSection["{{componentId}}-{{sectionId}}-sell-date"]['flatpickr'].config.maxDate = "today";
-                            dataCollectionSectionForm['funcs']['cleanup']();
-                            $('#{{componentId}}-{{sectionId}}-import').attr('disabled', false);
-                        }
-                    }, 'json');
+                    //         dataCollectionSection['{{componentId}}-{{sectionId}}-sell-date']['flatpickr'].config.minDate = '2000-01-01';
+                    //         dataCollectionSection['{{componentId}}-{{sectionId}}-sell-date']['flatpickr'].setDate('today');
+                    //         dataCollectionSection['{{componentId}}-{{sectionId}}-sell-date']['flatpickr'].config.maxDate = "today";
+                    //         dataCollectionSectionForm['funcs']['cleanup']();
+                    //         $('#{{componentId}}-{{sectionId}}-sell-import').attr('disabled', false);
+                    //     }
+                    // }, 'json');
                 });
             }
         },
@@ -633,60 +655,7 @@ dataCollectionSection =
             minimumInputLength : 3,
             afterInit: function() {
                 $('#{{componentId}}-{{sectionId}}-scheme_id').on('select2:select', function(e) {
-                    var postData = { };
-                    postData[$('#security-token').attr('name')] = $('#security-token').val();
-                    postData['id'] = e.params.data.id;
-
-                    $.post('{{links.url("mf/schemes/getSchemeNav")}}', postData, function(response) {
-                        if (response.tokenKey && response.token) {
-                            $("#security-token").attr("name", response.tokenKey);
-                            $("#security-token").val(response.token);
-                        }
-
-                        if (response.responseData.scheme) {
-                            dataCollectionSectionForm['funcs']['cleanup']();
-
-                            dataCollectionSectionForm['vars']['scheme'] = response.responseData.scheme;
-
-                            if (response.responseData.scheme.isin) {
-                                $('#{{componentId}}-{{sectionId}}-buy-isin').html(response.responseData.scheme.isin);
-                            }
-                            if (response.responseData.scheme.navs && response.responseData.scheme.navs.latest_nav) {
-                                $('#{{componentId}}-{{sectionId}}-buy-latest_nav').html(
-                                    dataCollectionSectionForm['vars']['currencySymbol'] + response.responseData.scheme.navs.latest_nav
-                                );
-                            }
-                            if (response.responseData.scheme.navs && response.responseData.scheme.navs.last_updated) {
-                                $('#{{componentId}}-{{sectionId}}-buy-latest_nav_date').html(response.responseData.scheme.navs.last_updated);
-                            }
-                            if (response.responseData.scheme.navs &&
-                                response.responseData.scheme.navs.navs &&
-                                Object.keys(response.responseData.scheme.navs.navs).length > 0
-                            ) {
-                                $('#{{componentId}}-{{sectionId}}-buy-first_nav_date').html(Object.keys(response.responseData.scheme.navs.navs)[0]);
-                                dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.minDate = Object.keys(response.responseData.scheme.navs.navs)[0];
-                                dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.maxDate = response.responseData.scheme.navs.last_updated;
-                                $('#{{componentId}}-{{sectionId}}-import').attr('disabled', false);
-                            } else {
-                                dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.minDate = '2000-01-01';
-                                dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].setDate('today');
-                                dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.maxDate = "today";
-                                $('#{{componentId}}-{{sectionId}}-import').attr('disabled', true);
-                            }
-                        }
-
-                        if (response.responseCode === 1) {
-                            paginatedPNotify('error', {
-                                text : response.responseMessage
-                            });
-
-                            dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.minDate = '2000-01-01';
-                            dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].setDate('today');
-                            dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.maxDate = "today";
-                            dataCollectionSectionForm['funcs']['cleanup']();
-                            $('#{{componentId}}-{{sectionId}}-import').attr('disabled', false);
-                        }
-                    }, 'json');
+                    dataCollectionSectionForm['funcs']['getSchemeNav'](e.params.data.id, 'buy');
                 });
             }
         },
@@ -757,14 +726,17 @@ dataCollectionSection =
                 $('#{{componentId}}-{{sectionId}}-sell_all').off();
                 $('#{{componentId}}-{{sectionId}}-sell_all').change(function() {
                     if ($(this)[0].checked === true) {
-                        $('#{{componentId}}-{{sectionId}}-sell-amount').attr('disabled', true);
                         $('#{{componentId}}-{{sectionId}}-sell-units').attr('disabled', true);
                         $('#{{componentId}}-{{sectionId}}-sell-units').val(
                             dataCollectionSectionForm['vars']['canSellTransactions'][dataCollectionSectionForm['vars']['scheme']['amfi_code']]['available_units']
                         );
+                        $('#{{componentId}}-{{sectionId}}-sell-units').removeClass('is-invalid');
+
                         var nav = dataCollectionSectionForm['vars']['scheme']['navs']['navs'][$('#{{componentId}}-{{sectionId}}-sell-date').val()]['nav'];
                         var amount = ($('#{{componentId}}-{{sectionId}}-sell-units').val() * nav).toFixed(2);
+                        $('#{{componentId}}-{{sectionId}}-sell-amount').attr('disabled', true);
                         $('#{{componentId}}-{{sectionId}}-sell-amount').val(amount);
+                        $('#{{componentId}}-{{sectionId}}-sell-amount').removeClass('is-invalid');
                     } else {
                         $('#{{componentId}}-{{sectionId}}-sell-amount').attr('disabled', false);
                         $('#{{componentId}}-{{sectionId}}-sell-units').attr('disabled', false);
@@ -805,12 +777,269 @@ dataCollectionSectionForm['vars'] = { };
 dataCollectionSectionForm['vars']['portfolio'] = JSON.parse('{{portfolio}}');
 dataCollectionSectionForm['vars']['transactions'] = JSON.parse('{{transactions}}');
 dataCollectionSectionForm['vars']['canSellTransactions'] = JSON.parse('{{canSellTransactions}}');
+dataCollectionSectionForm['vars']['amcs'] = JSON.parse('{{amcs}}');
 dataCollectionSectionForm['vars']['currencySymbol'] = '{{currencySymbol}}';
 dataCollectionSectionForm['vars']['sellInput'] = 'amount';
 dataCollectionSectionForm['vars']['scheme'] = { };
 dataCollectionSectionForm['funcs'] = { };
+
+dataCollectionSectionForm['funcs']['processTransaction'] = function(task = '', update = false, remove = false) {
+    var postData = { };
+
+    postData[$('#security-token').attr('name')] = $('#security-token').val();
+    if (remove) {
+        postData['id'] = $('#{{componentId}}-{{sectionId}}-transaction_id').val();
+    } else {
+        if (update) {
+            postData['id'] = $('#{{componentId}}-{{sectionId}}-transaction_id').val();
+        }
+        postData['user_id'] = $('#{{componentId}}-{{sectionId}}-user_id').val();
+        postData['portfolio_id'] = $('#{{componentId}}-{{sectionId}}-id').val();
+        postData['date'] = $('#{{componentId}}-{{sectionId}}-' + task + '-date').val();
+
+        if (task === 'sell') {
+            if (dataCollectionSectionForm['vars']['sellInput'] === 'amount') {
+                postData['amount'] = $('#{{componentId}}-{{sectionId}}-' + task + '-amount').val();
+            } else if (dataCollectionSectionForm['vars']['sellInput'] === 'units') {
+                postData['units'] = $('#{{componentId}}-{{sectionId}}-' + task + '-units').val();
+            }
+            postData['sell_all'] = $('#{{componentId}}-{{sectionId}}-sell_all')[0].checked;
+            postData['amfi_code'] = $('#{{componentId}}-{{sectionId}}-sell_transaction_id option:selected').data()['amfi_code'];
+            postData['scheme_id'] = $('#{{componentId}}-{{sectionId}}-sell_transaction_id option:selected').data()['scheme_id'];
+        } else {
+            postData['amc_id'] = $('#{{componentId}}-{{sectionId}}-amc_id').val();
+            postData['scheme_id'] = $('#{{componentId}}-{{sectionId}}-scheme_id').val();
+            postData['amount'] = $('#{{componentId}}-{{sectionId}}-' + task + '-amount').val();
+            postData['status'] = 'open';
+        }
+
+        postData['amc_transaction_id'] = $('#{{componentId}}-{{sectionId}}-' + task + '-amc_transaction_id').val();
+        postData['type'] = task;
+        postData['details'] = $('#{{componentId}}-{{sectionId}}-' + task + '-details').val();
+    }
+
+    if (($('#{{componentId}}-{{sectionId}}-' + task + '-amount') && $('#{{componentId}}-{{sectionId}}-' + task + '-amount').hasClass('is-invalid')) ||
+        ($('#{{componentId}}-{{sectionId}}-' + task + '-units') && $('#{{componentId}}-{{sectionId}}-' + task + '-units').hasClass('is-invalid'))
+    ) {
+        paginatedPNotify('error', {text : 'Fix amount/units errors.'});
+
+        return false;
+    }
+
+    if (postData['date'] === '' && !remove) {
+        $('#{{componentId}}-{{sectionId}}-' + task + '-date').siblings('input').addClass('is-invalid');
+        $('#{{componentId}}-{{sectionId}}-' + task + '-date').siblings('input').focus(function() {
+            $(this).removeClass('is-invalid');
+        });
+    } else if (postData['amount'] === '' && !remove) {
+        $('#{{componentId}}-{{sectionId}}-' + task + '-amount').addClass('is-invalid');
+        $('#{{componentId}}-{{sectionId}}-' + task + '-amount').focus(function() {
+            $(this).removeClass('is-invalid');
+        });
+    } else {
+        // $('#{{componentId}}-{{sectionId}}-modal-button-save').attr('disabled', true);
+        // $('#{{componentId}}-{{sectionId}}-modal-button-save').children('i').attr('hidden', false);
+
+        var url;
+        if (remove) {
+            url = '{{links.url("mf/portfolios/removeTransaction")}}';
+        } else {
+            url = '{{links.url("mf/portfolios/addTransaction")}}';
+            if (update) {
+                url = '{{links.url("mf/portfolios/updateTransaction")}}';
+            }
+        }
+
+        $.post(url, postData, function(response) {
+            if (response.tokenKey && response.token) {
+                $('#security-token').attr('name', response.tokenKey);
+                $('#security-token').val(response.token);
+            }
+
+            if (response.responseCode == 0) {
+                paginatedPNotify('success', {text : response.responseMessage});
+
+                if (!remove) {
+                    $('#{{componentId}}-{{sectionId}}-transaction-modal').modal('hide');
+                    $('.modal-backdrop').remove();
+                    $('#body').removeClass('modal-open');
+                }
+
+                dataCollectionSectionForm['funcs']['browse']();
+            } else {
+                paginatedPNotify('error', {text : response.responseMessage});
+            }
+
+            $('#{{componentId}}-{{sectionId}}-modal-button-save').attr('disabled', false);
+            $('#{{componentId}}-{{sectionId}}-modal-button-save').children('i').attr('hidden', true);
+        }, 'json');
+    }
+}
+
+dataCollectionSectionForm['funcs']['getSchemeNav'] = function(id, task = null, taskId = null, view = false) {
+    var postData = { };
+    postData[$('#security-token').attr('name')] = $('#security-token').val();
+    postData['id'] = id;
+
+    $.post('{{links.url("mf/schemes/getSchemeNav")}}', postData, function(response) {
+        if (response.tokenKey && response.token) {
+            $("#security-token").attr("name", response.tokenKey);
+            $("#security-token").val(response.token);
+        }
+
+        if (response.responseCode === 0) {
+            if (response.responseData.scheme) {
+                dataCollectionSectionForm['funcs']['cleanup']();
+                dataCollectionSectionForm['vars']['scheme'] = response.responseData.scheme;
+                dataCollectionSectionForm['funcs']['processSchemeNav'](response.responseData.scheme, task, taskId, view);
+            } else {
+                paginatedPNotify('error', {
+                    text : 'Scheme data not found!'
+                });
+            }
+        } else {
+            paginatedPNotify('error', {
+                text : response.responseMessage
+            });
+
+            dataCollectionSection['{{componentId}}-{{sectionId}}-' + task + '-date']['flatpickr'].config.minDate = '2000-01-01';
+            dataCollectionSection['{{componentId}}-{{sectionId}}-' + task + '-date']['flatpickr'].setDate('today');
+            dataCollectionSection['{{componentId}}-{{sectionId}}-' + task + '-date']['flatpickr'].config.maxDate = "today";
+            dataCollectionSectionForm['funcs']['cleanup']();
+            $('#{{componentId}}-{{sectionId}}-' + task + '-import').attr('disabled', false);
+        }
+    }, 'json');
+}
+
+dataCollectionSectionForm['funcs']['processSchemeNav'] = function(scheme, task = null, taskId = null, view = false) {
+    if (scheme.isin) {
+        $('#{{componentId}}-{{sectionId}}-' + task + '-isin').html(scheme.isin);
+    }
+    if (scheme.navs && scheme.navs.latest_nav) {
+        $('#{{componentId}}-{{sectionId}}-' + task + '-latest_nav').html(
+            dataCollectionSectionForm['vars']['currencySymbol'] + scheme.navs.latest_nav
+        );
+    }
+    if (scheme.navs && scheme.navs.last_updated) {
+        $('#{{componentId}}-{{sectionId}}-' + task + '-latest_nav_date').html(scheme.navs.last_updated);
+    }
+    if (scheme.navs &&
+        scheme.navs.navs &&
+        Object.keys(scheme.navs.navs).length > 0
+    ) {
+        $('#{{componentId}}-{{sectionId}}-' + task + '-first_nav_date').html(Object.keys(scheme.navs.navs)[0]);
+        dataCollectionSection['{{componentId}}-{{sectionId}}-' + task + '-date']['flatpickr'].config.minDate = Object.keys(scheme.navs.navs)[0];
+        dataCollectionSection['{{componentId}}-{{sectionId}}-' + task + '-date']['flatpickr'].config.maxDate = scheme.navs.last_updated;
+        $('#{{componentId}}-{{sectionId}}-' + task + '-import').attr('disabled', false);
+    } else {
+        dataCollectionSection['{{componentId}}-{{sectionId}}-' + task + '-date']['flatpickr'].config.minDate = '2000-01-01';
+        dataCollectionSection['{{componentId}}-{{sectionId}}-' + task + '-date']['flatpickr'].setDate('today');
+        dataCollectionSection['{{componentId}}-{{sectionId}}-' + task + '-date']['flatpickr'].config.maxDate = "today";
+        $('#{{componentId}}-{{sectionId}}-' + task + '-import').attr('disabled', true);
+    }
+
+    if (taskId) {
+        // if (task === 'buy') {
+            $('#{{componentId}}-{{sectionId}}-' + task + '-date').val(dataCollectionSectionForm['vars']['transactions'][taskId]['date']);
+            dataCollectionSection['{{componentId}}-{{sectionId}}-' + task + '-date']['flatpickr'].setDate(dataCollectionSectionForm['vars']['transactions'][taskId]['date'])
+            $('#{{componentId}}-{{sectionId}}-' + task + '-amount').val(parseFloat(dataCollectionSectionForm['vars']['transactions'][taskId]['amount'].replace(/,/g, '')));
+
+            if (dataCollectionSectionForm['vars']['scheme']['navs']['navs'][dataCollectionSectionForm['vars']['transactions'][taskId]['date']] &&
+                dataCollectionSectionForm['vars']['scheme']['navs']['navs'][dataCollectionSectionForm['vars']['transactions'][taskId]['date']]['nav']
+            ) {
+                $('#{{componentId}}-{{sectionId}}-' + task + '-selected_nav')
+                    .html(dataCollectionSectionForm['vars']['currencySymbol'] +
+                          dataCollectionSectionForm['vars']['scheme']['navs']['navs'][dataCollectionSectionForm['vars']['transactions'][taskId]['date']]['nav']
+                    );
+            } else {
+                $('#{{componentId}}-{{sectionId}}-' + task + '-selected_nav').html('-');
+            }
+
+            if (!view) {
+                $('#{{componentId}}-{{sectionId}}-' + task + '-modal-button-save').attr('hidden', false);
+                $('#{{componentId}}-{{sectionId}}-' + task + '-modal-button-save').off();
+                $('#{{componentId}}-{{sectionId}}-' + task + '-modal-button-save').click(function(e) {
+                    e.preventDefault();
+
+                    dataCollectionSectionForm['funcs']['processTransaction'](task, true);
+                });
+            } else {
+                $('#{{componentId}}-{{sectionId}}-' + task + '-modal-button-save').attr('hidden', true);
+                $('#{{componentId}}-{{sectionId}}-' + task + '-import').attr('hidden', true);
+                dataCollectionSection['{{componentId}}-{{sectionId}}-' + task + '-date']['flatpickr'].config.minDate = dataCollectionSectionForm['vars']['transactions'][taskId]['date'];
+                dataCollectionSection['{{componentId}}-{{sectionId}}-' + task + '-date']['flatpickr'].config.maxDate = dataCollectionSectionForm['vars']['transactions'][taskId]['date'];
+            }
+
+            if (task === 'buy') {
+                dataCollectionSectionForm['funcs']['calculateBuyUnits']();
+            } else if (task === 'sell') {
+                dataCollectionSectionForm['funcs']['calculateSellUnits']();
+                dataCollectionSectionForm['funcs']['calculateSellAmount']();
+                $('#{{componentId}}-{{sectionId}}-sell-available_amount').parents('.col').attr('hidden', true);
+                $('#{{componentId}}-{{sectionId}}-sell-available_units').parents('.col').attr('hidden', true);
+                $('#{{componentId}}-{{sectionId}}-sell_all').parents('.col').attr('hidden', true);
+            }
+
+            $('#{{componentId}}-{{sectionId}}-' + task + '-modal').modal('show');
+        // } else if (task === 'sell') {
+            // $('#{{componentId}}-{{sectionId}}-sell-date').val(dataCollectionSectionForm['vars']['transactions'][taskId]['date']);
+            // dataCollectionSection['{{componentId}}-{{sectionId}}-sell-date']['flatpickr'].setDate(dataCollectionSectionForm['vars']['transactions'][taskId]['date'])
+            // $('#{{componentId}}-{{sectionId}}-sell-amount').val(parseFloat(dataCollectionSectionForm['vars']['transactions'][taskId]['amount'].replace(/,/g, '')));
+
+            // if (dataCollectionSectionForm['vars']['scheme']['navs']['navs'][dataCollectionSectionForm['vars']['transactions'][taskId]['date']] &&
+            //     dataCollectionSectionForm['vars']['scheme']['navs']['navs'][dataCollectionSectionForm['vars']['transactions'][taskId]['date']]['nav']
+            // ) {
+            //     $('#{{componentId}}-{{sectionId}}-sell-selected_nav')
+            //         .html(dataCollectionSectionForm['vars']['currencySymbol'] +
+            //               dataCollectionSectionForm['vars']['scheme']['navs']['navs'][dataCollectionSectionForm['vars']['transactions'][taskId]['date']]['nav']
+            //         );
+            // } else {
+            //     $('#{{componentId}}-{{sectionId}}-sell-selected_nav').html('-');
+            // }
+
+            // if (!view) {
+                // $('#{{componentId}}-{{sectionId}}-sell-modal-button-save').attr('hidden', false);
+                // $('#{{componentId}}-{{sectionId}}-sell-modal-button-save').off();
+                // $('#{{componentId}}-{{sectionId}}-sell-modal-button-save').click(function(e) {
+                //     e.preventDefault();
+
+                //     dataCollectionSectionForm['funcs']['processTransaction']('sell', true);
+                // });
+            // } else {
+                // $('#{{componentId}}-{{sectionId}}-sell-modal-button-save').attr('hidden', true);
+
+                // $('#{{componentId}}-{{sectionId}}-sell-available_amount').parents('.col').attr('hidden', true);
+                // $('#{{componentId}}-{{sectionId}}-sell-available_units').parents('.col').attr('hidden', true);
+                // $('#{{componentId}}-{{sectionId}}-sell_all').parents('.col').attr('hidden', true);
+
+                // $('#{{componentId}}-{{sectionId}}-sell-import').attr('hidden', true);
+                // dataCollectionSection['{{componentId}}-{{sectionId}}-sell-date']['flatpickr'].config.minDate = dataCollectionSectionForm['vars']['transactions'][taskId]['date'];
+                // dataCollectionSection['{{componentId}}-{{sectionId}}-sell-date']['flatpickr'].config.maxDate = dataCollectionSectionForm['vars']['transactions'][taskId]['date'];
+            // }
+
+            // dataCollectionSectionForm['funcs']['calculateSellUnits']();
+            // dataCollectionSectionForm['funcs']['calculateSellAmount']();
+
+            // $('#{{componentId}}-{{sectionId}}-sell-modal').modal('show');
+        // }
+    } else {
+        if (task === 'buy') {
+            //
+        } else if (task === 'sell') {
+            $('#{{componentId}}-{{sectionId}}-sell-available_amount').html(
+                dataCollectionSectionForm['vars']['currencySymbol'] +
+                dataCollectionSectionForm['vars']['canSellTransactions'][scheme.amfi_code]['available_amount']
+            );
+            $('#{{componentId}}-{{sectionId}}-sell-available_units').html(
+                dataCollectionSectionForm['vars']['canSellTransactions'][scheme.amfi_code]['available_units']
+            );
+        }
+    }
+}
+
 dataCollectionSectionForm['funcs']['cleanup'] = function() {
-    $('#{{componentId}}-{{sectionId}}-import').attr('disabled', true);
+    $('#{{componentId}}-{{sectionId}}-buy-import').attr('disabled', true);
+    $('#{{componentId}}-{{sectionId}}-buy-import').attr('hidden', false);
     $('#{{componentId}}-{{sectionId}}-buy-isin').html('-');
     $('#{{componentId}}-{{sectionId}}-buy-latest_nav').html('-');
     $('#{{componentId}}-{{sectionId}}-buy-latest_nav_date').html('-');
@@ -818,9 +1047,12 @@ dataCollectionSectionForm['funcs']['cleanup'] = function() {
     $('#{{componentId}}-{{sectionId}}-buy-amount').val('');
     $('#{{componentId}}-{{sectionId}}-buy-calculated_units').html('-');
     $('#{{componentId}}-{{sectionId}}-buy-amc_transaction_id').val('');
-    dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.minDate = '2000-01-01';
-    dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].config.maxDate = 'today';
-    dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].clear();
+    dataCollectionSection['{{componentId}}-{{sectionId}}-buy-date']['flatpickr'].config.minDate = '2000-01-01';
+    dataCollectionSection['{{componentId}}-{{sectionId}}-buy-date']['flatpickr'].config.maxDate = 'today';
+    dataCollectionSection['{{componentId}}-{{sectionId}}-buy-date']['flatpickr'].clear();
+
+    $('#{{componentId}}-{{sectionId}}-sell-import').attr('disabled', true);
+    $('#{{componentId}}-{{sectionId}}-sell-import').attr('hidden', false);
     $('#{{componentId}}-{{sectionId}}-sell-isin').html('-');
     $('#{{componentId}}-{{sectionId}}-sell-latest_nav').html('-');
     $('#{{componentId}}-{{sectionId}}-sell-latest_nav_date').html('-');
@@ -831,10 +1063,64 @@ dataCollectionSectionForm['funcs']['cleanup'] = function() {
     $('#{{componentId}}-{{sectionId}}-sell-available_units').html('-');
     $('#{{componentId}}-{{sectionId}}-sell-amc_transaction_id').val('');
     $('#{{componentId}}-{{sectionId}}-sell_all')[0].checked = false;
-    dataCollectionSection["{{componentId}}-{{sectionId}}-sell-date"]['flatpickr'].config.minDate = '2000-01-01';
-    dataCollectionSection["{{componentId}}-{{sectionId}}-sell-date"]['flatpickr'].config.maxDate = 'today';
-    dataCollectionSection["{{componentId}}-{{sectionId}}-sell-date"]['flatpickr'].clear();
+    $('#{{componentId}}-{{sectionId}}-sell-available_amount').parents('.col').attr('hidden', false);
+    $('#{{componentId}}-{{sectionId}}-sell-available_units').parents('.col').attr('hidden', false);
+    $('#{{componentId}}-{{sectionId}}-sell_all').parents('.col').attr('hidden', false);
+
+    dataCollectionSection['{{componentId}}-{{sectionId}}-sell-date']['flatpickr'].config.minDate = '2000-01-01';
+    dataCollectionSection['{{componentId}}-{{sectionId}}-sell-date']['flatpickr'].config.maxDate = 'today';
+    dataCollectionSection['{{componentId}}-{{sectionId}}-sell-date']['flatpickr'].clear();
     dataCollectionSectionForm['vars']['scheme'] = { };
+}
+
+dataCollectionSectionForm['funcs']['calculateBuyUnits'] = function() {
+    if ($('#{{componentId}}-{{sectionId}}-buy-amount').val() !== '') {
+        var nav = dataCollectionSectionForm['vars']['scheme']['navs']['navs'][$('#{{componentId}}-{{sectionId}}-buy-date').val()]['nav'];
+        var units = (parseFloat($('#{{componentId}}-{{sectionId}}-buy-amount').val().replace(/,/g, '')) / nav).toFixed(3);
+        $('#{{componentId}}-{{sectionId}}-buy-calculated_units').html(units);
+    } else {
+        $('#{{componentId}}-{{sectionId}}-buy-calculated_units').html('-');
+    }
+}
+
+dataCollectionSectionForm['funcs']['calculateSellUnits'] = function() {
+    if ($('#{{componentId}}-{{sectionId}}-sell-amount').val() !== '') {
+        var nav = dataCollectionSectionForm['vars']['scheme']['navs']['navs'][$('#{{componentId}}-{{sectionId}}-sell-date').val()]['nav'];
+        var units = (parseFloat($('#{{componentId}}-{{sectionId}}-sell-amount').val().replace(/,/g, '')) / nav).toFixed(3);
+        $('#{{componentId}}-{{sectionId}}-sell-units').val(units);
+
+        if (units > dataCollectionSectionForm['vars']['canSellTransactions'][dataCollectionSectionForm['vars']['scheme']['amfi_code']]['available_units']) {
+            $('#{{componentId}}-{{sectionId}}-sell-units').addClass('is-invalid');
+            $('#{{componentId}}-{{sectionId}}-sell-amount').addClass('is-invalid');
+        } else {
+            $('#{{componentId}}-{{sectionId}}-sell-units').removeClass('is-invalid');
+            $('#{{componentId}}-{{sectionId}}-sell-amount').removeClass('is-invalid');
+        }
+    } else {
+        $('#{{componentId}}-{{sectionId}}-sell-units').val('');
+    }
+    dataCollectionSectionForm['vars']['sellInput'] = 'amount';
+}
+
+dataCollectionSectionForm['funcs']['calculateSellAmount'] = function() {
+    if ($('#{{componentId}}-{{sectionId}}-sell-units').val() !== '') {
+        var nav = dataCollectionSectionForm['vars']['scheme']['navs']['navs'][$('#{{componentId}}-{{sectionId}}-sell-date').val()]['nav'];
+        var amount = ($('#{{componentId}}-{{sectionId}}-sell-units').val() * nav).toFixed(2);
+        $('#{{componentId}}-{{sectionId}}-sell-amount').val(amount);
+
+        if (parseFloat(amount) >
+            (nav * dataCollectionSectionForm['vars']['canSellTransactions'][dataCollectionSectionForm['vars']['scheme']['amfi_code']]['available_units']).toFixed(2)
+        ) {
+            $('#{{componentId}}-{{sectionId}}-sell-units').addClass('is-invalid');
+            $('#{{componentId}}-{{sectionId}}-sell-amount').addClass('is-invalid');
+        } else {
+            $('#{{componentId}}-{{sectionId}}-sell-units').removeClass('is-invalid');
+            $('#{{componentId}}-{{sectionId}}-sell-amount').removeClass('is-invalid');
+        }
+    } else {
+        $('#{{componentId}}-{{sectionId}}-sell-amount').val('');
+    }
+    dataCollectionSectionForm['vars']['sellInput'] = 'units';
 }
 
 dataCollectionSectionForm['funcs']['init'] = function() {
@@ -913,7 +1199,7 @@ dataCollectionSectionForm['funcs']['init'] = function() {
             $('#{{componentId}}-{{sectionId}}-buy-modal-button-save').click(function(e) {
                 e.preventDefault();
 
-                processTransaction('buy');
+                dataCollectionSectionForm['funcs']['processTransaction']('buy');
             });
         } else if ($(this)[0].id === '{{componentId}}-{{sectionId}}-sell') {
             $('#{{componentId}}-{{sectionId}}-sell-modal').modal('show');
@@ -922,13 +1208,13 @@ dataCollectionSectionForm['funcs']['init'] = function() {
             $('#{{componentId}}-{{sectionId}}-sell-modal-button-save').click(function(e) {
                 e.preventDefault();
 
-                processTransaction('sell');
+                dataCollectionSectionForm['funcs']['processTransaction']('sell');
             });
         }
     });
 
-    $('#{{componentId}}-{{sectionId}}-import').off();
-    $('#{{componentId}}-{{sectionId}}-import').click(function(e) {
+    $('#{{componentId}}-{{sectionId}}-buy-import, #{{componentId}}-{{sectionId}}-sell-import').off();
+    $('#{{componentId}}-{{sectionId}}-buy-import, #{{componentId}}-{{sectionId}}-sell-import').click(function(e) {
         e.preventDefault();
 
         var thisButton = $(this);
@@ -938,7 +1224,17 @@ dataCollectionSectionForm['funcs']['init'] = function() {
         var postData = { };
         postData[$('#security-token').attr('name')] = $('#security-token').val();
         postData['get_all_navs'] = true;
-        postData['scheme_id'] = $('#{{componentId}}-{{sectionId}}-scheme_id').val();
+        if ($(thisButton)[0].id === '{{componentId}}-{{sectionId}}-sell-import') {
+            postData['scheme_id'] = $('#{{componentId}}-{{sectionId}}-sell_transaction_id option:selected').data()['scheme_id'];
+        } else {
+            postData['scheme_id'] = $('#{{componentId}}-{{sectionId}}-scheme_id').val();
+        }
+
+        if (postData['scheme_id'] === '' || !postData['scheme_id']) {
+            paginatedPNotify('error', 'Provide proper scheme ID. Contact developer.');
+
+            return;
+        }
 
         $.post('{{links.url("mf/extractdata/getAllNavData")}}', postData, function(response) {
             $(thisButton).removeClass('disabled');
@@ -950,7 +1246,11 @@ dataCollectionSectionForm['funcs']['init'] = function() {
                 paginatedPNotify('error', response.responseMessage);
             }
 
-            $('#{{componentId}}-{{sectionId}}-scheme_id').empty().trigger('change');
+            if ($(thisButton)[0].id === '{{componentId}}-{{sectionId}}-sell-import') {
+                $('#{{componentId}}-{{sectionId}}-sell_transaction_id').val(0).trigger('change');
+            } else {
+                $('#{{componentId}}-{{sectionId}}-scheme_id').empty().trigger('change');
+            }
 
             dataCollectionSectionForm['funcs']['cleanup']();
 
@@ -961,119 +1261,46 @@ dataCollectionSectionForm['funcs']['init'] = function() {
         }, 'json');
     });
 
-    function processTransaction(task = '', update = false, remove = false) {
-        var postData = { };
-
-        postData[$('#security-token').attr('name')] = $('#security-token').val();
-        if (remove) {
-            postData['id'] = $('#{{componentId}}-{{sectionId}}-transaction_id').val();
-        } else {
-            if (update) {
-                postData['id'] = $('#{{componentId}}-{{sectionId}}-transaction_id').val();
-            }
-            postData['user_id'] = $('#{{componentId}}-{{sectionId}}-user_id').val();
-            postData['portfolio_id'] = $('#{{componentId}}-{{sectionId}}-id').val();
-            postData['amc_id'] = $('#{{componentId}}-{{sectionId}}-' + task + '-amc_id').val();
-            postData['scheme_id'] = $('#{{componentId}}-{{sectionId}}-scheme_id').val();
-            postData['amfi_code'] = $('#{{componentId}}-{{sectionId}}-' + task + '-amfi_code').val();
-            postData['date'] = $('#{{componentId}}-{{sectionId}}-' + task + '-date').val();
-            if (task === 'sell') {
-                if (dataCollectionSectionForm['vars']['sellInput'] === 'amount') {
-                    postData['amount'] = $('#{{componentId}}-{{sectionId}}-' + task + '-amount').val();
-                } else if (dataCollectionSectionForm['vars']['sellInput'] === 'units') {
-                    postData['units'] = $('#{{componentId}}-{{sectionId}}-' + task + '-units').val();
-                }
-                postData['sell_all'] = $('#{{componentId}}-{{sectionId}}-sell_all')[0].checked;
-            } else {
-                postData['amount'] = $('#{{componentId}}-{{sectionId}}-' + task + '-amount').val();
-            }
-            postData['amc_transaction_id'] = $('#{{componentId}}-{{sectionId}}-' + task + '-amc_transaction_id').val();
-            postData['type'] = task;
-            if (task === 'buy') {
-                postData['status'] = 'open';
-            }
-            postData['details'] = $('#{{componentId}}-{{sectionId}}-' + task + '-details').val();
-        }
-
-        if (($('#{{componentId}}-{{sectionId}}-' + task + '-amount') && $('#{{componentId}}-{{sectionId}}-' + task + '-amount').hasClass('is-invalid')) ||
-            ($('#{{componentId}}-{{sectionId}}-' + task + '-units') && $('#{{componentId}}-{{sectionId}}-' + task + '-units').hasClass('is-invalid'))
-        ) {
-            paginatedPNotify('error', {text : 'Fix amount/units errors.'});
-
-            return false;
-        }
-
-        if (postData['date'] === '' && !remove) {
-            $('#{{componentId}}-{{sectionId}}-' + task + '-date').siblings('input').addClass('is-invalid');
-            $('#{{componentId}}-{{sectionId}}-' + task + '-date').siblings('input').focus(function() {
-                $(this).removeClass('is-invalid');
-            });
-        } else if (postData['amount'] === '' && !remove) {
-            $('#{{componentId}}-{{sectionId}}-' + task + '-amount').addClass('is-invalid');
-            $('#{{componentId}}-{{sectionId}}-' + task + '-amount').focus(function() {
-                $(this).removeClass('is-invalid');
-            });
-        } else {
-            // $('#{{componentId}}-{{sectionId}}-modal-button-save').attr('disabled', true);
-            // $('#{{componentId}}-{{sectionId}}-modal-button-save').children('i').attr('hidden', false);
-
-            var url;
-            if (remove) {
-                url = '{{links.url("mf/portfolios/removeTransaction")}}';
-            } else {
-                url = '{{links.url("mf/portfolios/addTransaction")}}';
-                if (update) {
-                    url = '{{links.url("mf/portfolios/updateTransaction")}}';
-                }
-            }
-
-            $.post(url, postData, function(response) {
-                if (response.tokenKey && response.token) {
-                    $('#security-token').attr('name', response.tokenKey);
-                    $('#security-token').val(response.token);
-                }
-
-                if (response.responseCode == 0) {
-                    paginatedPNotify('success', {text : response.responseMessage});
-
-                    if (!remove) {
-                        $('#{{componentId}}-{{sectionId}}-transaction-modal').modal('hide');
-                        $('.modal-backdrop').remove();
-                        $('#body').removeClass('modal-open');
-                    }
-
-                    dataCollectionSectionForm['funcs']['browse']();
-                } else {
-                    paginatedPNotify('error', {text : response.responseMessage});
-                }
-
-                $('#{{componentId}}-{{sectionId}}-modal-button-save').attr('disabled', false);
-                $('#{{componentId}}-{{sectionId}}-modal-button-save').children('i').attr('hidden', true);
-            }, 'json');
-        }
-    }
-
     $('.viewTransaction').off();
     $('.viewTransaction').each(function(rowId, row) {
         $(row).off();
         $(row).click(function(e) {
             e.preventDefault();
-
             var idArr = $(this)[0].id.split('-');
             var id = idArr[idArr.length - 1];
+            var newOption = { };
 
-            if (dataCollectionSectionForm['vars']['transactions'][id]) {
-                $('#{{componentId}}-{{sectionId}}-transaction_id').val(dataCollectionSectionForm['vars']['transactions'][id]['id']);
-                if (dataCollectionSectionForm['vars']['transactions'][id]['type'] === 'buy') {
-                    $('#{{componentId}}-{{sectionId}}-buy-modal-button-save').attr('hidden', true);
-                    $('#{{componentId}}-{{sectionId}}-buy-modal').modal('show');
-                } else if (dataCollectionSectionForm['vars']['transactions'][id]['type'] === 'sell') {
-                    $('#{{componentId}}-{{sectionId}}-sell-modal-button-save').attr('hidden', true);
-                    $('#{{componentId}}-{{sectionId}}-sell-modal').modal('show');
-                }
+            $('#{{componentId}}-{{sectionId}}-transaction_id').val(dataCollectionSectionForm['vars']['transactions'][id]['id']);
 
-                $('#{{componentId}}-{{sectionId}}-details').val(dataCollectionSectionForm['vars']['transactions'][id]['details']);
+            if (dataCollectionSectionForm['vars']['transactions'][id]['type'] === 'buy') {
+                $('#{{componentId}}-{{sectionId}}-amc_id').val(dataCollectionSectionForm['vars']['transactions'][id]['amc_id']).trigger('change');
+                $('#{{componentId}}-{{sectionId}}-amc_id').attr('disabled', true);
+
+                $('#{{componentId}}-{{sectionId}}-scheme_id').attr('disabled', true);
+                newOption = new Option(
+                    dataCollectionSectionForm['vars']['transactions'][id]['scheme']['name'],
+                    dataCollectionSectionForm['vars']['transactions'][id]['scheme']['id'],
+                    false,
+                    false
+                );
+                $('#{{componentId}}-{{sectionId}}-scheme_id').append(newOption).val(dataCollectionSectionForm['vars']['transactions'][id]['scheme']['id']).trigger('change');
+
+                dataCollectionSectionForm['funcs']['getSchemeNav'](dataCollectionSectionForm['vars']['transactions'][id]['scheme']['id'], 'buy', id, true);
+            } else if (dataCollectionSectionForm['vars']['transactions'][id]['type'] === 'sell') {
+                $('#{{componentId}}-{{sectionId}}-sell_transaction_id').attr('disabled', true);
+                // newOption = new Option(
+                //     dataCollectionSectionForm['vars']['transactions'][id]['scheme']['name'],
+                //     dataCollectionSectionForm['vars']['transactions'][id]['scheme']['id'],
+                //     false,
+                //     false
+                // );
+                $('#{{componentId}}-{{sectionId}}-sell_transaction_id')
+                    .val(dataCollectionSectionForm['vars']['canSellTransactions'][dataCollectionSectionForm['vars']['transactions'][id]['amfi_code']]['id']).trigger('change');
+
+                dataCollectionSectionForm['funcs']['getSchemeNav'](dataCollectionSectionForm['vars']['transactions'][id]['scheme']['id'], 'sell', id, true);
             }
+
+            $('#{{componentId}}-{{sectionId}}-details').val(dataCollectionSectionForm['vars']['transactions'][id]['details']);
         });
     });
 
@@ -1086,25 +1313,18 @@ dataCollectionSectionForm['funcs']['init'] = function() {
             var idArr = $(this)[0].id.split('-');
             var id = idArr[idArr.length - 1];
 
-            if (dataCollectionSectionForm['vars']['transactions'][id]) {
+            if (dataCollectionSectionForm['vars']['transactions'][id] &&
+                dataCollectionSectionForm['vars']['transactions'][id]['status'] === 'open' &&
+                dataCollectionSectionForm['vars']['transactions'][id]['units_sold'] == 0
+            ) {
                 $('#{{componentId}}-{{sectionId}}-transaction_id').val(dataCollectionSectionForm['vars']['transactions'][id]['id']);
+
                 if (dataCollectionSectionForm['vars']['transactions'][id]['type'] === 'buy') {
-                    $('#{{componentId}}-{{sectionId}}-buy-date').val(dataCollectionSectionForm['vars']['transactions'][id]['date']);
-                    dataCollectionSection["{{componentId}}-{{sectionId}}-buy-date"]['flatpickr'].setDate(dataCollectionSectionForm['vars']['transactions'][id]['date'])
-                    $('#{{componentId}}-{{sectionId}}-buy-amount').val(dataCollectionSectionForm['vars']['transactions'][id]['amount']);
-
-                    $('#{{componentId}}-{{sectionId}}-buy-modal-button-save').attr('hidden', false);
-                    $('#{{componentId}}-{{sectionId}}-buy-modal').modal('show');
-
-                    $('#{{componentId}}-{{sectionId}}-buy-modal-button-save').off();
-                    $('#{{componentId}}-{{sectionId}}-buy-modal-button-save').click(function(e) {
-                        e.preventDefault();
-
-                        processTransaction('buy', true);
-                    });
+                    $('#{{componentId}}-{{sectionId}}-amc_id').val(dataCollectionSectionForm['vars']['transactions'][id]['amc_id']).trigger('change');
+                    dataCollectionSectionForm['funcs']['getSchemeNav'](dataCollectionSectionForm['vars']['transactions'][id]['scheme']['id'], 'buy', id);
                 } else if (dataCollectionSectionForm['vars']['transactions'][id]['type'] === 'sell') {
                     $('#{{componentId}}-{{sectionId}}-sell-date').val(dataCollectionSectionForm['vars']['transactions'][id]['date']);
-                    dataCollectionSection["{{componentId}}-{{sectionId}}-sell-date"]['flatpickr'].setDate(dataCollectionSectionForm['vars']['transactions'][id]['date'])
+                    dataCollectionSection['{{componentId}}-{{sectionId}}-sell-date']['flatpickr'].setDate(dataCollectionSectionForm['vars']['transactions'][id]['date'])
                     $('#{{componentId}}-{{sectionId}}-sell-amount').val(dataCollectionSectionForm['vars']['transactions'][id]['amount']);
 
                     $('#{{componentId}}-{{sectionId}}-sell-modal-button-save').attr('hidden', false);
@@ -1114,13 +1334,12 @@ dataCollectionSectionForm['funcs']['init'] = function() {
                     $('#{{componentId}}-{{sectionId}}-sell-modal-button-save').click(function(e) {
                         e.preventDefault();
 
-                        processTransaction('sell', true);
+                        dataCollectionSectionForm['funcs']['processTransaction']('sell', true);
                     });
                 }
 
                 $('#{{componentId}}-{{sectionId}}-details').val(dataCollectionSectionForm['vars']['transactions'][id]['details']);
             }
-
         });
     });
 
@@ -1157,66 +1376,48 @@ dataCollectionSectionForm['funcs']['init'] = function() {
                         $('#{{componentId}}-{{sectionId}}-transaction_id').val(dataCollectionSectionForm['vars']['transactions'][id]['id']);
                     }
 
-                    processTransaction('', false, true);
+                    dataCollectionSectionForm['funcs']['processTransaction']('', false, true);
                 }
             });
         });
     });
 
     $('#{{componentId}}-{{sectionId}}-buy-modal, #{{componentId}}-{{sectionId}}-sell-modal').on('hide.bs.modal', function (e) {
+        $('#{{componentId}}-{{sectionId}}-amc_id').val(0).trigger('change');
+        $('#{{componentId}}-{{sectionId}}-amc_id').attr('disabled', false);
         $('#{{componentId}}-{{sectionId}}-scheme_id').empty().trigger('change');
         $('#{{componentId}}-{{sectionId}}-scheme_id').attr('disabled', true);
-        $('#{{componentId}}-{{sectionId}}-amc_id').val(0).trigger('change');
+        // $('#{{componentId}}-{{sectionId}}-sell_transaction_id').empty().trigger('change');
+        // if (Object.keys(dataCollectionSectionForm['vars']['canSellTransactions']).length > 0) {
+        //     var newOption = { };
+
+        //     for (var amfiCode in dataCollectionSectionForm['vars']['canSellTransactions']) {
+        //         newOption = new Option(
+        //             dataCollectionSectionForm['vars']['canSellTransactions'][amfiCode]['scheme']['name'],
+        //             dataCollectionSectionForm['vars']['canSellTransactions'][amfiCode]['id'],
+        //             false,
+        //             false
+        //         );
+        //         $('#{{componentId}}-{{sectionId}}-sell_transaction_id').append(newOption).val(0).trigger('change');
+        //         $($('#{{componentId}}-{{sectionId}}-sell_transaction_id').children().last()).data('value', dataCollectionSectionForm['vars']['canSellTransactions'][amfiCode]['id']);
+        //         $($('#{{componentId}}-{{sectionId}}-sell_transaction_id').children().last()).data('amfi_code', dataCollectionSectionForm['vars']['canSellTransactions'][amfiCode]['amfi_code']);
+        //     }
+        // }
         $('#{{componentId}}-{{sectionId}}-sell_transaction_id').val(0).trigger('change');
+        $('#{{componentId}}-{{sectionId}}-sell_transaction_id').attr('disabled', false);
         dataCollectionSectionForm['funcs']['cleanup']();
     });
 
     $('#{{componentId}}-{{sectionId}}-buy-amount').keyup(function() {
-        if ($('#{{componentId}}-{{sectionId}}-buy-amount').val() !== '') {
-            var nav = dataCollectionSectionForm['vars']['scheme']['navs']['navs'][$('#{{componentId}}-{{sectionId}}-buy-date').val()]['nav'];
-            var units = ($('#{{componentId}}-{{sectionId}}-buy-amount').val() / nav).toFixed(3);
-            $('#{{componentId}}-{{sectionId}}-buy-calculated_units').html(units);
-        } else {
-            $('#{{componentId}}-{{sectionId}}-buy-calculated_units').html('-');
-        }
+        dataCollectionSectionForm['funcs']['calculateBuyUnits']();
     });
+
     $('#{{componentId}}-{{sectionId}}-sell-amount').keyup(function() {
-        if ($('#{{componentId}}-{{sectionId}}-sell-amount').val() !== '') {
-            var nav = dataCollectionSectionForm['vars']['scheme']['navs']['navs'][$('#{{componentId}}-{{sectionId}}-sell-date').val()]['nav'];
-            var units = ($('#{{componentId}}-{{sectionId}}-sell-amount').val() / nav).toFixed(3);
-            $('#{{componentId}}-{{sectionId}}-sell-units').val(units);
-
-            if (units > dataCollectionSectionForm['vars']['canSellTransactions'][dataCollectionSectionForm['vars']['scheme']['amfi_code']]['available_units']) {
-                $('#{{componentId}}-{{sectionId}}-sell-units').addClass('is-invalid');
-                $('#{{componentId}}-{{sectionId}}-sell-amount').addClass('is-invalid');
-            } else {
-                $('#{{componentId}}-{{sectionId}}-sell-units').removeClass('is-invalid');
-                $('#{{componentId}}-{{sectionId}}-sell-amount').removeClass('is-invalid');
-            }
-        } else {
-            $('#{{componentId}}-{{sectionId}}-sell-units').val('');
-        }
-        dataCollectionSectionForm['vars']['sellInput'] = 'amount';
+        dataCollectionSectionForm['funcs']['calculateSellUnits']();
     });
-    $('#{{componentId}}-{{sectionId}}-sell-units').keyup(function() {
-        if ($('#{{componentId}}-{{sectionId}}-sell-units').val() !== '') {
-            var nav = dataCollectionSectionForm['vars']['scheme']['navs']['navs'][$('#{{componentId}}-{{sectionId}}-sell-date').val()]['nav'];
-            var amount = ($('#{{componentId}}-{{sectionId}}-sell-units').val() * nav).toFixed(2);
-            $('#{{componentId}}-{{sectionId}}-sell-amount').val(amount);
 
-            if (parseFloat(amount) >
-                (nav * dataCollectionSectionForm['vars']['canSellTransactions'][dataCollectionSectionForm['vars']['scheme']['amfi_code']]['available_units']).toFixed(2)
-            ) {
-                $('#{{componentId}}-{{sectionId}}-sell-units').addClass('is-invalid');
-                $('#{{componentId}}-{{sectionId}}-sell-amount').addClass('is-invalid');
-            } else {
-                $('#{{componentId}}-{{sectionId}}-sell-units').removeClass('is-invalid');
-                $('#{{componentId}}-{{sectionId}}-sell-amount').removeClass('is-invalid');
-            }
-        } else {
-            $('#{{componentId}}-{{sectionId}}-sell-amount').val('');
-        }
-        dataCollectionSectionForm['vars']['sellInput'] = 'units';
+    $('#{{componentId}}-{{sectionId}}-sell-units').keyup(function() {
+        dataCollectionSectionForm['funcs']['calculateSellAmount']();
     });
 }
 
