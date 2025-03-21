@@ -480,3 +480,42 @@
         )}}
     </div>
 </div>
+{% set transactionHtml =
+    '<div class="row">' ~
+    '    <div class="col">' ~
+    '        <table id="' ~ componentId ~ '-' ~ sectionId ~ '-' ~ transactionMode ~ '-transactions-table" class="table table-sm table-hover responsive nowrap mb-0" width="100%" cellspacing="0">' ~
+    '            <thead>' ~
+    '                <tr>' ~
+    '                    <th class="text-uppercase">Date</th>' ~
+    '                    <th class="text-uppercase">Units</th>' ~
+    '                    <th class="text-uppercase">Amount</th>' ~
+    '                </tr>' ~
+    '            </thead>' ~
+    '            <tbody>' ~
+    '            </tbody>' ~
+    '        </table>' ~
+    '    </div>' ~
+    '</div>'
+%}
+<div class="row" id="{{transactionMode}}-transactions-div" hidden>
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'transactions',
+                'fieldLabel'                     : 'Transactions',
+                'fieldType'                      : 'html',
+                'fieldAdditionalClass'           : 'mb-0 ' ~ transactionMode ~ '-transactions',
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'Corresponding transactions for the transaction',
+                'fieldRequired'                  : false,
+                'fieldBazScan'                   : true,
+                'fieldBazPostOnUpdate'           : true,
+                'fieldHtmlContent'               : transactionHtml
+            ]
+        )}}
+    </div>
+</div>
