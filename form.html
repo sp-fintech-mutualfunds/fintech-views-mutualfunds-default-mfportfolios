@@ -915,6 +915,8 @@ dataCollectionSectionForm['funcs']['processSchemeNav'] = function(scheme, task =
     }
 
     if (taskId) {
+        $('#{{componentId}}-{{sectionId}}-transaction_id').val(taskId);
+
         $('#{{componentId}}-{{sectionId}}-' + task + '-date').val(dataCollectionSectionForm['vars']['transactions'][taskId]['date']);
         dataCollectionSection['{{componentId}}-{{sectionId}}-' + task + '-date']['flatpickr'].setDate(dataCollectionSectionForm['vars']['transactions'][taskId]['date'])
         $('#{{componentId}}-{{sectionId}}-' + task + '-amount').val(parseFloat(dataCollectionSectionForm['vars']['transactions'][taskId]['amount'].replace(/,/g, '')));
@@ -1170,7 +1172,7 @@ dataCollectionSectionForm['funcs']['init'] = function() {
                 });
 
                 dataCollectionSectionForm['funcs']['browse']();
-            } else if (response.responseCode === 1) {
+            } else {
                 paginatedPNotify('error', {
                     text : response.responseMessage
                 });
@@ -1306,8 +1308,6 @@ dataCollectionSectionForm['funcs']['init'] = function() {
                 dataCollectionSectionForm['vars']['transactions'][id]['status'] === 'open' &&
                 dataCollectionSectionForm['vars']['transactions'][id]['units_sold'] == 0
             ) {
-                $('#{{componentId}}-{{sectionId}}-transaction_id').val(dataCollectionSectionForm['vars']['transactions'][id]['id']);
-
                 $('#{{componentId}}-{{sectionId}}-amc_id').val(dataCollectionSectionForm['vars']['transactions'][id]['amc_id']).trigger('change');
                 $('#{{componentId}}-{{sectionId}}-amc_id').attr('disabled', true);
 
