@@ -47,8 +47,8 @@
             </div>
         </div>
         <div class="row">
-            <div class="col">
-                {% if mode != 'timeline' %}
+            {% if mode != 'timeline' %}
+                <div class="col">
                     <div class="row">
                         <div class="col">
                             {{adminltetags.useTag('fields',
@@ -125,35 +125,35 @@
                             )}}
                         </div>
                     </div>
-                {% else %}
-                    {{adminltetags.useTag('fields',
-                        [
-                            'component'                      : component,
-                            'componentName'                  : componentName,
-                            'componentId'                    : componentId,
-                            'sectionId'                      : sectionId,
-                            'fieldId'                        : 'user_id',
-                            'fieldLabel'                     : 'User',
-                            'fieldType'                      : 'select2',
-                            'fieldHelp'                      : true,
-                            'fieldHelpTooltipContent'        : 'User',
-                            'fieldRequired'                  : true,
-                            'fieldHidden'                    : true,
-                            'fieldDisabled'                  : disableUser,
-                            'fieldBazScan'                   : true,
-                            'fieldBazPostOnCreate'           : true,
-                            'fieldBazPostOnUpdate'           : false,
-                            'fieldDataSelect2Options'        : users,
-                            'fieldDataSelect2OptionsKey'     : 'id',
-                            'fieldDataSelect2OptionsValue'   : 'name',
-                            'fieldDataSelect2OptionsArray'   : true,
-                            'fieldDataSelect2OptionsSelected': portfolioUser
-                        ]
-                    )}}
-                {% endif %}
-            </div>
-            <div class="col">
-                {% if portfolio['id'] is defined %}
+                </div>
+            {% else %}
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'user_id',
+                        'fieldLabel'                     : 'User',
+                        'fieldType'                      : 'select2',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'User',
+                        'fieldRequired'                  : true,
+                        'fieldHidden'                    : true,
+                        'fieldDisabled'                  : disableUser,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnCreate'           : true,
+                        'fieldBazPostOnUpdate'           : false,
+                        'fieldDataSelect2Options'        : users,
+                        'fieldDataSelect2OptionsKey'     : 'id',
+                        'fieldDataSelect2OptionsValue'   : 'name',
+                        'fieldDataSelect2OptionsArray'   : true,
+                        'fieldDataSelect2OptionsSelected': portfolioUser
+                    ]
+                )}}
+            {% endif %}
+            {% if portfolio['id'] is defined %}
+                <div class="col">
                     <div class="row">
                         <div class="col">
                             {{adminltetags.useTag('fields',
@@ -261,8 +261,8 @@
                             </div>
                         </div>
                     {% endif %}
-                {% endif %}
-            </div>
+                </div>
+            {% endif %}
         </div>
     </fieldset>
 </form>
