@@ -383,11 +383,11 @@
             {% if transaction['type'] == 'buy' %}
                 {% if transaction['latest_value'] != 0 %}
                     {% set latestValue = '<span class="text-' ~textColor ~ '">' ~ transaction['latest_value'] ~ '</span>' %}
-                    {% if transaction['cagr'] is defined %}
-                        {% if str_contains(transaction['cagr'], '-') %}
+                    {% if transaction['xirr'] is defined %}
+                        {% if str_contains(transaction['xirr'], '-') %}
                             {% set textColor = 'danger' %}
                         {% endif %}
-                        {% set latestValue = '<span class="text-' ~textColor ~ '">' ~ transaction['latest_value'] ~ ' (' ~ transaction['diff'] ~ '/' ~ transaction['cagr'] ~ '%)</span>' %}
+                        {% set latestValue = '<span class="text-' ~textColor ~ '">' ~ transaction['latest_value'] ~ ' (' ~ transaction['diff'] ~ '/' ~ transaction['xirr'] ~ '%)</span>' %}
                     {% endif %}
                 {% else %}
                     {% set latestValue = '-' %}
@@ -513,7 +513,7 @@
                         <th class="text-uppercase">UNITS (Sold)</th>
                         <th class="text-uppercase">{{ currencySymbol }} AMOUNT</th>
                         <th class="text-uppercase">Latest Value Date</th>
-                        <th class="text-uppercase">{{ currencySymbol }} Latest Value (Diff/CAGR)</th>
+                        <th class="text-uppercase">{{ currencySymbol }} Latest Value (Diff/Xirr)</th>
                         <th class="text-uppercase">ACTIONS</th>
                     </tr>
                 </thead>
@@ -1174,8 +1174,13 @@ dataCollectionSectionForm['funcs']['calculateSellUnits'] = function() {
         $('#{{componentId}}-{{sectionId}}-sell-units').val(units);
 
         if (units > dataCollectionSectionForm['vars']['canSellTransactions'][dataCollectionSectionForm['vars']['scheme']['amfi_code']]['available_units']) {
-            $('#{{componentId}}-{{sectionId}}-sell-units').addClass('is-invalid');
-            $('#{{componentId}}-{{sectionId}}-sell-amount').addClass('is-invalid');
+            if ($('#{{componentId}}-{{sectionId}}-transaction_id').val() === '') {
+                $('#{{componentId}}-{{sectionId}}-sell-units').addClass('is-invalid');
+                $('#{{componentId}}-{{sectionId}}-sell-amount').addClass('is-invalid');
+            } else {
+                $('#{{componentId}}-{{sectionId}}-sell-units').removeClass('is-invalid');
+                $('#{{componentId}}-{{sectionId}}-sell-amount').removeClass('is-invalid');
+            }
         } else {
             $('#{{componentId}}-{{sectionId}}-sell-units').removeClass('is-invalid');
             $('#{{componentId}}-{{sectionId}}-sell-amount').removeClass('is-invalid');
@@ -1195,8 +1200,13 @@ dataCollectionSectionForm['funcs']['calculateSellAmount'] = function() {
         if (parseFloat(amount) >
             (nav * dataCollectionSectionForm['vars']['canSellTransactions'][dataCollectionSectionForm['vars']['scheme']['amfi_code']]['available_units']).toFixed(2)
         ) {
-            $('#{{componentId}}-{{sectionId}}-sell-units').addClass('is-invalid');
-            $('#{{componentId}}-{{sectionId}}-sell-amount').addClass('is-invalid');
+            if ($('#{{componentId}}-{{sectionId}}-transaction_id').val() === '') {
+                $('#{{componentId}}-{{sectionId}}-sell-units').addClass('is-invalid');
+                $('#{{componentId}}-{{sectionId}}-sell-amount').addClass('is-invalid');
+            } else {
+                $('#{{componentId}}-{{sectionId}}-sell-units').removeClass('is-invalid');
+                $('#{{componentId}}-{{sectionId}}-sell-amount').removeClass('is-invalid');
+            }
         } else {
             $('#{{componentId}}-{{sectionId}}-sell-units').removeClass('is-invalid');
             $('#{{componentId}}-{{sectionId}}-sell-amount').removeClass('is-invalid');
