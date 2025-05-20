@@ -99,12 +99,6 @@
         </div>
     </div>
 {% elseif transactionMode == 'sell' %}
-    {% if canSellTransactions|length > 0 %}
-        {% for canSellTransactionKey, canSellTransaction in canSellTransactions %}
-            {% set canSellTransactions[canSellTransactionKey]['data']['amfi_code'] = canSellTransaction['amfi_code'] %}
-            {% set canSellTransactions[canSellTransactionKey]['data']['scheme_id'] = canSellTransaction['scheme']['id'] %}
-        {% endfor %}
-    {% endif %}
     <div class="row">
         <div class="col">
             {{adminltetags.useTag('fields',
@@ -122,8 +116,8 @@
                     'fieldBazScan'                   : true,
                     'fieldBazPostOnCreate'           : false,
                     'fieldBazPostOnUpdate'           : false,
-                    'fieldDataSelect2Options'        : canSellTransactions,
-                    'fieldDataSelect2OptionsKey'     : 'id',
+                    'fieldDataSelect2Options'        : portfolio['investments'],
+                    'fieldDataSelect2OptionsKey'     : 'scheme_id',
                     'fieldDataSelect2OptionsValue'   : 'scheme/name',
                     'fieldDataSelect2OptionsArray'   : true,
                     'fieldDataSelect2OptionsSelected': ''

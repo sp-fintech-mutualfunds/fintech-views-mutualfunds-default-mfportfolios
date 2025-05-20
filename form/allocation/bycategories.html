@@ -1,0 +1,92 @@
+
+{% set categoriesHtml = '' %}
+{% if portfolio['allocation']['by_categories'] is defined and portfolio['allocation']['by_categories']|length > 0 %}
+    <div class="row">
+        <div class="col">
+            {{adminltetags.useTag('buttons',
+                [
+                    'componentId'           : componentId,
+                    'sectionId'             : sectionId,
+                    'buttonType'            : 'button',
+                    'buttons'               :
+                        [
+                            'switch-categories-chart' : [
+                                'title'                   : false,
+                                'size'                    : 'sm',
+                                'icon'                    : 'chart-pie'
+                            ]
+                        ]
+                ]
+            )}}
+        </div>
+    </div>
+    {% for categories in portfolio['allocation']['by_categories'] %}
+        {% set returnColor = 'success' %}
+        {% if categories['return_percent'] < categories['invested_percent'] %}
+            {% set returnColor = 'warning' %}
+        {% endif %}
+        {% set categoriesHtml = categoriesHtml ~ '<tr>' ~
+        '           <td>' ~ categories['category']['id'] ~ '</td>' ~
+        '           <td>' ~ categories['category']['name'] ~ '</td>' ~
+        '           <td>' ~ categories['invested_amount'] ~ '</td>' ~
+        '           <td>' ~ categories['invested_percent'] ~ '</td>' ~
+        '           <td>' ~ categories['return_amount'] ~ '</td>' ~
+        '           <td class="text-' ~ returnColor ~ '">' ~ categories['return_percent'] ~ '</td>' ~
+        '           <td>' ~ categories['investments']|length ~ '</td>' ~
+        '   </tr>'
+        %}
+    {% endfor %}
+    <div class="row">
+        <div class="col">
+            <canvas class="text-center" id="allocation-categories-amount" style="max-height:400px;"></canvas>
+        </div>
+        <div class="col">
+            <canvas class="text-center" id="allocation-categories-percent" style="max-height:400px;"></canvas>
+        </div>
+    </div>
+    <hr>
+{% endif %}
+<div class="row">
+    <div class="col">
+        <table id="{{componentId}}-{{sectionId}}-allocation-categories-table" class="table table-sm table-hover responsive nowrap mb-0" width="100%" cellspacing="0">
+            <thead>
+                <tr>
+                    <th class="text-uppercase">Category ID</th>
+                    <th class="text-uppercase">Category</th>
+                    <th class="text-uppercase">Invested Amount</th>
+                    <th class="text-uppercase">Invested %</th>
+                    <th class="text-uppercase">Return Amount</th>
+                    <th class="text-uppercase">Return %</th>
+                    <th class="text-uppercase"># of Investments</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{categoriesHtml}}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% if portfolio['allocation']['by_categories'] is defined and portfolio['allocation']['by_categories']|length > 2 %}
+    <hr>
+    <div class="row">
+        <div class="col">
+            {{adminltetags.useTag('fields',
+                [
+                    'component'                      : component,
+                    'componentName'                  : componentName,
+                    'componentId'                    : componentId,
+                    'sectionId'                      : sectionId,
+                    'fieldId'                        : 'categories_percentage_variance',
+                    'fieldLabel'                     : 'Calculate Categories percentage difference',
+                    'fieldType'                      : 'html',
+                    'fieldHelp'                      : true,
+                    'fieldHelpTooltipContent'        : 'To calculate difference between 2 categories, select them on the table via clicking them. Click again to deselect and seclect other categories. Calculation will be done from lower value to higher value.',
+                    'fieldRequired'                  : false,
+                    'fieldBazScan'                   : true,
+                    'fieldBazPostOnUpdate'           : true,
+                    'fieldHtmlContent'               : 'Please select 2 categories...'
+                ]
+            )}}
+        </div>
+    </div>
+{% endif %}
