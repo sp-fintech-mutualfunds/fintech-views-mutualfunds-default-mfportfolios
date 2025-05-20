@@ -99,6 +99,15 @@
         </div>
     </div>
 {% elseif transactionMode == 'sell' %}
+    {% set investments = [] %}
+    {% if portfolio['investments']|length > 0 %}
+        {% for amfi_code, investment in portfolio['investments'] %}
+            {% if investment['status'] == 'close' %}
+                {% continue %}
+            {% endif %}
+            {% set investments[amfi_code] = investment %}
+        {% endfor %}
+    {% endif %}
     <div class="row">
         <div class="col">
             {{adminltetags.useTag('fields',
@@ -116,7 +125,7 @@
                     'fieldBazScan'                   : true,
                     'fieldBazPostOnCreate'           : false,
                     'fieldBazPostOnUpdate'           : false,
-                    'fieldDataSelect2Options'        : portfolio['investments'],
+                    'fieldDataSelect2Options'        : investments,
                     'fieldDataSelect2OptionsKey'     : 'scheme_id',
                     'fieldDataSelect2OptionsValue'   : 'scheme/name',
                     'fieldDataSelect2OptionsArray'   : true,

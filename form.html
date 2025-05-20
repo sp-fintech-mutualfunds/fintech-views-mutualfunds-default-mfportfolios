@@ -24,7 +24,9 @@
     {% endif %}
     {% set portfolioId = portfolio['id'] %}
     {% set portfolioInvestedAmount = currencySymbol ~ portfolio['invested_amount'] %}
-    {% set portfolioTotalValue = '<span class="text-' ~ portfolioColor ~ '">' ~ currencySymbol ~ portfolio['total_value'] ~ '</span>' %}
+    {% set portfolioSoldAmount = currencySymbol ~ portfolio['sold_amount'] %}
+    {% set portfolioReturnAmount = '<span class="text-' ~ portfolioColor ~ '">' ~ currencySymbol ~ portfolio['return_amount'] ~ '</span>' %}
+    {% set portfolioTotalValue = currencySymbol ~ portfolio['total_value'] %}
     {% set portfolioProfitLoss = '<span class="text-' ~ portfolioColor ~ '">' ~ currencySymbol ~ portfolio['profit_loss'] ~ '</span>' %}
     {% set portfolioXirr = '<span class="text-' ~ portfolioColor ~ '">' ~ portfolio['xirr'] ~ '%</span>' %}
     <form data-validateon="section" id="{{componentId}}-{{sectionId}}-form">
@@ -145,27 +147,6 @@
                                     'componentName'                  : componentName,
                                     'componentId'                    : componentId,
                                     'sectionId'                      : sectionId,
-                                    'fieldId'                        : 'total_value',
-                                    'fieldLabel'                     : 'Total value',
-                                    'fieldType'                      : 'html',
-                                    'fieldHelp'                      : true,
-                                    'fieldHelpTooltipContent'        : 'Total value',
-                                    'fieldRequired'                  : false,
-                                    'fieldBazScan'                   : true,
-                                    'fieldBazPostOnUpdate'           : true,
-                                    'fieldHtmlContent'               : portfolioTotalValue
-                                ]
-                            )}}
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            {{adminltetags.useTag('fields',
-                                [
-                                    'component'                      : component,
-                                    'componentName'                  : componentName,
-                                    'componentId'                    : componentId,
-                                    'sectionId'                      : sectionId,
                                     'fieldId'                        : 'profit_loss',
                                     'fieldLabel'                     : 'Profit/Loss',
                                     'fieldType'                      : 'html',
@@ -198,6 +179,65 @@
                             )}}
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col">
+                            {{adminltetags.useTag('fields',
+                                [
+                                    'component'                      : component,
+                                    'componentName'                  : componentName,
+                                    'componentId'                    : componentId,
+                                    'sectionId'                      : sectionId,
+                                    'fieldId'                        : 'sold_amount',
+                                    'fieldLabel'                     : 'Sold Amount',
+                                    'fieldType'                      : 'html',
+                                    'fieldHelp'                      : true,
+                                    'fieldHelpTooltipContent'        : 'Sold Amount',
+                                    'fieldRequired'                  : false,
+                                    'fieldBazScan'                   : true,
+                                    'fieldBazPostOnUpdate'           : true,
+                                    'fieldHtmlContent'               : portfolioSoldAmount
+                                ]
+                            )}}
+                        </div>
+                        <div class="col">
+                            {{adminltetags.useTag('fields',
+                                [
+                                    'component'                      : component,
+                                    'componentName'                  : componentName,
+                                    'componentId'                    : componentId,
+                                    'sectionId'                      : sectionId,
+                                    'fieldId'                        : 'return_amount',
+                                    'fieldLabel'                     : 'Return Amount',
+                                    'fieldType'                      : 'html',
+                                    'fieldHelp'                      : true,
+                                    'fieldHelpTooltipContent'        : 'Return Amount.',
+                                    'fieldRequired'                  : false,
+                                    'fieldBazScan'                   : true,
+                                    'fieldBazPostOnUpdate'           : true,
+                                    'fieldHtmlContent'               : portfolioReturnAmount
+                                ]
+                            )}}
+                        </div>
+                        <div class="col">
+                            {{adminltetags.useTag('fields',
+                                [
+                                    'component'                      : component,
+                                    'componentName'                  : componentName,
+                                    'componentId'                    : componentId,
+                                    'sectionId'                      : sectionId,
+                                    'fieldId'                        : 'total_value',
+                                    'fieldLabel'                     : 'Total value',
+                                    'fieldType'                      : 'html',
+                                    'fieldHelp'                      : true,
+                                    'fieldHelpTooltipContent'        : 'Total value',
+                                    'fieldRequired'                  : false,
+                                    'fieldBazScan'                   : true,
+                                    'fieldBazPostOnUpdate'           : true,
+                                    'fieldHtmlContent'               : portfolioTotalValue
+                                ]
+                            )}}
+                        </div>
+                    </div>
                 </div>
             </div>
         </fieldset>
@@ -216,9 +256,6 @@
     {% endif %}
     <hr>
     {% set url = links.url('mf/portfolios/q/id/' ~ portfolio['id']) %}
-    {% if mode == 'timeline' %}
-        {% set url = links.url('mf/portfolios/q/mode/timeline/id/' ~ portfolio['id']) %}
-    {% endif %}
     {{adminltetags.useTag('buttons',
         [
             'component'                      : component,
@@ -241,60 +278,37 @@
     <div class="row">
         {% set transactionButtons = [] %}
         {% if portfolio['transactions'] is defined and portfolio['transactions']|length > 0 %}
-            {% if mode  == 'timeline' %}
-                {% set transactionButtons = array_merge(transactionButtons,
-                        [
-                            'begin' : [
-                                'title'                   : false,
-                                'size'                    : 'xs',
-                                'type'                    : 'info',
-                                'icon'                    : 'backward-fast',
-                                'disabled'                : true
-                            ],
-                            'previous-day' : [
-                                'title'                   : false,
-                                'size'                    : 'xs',
-                                'type'                    : 'info',
-                                'icon'                    : 'backward-step',
-                                'disabled'                : true
-                            ],
-                            'next-day' : [
-                                'title'                   : false,
-                                'size'                    : 'xs',
-                                'type'                    : 'info',
-                                'icon'                    : 'forward-step'
-                            ],
-                            'today' : [
-                                'title'                   : false,
-                                'size'                    : 'xs',
-                                'type'                    : 'info',
-                                'icon'                    : 'forward-fast'
-                            ]
+            {% set transactionButtons = array_merge(transactionButtons,
+                    [
+                        'first-day' : [
+                            'title'                   : false,
+                            'size'                    : 'xs',
+                            'type'                    : 'info',
+                            'icon'                    : 'backward-fast',
+                            'disabled'                : true
+                        ],
+                        'previous-day' : [
+                            'title'                   : false,
+                            'size'                    : 'xs',
+                            'type'                    : 'info',
+                            'icon'                    : 'backward-step',
+                            'disabled'                : true
+                        ],
+                        'next-day' : [
+                            'title'                   : false,
+                            'size'                    : 'xs',
+                            'type'                    : 'info',
+                            'icon'                    : 'forward-step'
+                        ],
+                        'last-day' : [
+                            'title'                   : false,
+                            'size'                    : 'xs',
+                            'type'                    : 'info',
+                            'icon'                    : 'forward-fast'
                         ]
-                    )
-                %}
-            {% else %}
-                {% set transactionButtons = array_merge(transactionButtons,
-                        [
-                            'recalculate' : [
-                                'title'                   : 'Recalculate',
-                                'size'                    : 'xs',
-                                'type'                    : 'primary',
-                                'icon'                    : 'cog fa-spin',
-                                'iconHidden'              : true
-                            ],
-                            'timeline' : [
-                                'title'                   : 'Timeline',
-                                'size'                    : 'xs',
-                                'type'                    : 'info',
-                                'buttonAdditionalClass'   : 'contentAjaxLink',
-                                'icon'                    : 'timeline',
-                                'url'                     : links.url('mf/portfolios/q/mode/timeline/id/' ~ portfolio['id'])
-                            ]
-                        ]
-                    )
-                %}
-            {% endif %}
+                    ]
+                )
+            %}
         {% endif %}
         {% if portfolio['investments']|length > 0 %}
             {% set transactionButtons = array_merge(transactionButtons,
@@ -302,6 +316,14 @@
                         'importInvestmentNavs' : [
                             'title'                   : 'Import Navs',
                             'size'                    : 'xs',
+                            'position'                : 'right',
+                            'icon'                    : 'cog fa-spin',
+                            'iconHidden'              : true
+                        ],
+                        'recalculate' : [
+                            'title'                   : 'Recalculate',
+                            'size'                    : 'xs',
+                            'type'                    : 'info',
                             'position'                : 'right',
                             'icon'                    : 'cog fa-spin',
                             'iconHidden'              : true
@@ -483,24 +505,26 @@ if (!dataCollectionSection['{{componentId}}-{{sectionId}}-form']) {
 
 dataCollectionSection =
     $.extend(dataCollectionSection, {
-        '{{componentId}}-{{sectionId}}-id'                          : { },
-        '{{componentId}}-{{sectionId}}-name'                        : { },
-        '{{componentId}}-{{sectionId}}-user_id'                     : {
+        '{{componentId}}-{{sectionId}}-id'                                  : { },
+        '{{componentId}}-{{sectionId}}-name'                                : { },
+        '{{componentId}}-{{sectionId}}-user_id'                             : {
             placeholder: "SELECT USER"
         },
-        '{{componentId}}-{{sectionId}}-description'                 : { },
-        '{{componentId}}-{{sectionId}}-portfolio_name'              : { },
-        '{{componentId}}-{{sectionId}}-portfolio_user'              : { },
-        '{{componentId}}-{{sectionId}}-portfolio_description'       : { },
-        '{{componentId}}-{{sectionId}}-total_value'                 : { },
-        '{{componentId}}-{{sectionId}}-invested_amount'             : { },
-        '{{componentId}}-{{sectionId}}-profit_loss'                 : { },
-        '{{componentId}}-{{sectionId}}-xirr'                        : { },
-        '{{componentId}}-{{sectionId}}-transaction_id'              : { },
-        '{{componentId}}-{{sectionId}}-type'                        : {
+        '{{componentId}}-{{sectionId}}-description'                         : { },
+        '{{componentId}}-{{sectionId}}-portfolio_name'                      : { },
+        '{{componentId}}-{{sectionId}}-portfolio_user'                      : { },
+        '{{componentId}}-{{sectionId}}-portfolio_description'               : { },
+        '{{componentId}}-{{sectionId}}-total_value'                         : { },
+        '{{componentId}}-{{sectionId}}-invested_amount'                     : { },
+        '{{componentId}}-{{sectionId}}-return_amount'                       : { },
+        '{{componentId}}-{{sectionId}}-sold_amount'                         : { },
+        '{{componentId}}-{{sectionId}}-profit_loss'                         : { },
+        '{{componentId}}-{{sectionId}}-xirr'                                : { },
+        '{{componentId}}-{{sectionId}}-transaction_id'                      : { },
+        '{{componentId}}-{{sectionId}}-type'                                : {
             placeholder: "SELECT TRANSACTION TYPE"
         },
-        '{{componentId}}-{{sectionId}}-amc_id'                      : {
+        '{{componentId}}-{{sectionId}}-amc_id'                              : {
             placeholder: "SELECT AMC",
             afterInit: function() {
                 $('#{{componentId}}-{{sectionId}}-amc_id').on('select2:select', function(e) {
@@ -510,7 +534,7 @@ dataCollectionSection =
                 });
             }
         },
-        '{{componentId}}-{{sectionId}}-sell_transaction_id'         : {
+        '{{componentId}}-{{sectionId}}-sell_transaction_id'                 : {
             placeholder: "SELECT SCHEME TO SELL",
             afterInit: function() {
                 $('#{{componentId}}-{{sectionId}}-sell_transaction_id').on('select2:select', function(e) {
@@ -518,7 +542,7 @@ dataCollectionSection =
                 });
             }
         },
-        '{{componentId}}-{{sectionId}}-scheme_id'                   : {
+        '{{componentId}}-{{sectionId}}-scheme_id'                           : {
             placeholder: "SELECT SCHEME",
             "ajax"          : {
                 url         : "{{links.url('mf/schemes/searchSchemesForAMC')}}",
@@ -722,8 +746,7 @@ dataCollectionSectionForm['funcs']['processTransaction'] = function(task, update
                 postData['units'] = $('#{{componentId}}-{{sectionId}}-' + task + '-units').val();
             }
             postData['sell_all'] = $('#{{componentId}}-{{sectionId}}-sell_all')[0].checked;
-            postData['amfi_code'] = $('#{{componentId}}-{{sectionId}}-sell_transaction_id option:selected').data()['amfi_code'];
-            postData['scheme_id'] = $('#{{componentId}}-{{sectionId}}-sell_transaction_id option:selected').data()['scheme_id'];
+            postData['scheme_id'] = $('#{{componentId}}-{{sectionId}}-sell_transaction_id option:selected').data()['value'];
         } else {
             postData['amc_id'] = $('#{{componentId}}-{{sectionId}}-amc_id').val();
             postData['scheme_id'] = $('#{{componentId}}-{{sectionId}}-scheme_id').val();
@@ -1271,12 +1294,14 @@ dataCollectionSectionForm['funcs']['init'] = function() {
                     {orderable: false},
                     {orderable: false},
                     {orderable: false},
+                    {orderable: false},
+                    {orderable: false},
                     {orderable: false}
                 ],
                 order: false,
                 lengthMenu: [
-                    [50, 100, -1],
-                    [50, 100, 'All']
+                    [20, 50, 100, -1],
+                    [20, 50, 100, 'All']
                 ]
             });
         }
@@ -1297,8 +1322,8 @@ dataCollectionSectionForm['funcs']['init'] = function() {
                 ],
                 order: false,
                 lengthMenu: [
-                    [50, 100, -1],
-                    [50, 100, 'All']
+                    [20, 50, 100, -1],
+                    [20, 50, 100, 'All']
                 ]
             });
         }

@@ -15,9 +15,11 @@
                 {% set latestValue = '-' %}
                 {% set transaction['latest_value_date'] = '-' %}
             {% endif %}
+            {% if transaction['status'] == 'close' and transaction['date_closed'] is defined %}
+                {% set transaction['latest_value_date'] = transaction['date_closed'] %}
+            {% endif %}
         {% else %}
             {% set latestValue = '-' %}
-            {% set transaction['latest_value_date'] = '-' %}
         {% endif %}
         {% set transactionsHtml = transactionsHtml ~ '<tr>' ~
         '           <td>' ~ transaction['id'] ~ '</td>' ~
@@ -26,7 +28,7 @@
         '           <td>' ~ strtoupper(transaction['status']) ~ '</td>' ~
         '           <td>' ~ transaction['scheme']['name'] ~ '</td>' ~
         '           <td>' ~ transaction['units_bought'] ~ ' (' ~ transaction['units_sold'] ~ ')</td>' ~
-        '           <td>' ~ transaction['amount'] ~ '</td>' ~
+        '           <td>' ~ transaction['amount'] ~ ' (' ~ transaction['available_amount'] ~ ')</td>' ~
         '           <td>' ~ transaction['latest_value_date'] ~ '</td>' ~
         '           <td>' ~ latestValue ~ '</td>' ~
         '           <td>' %}
@@ -131,8 +133,8 @@
                     <th class="text-uppercase">Status</th>
                     <th class="text-uppercase">SCHEME</th>
                     <th class="text-uppercase">UNITS (Sold)</th>
-                    <th class="text-uppercase">{{ currencySymbol }} AMOUNT</th>
-                    <th class="text-uppercase">Latest Value Date</th>
+                    <th class="text-uppercase">{{ currencySymbol }} Invested AMOUNT (available)</th>
+                    <th class="text-uppercase">Latest Value/Close Date</th>
                     <th class="text-uppercase">{{ currencySymbol }} Latest Value (Diff/Xirr)</th>
                     <th class="text-uppercase">ACTIONS</th>
                 </tr>

@@ -37,9 +37,11 @@
             ]
         %}
         {% set investmentsHtml = investmentsHtml ~ '<tr>' ~
+        '           <td>' ~ strtoupper(investment['status']) ~ '</td>' ~
         '           <td>' ~ investment['scheme']['name'] ~ '</td>' ~
         '           <td>' ~ investment['units'] ~ '</td>' ~
         '           <td>' ~ investment['amount'] ~ '</td>' ~
+        '           <td>' ~ investment['sold_amount'] ~ '</td>' ~
         '           <td>' ~ investment['latest_value_date'] ~ '</td>' ~
         '           <td>' ~ latestValue ~ '</td>' ~
         '           <td>' ~ adminltetags.useTag('buttons',
@@ -62,9 +64,11 @@
         <table id="{{componentId}}-{{sectionId}}-investments-table" class="table table-sm table-hover responsive nowrap mb-0" width="100%" cellspacing="0">
             <thead>
                 <tr>
+                    <th class="text-uppercase">Status</th>
                     <th class="text-uppercase">SCHEME</th>
                     <th class="text-uppercase">UNITS</th>
                     <th class="text-uppercase">{{ currencySymbol }} AMOUNT</th>
+                    <th class="text-uppercase">{{ currencySymbol }} Sold AMOUNT</th>
                     <th class="text-uppercase">Latest Value Date</th>
                     <th class="text-uppercase">{{ currencySymbol }} Latest Value (Diff/Xirr)</th>
                     <th class="text-uppercase">ACTIONS</th>
