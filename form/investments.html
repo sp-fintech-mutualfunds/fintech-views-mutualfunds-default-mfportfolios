@@ -14,28 +14,23 @@
             {% set latestValue = '-' %}
             {% set investment['latest_value_date'] = '-' %}
         {% endif %}
-        {% set investmentButtons = [] %}
-        {% set investmentButtons['buy-' ~ amfi_code] = [
-                'title'                   : 'Buy',
-                'size'                    : 'xs',
-                'buttonAdditionalClass'   : 'buyInvestment',
-                'type'                    : 'success'
-            ]
-        %}
-        {% set investmentButtons['sell-' ~ amfi_code] = [
-                'title'                   : 'Sell',
-                'size'                    : 'xs',
-                'buttonAdditionalClass'   : 'sellInvestment',
-                'type'                    : 'warning'
-            ]
-        %}
-        {% set investmentButtons['scheme-' ~ investment['scheme_id']] = [
-                'title'                   : 'Scheme',
-                'size'                    : 'xs',
-                'buttonAdditionalClass'   : 'schemeInvestment',
-                'icon'                    : 'arrow-up-right-from-square'
-            ]
-        %}
+        {% if mode == 'view' %}
+            {% set investmentButtons = [] %}
+            {% set investmentButtons['buy-' ~ amfi_code] = [
+                    'title'                   : 'Buy',
+                    'size'                    : 'xs',
+                    'buttonAdditionalClass'   : 'buyInvestment',
+                    'type'                    : 'success'
+                ]
+            %}
+            {% set investmentButtons['sell-' ~ amfi_code] = [
+                    'title'                   : 'Sell',
+                    'size'                    : 'xs',
+                    'buttonAdditionalClass'   : 'sellInvestment',
+                    'type'                    : 'warning'
+                ]
+            %}
+        {% endif %}
         {% set investmentsHtml = investmentsHtml ~ '<tr>' ~
         '           <td>' ~ strtoupper(investment['status']) ~ '</td>' ~
         '           <td>' ~ investment['scheme']['name'] ~ '</td>' ~
@@ -43,20 +38,24 @@
         '           <td>' ~ investment['amount'] ~ '</td>' ~
         '           <td>' ~ investment['sold_amount'] ~ '</td>' ~
         '           <td>' ~ investment['latest_value_date'] ~ '</td>' ~
-        '           <td>' ~ latestValue ~ '</td>' ~
-        '           <td>' ~ adminltetags.useTag('buttons',
-                                [
-                                    'component'                     : component,
-                                    'componentName'                 : componentName,
-                                    'componentId'                   : componentId,
-                                    'parentComponentId'             : parent,
-                                    'sectionId'                     : sectionId,
-                                    'buttonType'                    : 'button',
-                                    'buttons'                       : investmentButtons
-                                ]
-                            ) ~ '</td>' ~
-        '   </tr>'
+        '           <td>' ~ latestValue ~ '</td>'
         %}
+        {% if mode == 'view' %}
+            {% set investmentsHtml = investmentsHtml ~
+                '       <td>' ~ adminltetags.useTag('buttons',
+                                    [
+                                        'component'                     : component,
+                                        'componentName'                 : componentName,
+                                        'componentId'                   : componentId,
+                                        'parentComponentId'             : parent,
+                                        'sectionId'                     : sectionId,
+                                        'buttonType'                    : 'button',
+                                        'buttons'                       : investmentButtons
+                                    ]
+                                ) ~ '</td>'
+            %}
+        {% endif %}
+        {% set investmentsHtml = investmentsHtml ~ '   </tr>' %}
     {% endfor %}
 {% endif %}
 <div class="row" id="investments-table">
@@ -71,7 +70,9 @@
                     <th class="text-uppercase">{{ currencySymbol }} Sold AMOUNT</th>
                     <th class="text-uppercase">Latest Value Date</th>
                     <th class="text-uppercase">{{ currencySymbol }} Latest Value (Diff/Xirr)</th>
-                    <th class="text-uppercase">ACTIONS</th>
+                    {% if mode == 'view' %}
+                        <th class="text-uppercase">ACTIONS</th>
+                    {% endif %}
                 </tr>
             </thead>
             <tbody>

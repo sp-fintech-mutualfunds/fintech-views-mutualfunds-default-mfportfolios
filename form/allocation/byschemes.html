@@ -1,6 +1,25 @@
 
 {% set schemesHtml = '' %}
 {% if portfolio['allocation']['by_schemes'] is defined and portfolio['allocation']['by_schemes']|length > 0 %}
+    <div class="row">
+        <div class="col">
+            {{adminltetags.useTag('buttons',
+                [
+                    'componentId'           : componentId,
+                    'sectionId'             : sectionId,
+                    'buttonType'            : 'button',
+                    'buttons'               :
+                        [
+                            'switch-schemes-chart' : [
+                                'title'                   : false,
+                                'size'                    : 'sm',
+                                'icon'                    : 'chart-pie'
+                            ]
+                        ]
+                ]
+            )}}
+        </div>
+    </div>
     {% for scheme in portfolio['allocation']['by_schemes'] %}
         {% set returnColor = 'success' %}
         {% if scheme['return_percent'] < scheme['invested_percent'] %}

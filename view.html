@@ -5,6 +5,31 @@
     {% set portfolioId = '' %}
     {% set title = 'New Portfolio' %}
 {% endif %}
+{% set cardType = 'primary' %}
+{% if mode == 'edit' %}
+    {% set formButtons =
+        [
+            'updateButtonId'                : portfolioId,
+            'addActionUrl'                  : 'mf/portfolios/add',
+            'addSuccessRedirectUrl'         : 'mf/portfolios',
+            'updateActionUrl'               : 'mf/portfolios/update',
+            'updateSuccessRedirectUrl'      : 'mf/portfolios',
+            'cancelActionUrl'               : 'mf/portfolios',
+            'closeActionUrl'                : 'mf/portfolios'
+        ]
+    %}
+{% elseif mode == 'view' or mode == 'timeline' %}
+    {% if mode == 'timeline' %}
+        {% set title = title ~ ' - Timeline mode' %}
+        {% set cardType = 'info' %}
+    {% endif %}
+    {% set formButtons =
+        [
+            'updateButtonId'                : portfolioId,
+            'closeActionUrl'                : 'mf/portfolios'
+        ]
+    %}
+{% endif %}
 {{adminltetags.useTag('content',
     [
         'component'                     : component,
@@ -15,20 +40,11 @@
         'contentType'                   : 'sectionWithForm',
         'cardHeader'                    : true,
         'cardFooter'                    : true,
-        'cardType'                      : 'primary',
+        'cardType'                      : cardType,
         'cardIcon'                      : 'address-book',
         'cardTitle'                     : title,
         'cardAdditionalClass'           : 'rounded-0',
         'cardBodyInclude'               : 'portfolios/form',
-        'formButtons'                   :
-        [
-            'updateButtonId'                : portfolioId,
-            'addActionUrl'                  : 'mf/portfolios/add',
-            'addSuccessRedirectUrl'         : 'mf/portfolios',
-            'updateActionUrl'               : 'mf/portfolios/update',
-            'updateSuccessRedirectUrl'      : 'mf/portfolios',
-            'cancelActionUrl'               : 'mf/portfolios',
-            'closeActionUrl'                : 'mf/portfolios'
-        ]
+        'formButtons'                   : formButtons
     ]
 )}}

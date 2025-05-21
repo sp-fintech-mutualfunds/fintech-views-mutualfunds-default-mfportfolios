@@ -26,98 +26,114 @@
         '           <td>' ~ transaction['date'] ~ '</td>' ~
         '           <td>' ~ strtoupper(transaction['type']) ~ '</td>' ~
         '           <td>' ~ strtoupper(transaction['status']) ~ '</td>' ~
-        '           <td>' ~ transaction['scheme']['name'] ~ '</td>' ~
-        '           <td>' ~ transaction['units_bought'] ~ ' (' ~ transaction['units_sold'] ~ ')</td>' ~
-        '           <td>' ~ transaction['amount'] ~ ' (' ~ transaction['available_amount'] ~ ')</td>' ~
-        '           <td>' ~ transaction['latest_value_date'] ~ '</td>' ~
-        '           <td>' ~ latestValue ~ '</td>' ~
-        '           <td>' %}
-        {% if transaction['type'] == 'buy' and transaction['status'] == 'open' and transaction['units_sold'] == 0 %}
-            {% set dropdowns = [] %}
-            {% set dropdowns['remove-' ~ transaction['id']] = [
-                    'title'             : 'remove',
-                    'size'              : 'xs',
-                    'type'              : 'danger',
-                    'additionalClass'   : 'removeTransaction'
-                ]
-            %}
+        '           <td>' ~ transaction['scheme']['name'] ~ '</td>'
+        %}
+        {% if transaction['type'] == 'buy' and transaction['units_sold'] > 0 %}
             {% set transactionsHtml = transactionsHtml ~
-                adminltetags.useTag('buttons',
-                    [
-                        'component'                     : component,
-                        'componentName'                 : componentName,
-                        'componentId'                   : componentId,
-                        'parentComponentId'             : parent,
-                        'sectionId'                     : sectionId,
-                        'buttonType'                    : 'DropdownSplitButtons',
-                        'dropdownSplitButtonsSplit'     : true,
-                        'dropdownAlign'                 : 'right',
-                        'splitMainButtonAdditionalClass': 'editTransaction',
-                        'splitMainButtonId'             : 'edit-' ~ transaction['id'],
-                        'splitMainButtonTitle'          : 'Edit',
-                        'buttonFlat'                    : true,
-                        'buttonSize'                    : 'xs',
-                        'splitMainButtonType'           : 'warning',
-                        'dropdowns'                     : dropdowns
-                    ]
-                )
+            '           <td>' ~ transaction['units_bought'] ~ ' (' ~ transaction['units_sold'] ~ '/' ~ (transaction['units_bought'] - transaction['units_sold']) ~ ')</td>'
             %}
-        {% elseif transaction['type'] == 'buy' and transaction['units_sold'] > 0 %}
-            {% set viewButton = [] %}
-            {% set viewButton['view-' ~ transaction['id']]  =
-                [
-                    'title'                   : 'View',
-                    'size'                    : 'xs',
-                    'type'                    : 'info',
-                    'buttonAdditionalClass'   : 'viewTransaction'
-                ]
-            %}
+        {% else %}
             {% set transactionsHtml = transactionsHtml ~
-                adminltetags.useTag('buttons',
-                    [
-                        'component'                     : component,
-                        'componentName'                 : componentName,
-                        'componentId'                   : componentId,
-                        'parentComponentId'             : parent,
-                        'sectionId'                     : sectionId,
-                        'buttonType'                    : 'button',
-                        'buttons'                       : viewButton
-                    ]
-                )
-            %}
-        {% elseif transaction['type'] == 'sell' %}
-            {% set dropdowns = [] %}
-            {% set dropdowns['remove-' ~ transaction['id']] = [
-                    'title'             : 'remove',
-                    'size'              : 'xs',
-                    'type'              : 'danger',
-                    'additionalClass'   : 'removeTransaction'
-                ]
-            %}
-            {% set transactionsHtml = transactionsHtml ~
-                adminltetags.useTag('buttons',
-                    [
-                        'component'                     : component,
-                        'componentName'                 : componentName,
-                        'componentId'                   : componentId,
-                        'parentComponentId'             : parent,
-                        'sectionId'                     : sectionId,
-                        'buttonType'                    : 'DropdownSplitButtons',
-                        'dropdownSplitButtonsSplit'     : true,
-                        'dropdownAlign'                 : 'right',
-                        'splitMainButtonAdditionalClass': 'viewTransaction',
-                        'splitMainButtonId'             : 'view-' ~ transaction['id'],
-                        'splitMainButtonTitle'          : 'View',
-                        'buttonFlat'                    : true,
-                        'buttonSize'                    : 'xs',
-                        'splitMainButtonType'           : 'info',
-                        'dropdowns'                     : dropdowns
-                    ]
-                )
+            '           <td>' ~ transaction['units_bought'] ~ ' (' ~ transaction['units_sold'] ~ ')</td>'
             %}
         {% endif %}
         {% set transactionsHtml = transactionsHtml ~
-            '</td>' ~
+        '           <td>' ~ transaction['amount'] ~ ' (' ~ transaction['available_amount'] ~ ')</td>' ~
+        '           <td>' ~ transaction['latest_value_date'] ~ '</td>' ~
+        '           <td>' ~ latestValue ~ '</td>' %}
+        {% if mode == 'view' %}
+            {% set transactionsHtml = transactionsHtml ~
+                '           <td>'
+            %}
+            {% if transaction['type'] == 'buy' and transaction['status'] == 'open' and transaction['units_sold'] == 0 %}
+                {% set dropdowns = [] %}
+                {% set dropdowns['remove-' ~ transaction['id']] = [
+                        'title'             : 'remove',
+                        'size'              : 'xs',
+                        'type'              : 'danger',
+                        'additionalClass'   : 'removeTransaction'
+                    ]
+                %}
+                {% set transactionsHtml = transactionsHtml ~
+                    adminltetags.useTag('buttons',
+                        [
+                            'component'                     : component,
+                            'componentName'                 : componentName,
+                            'componentId'                   : componentId,
+                            'parentComponentId'             : parent,
+                            'sectionId'                     : sectionId,
+                            'buttonType'                    : 'DropdownSplitButtons',
+                            'dropdownSplitButtonsSplit'     : true,
+                            'dropdownAlign'                 : 'right',
+                            'splitMainButtonAdditionalClass': 'editTransaction',
+                            'splitMainButtonId'             : 'edit-' ~ transaction['id'],
+                            'splitMainButtonTitle'          : 'Edit',
+                            'buttonFlat'                    : true,
+                            'buttonSize'                    : 'xs',
+                            'splitMainButtonType'           : 'warning',
+                            'dropdowns'                     : dropdowns
+                        ]
+                    )
+                %}
+            {% elseif transaction['type'] == 'buy' and transaction['units_sold'] > 0 %}
+                {% set viewButton = [] %}
+                {% set viewButton['view-' ~ transaction['id']]  =
+                    [
+                        'title'                   : 'View',
+                        'size'                    : 'xs',
+                        'type'                    : 'info',
+                        'buttonAdditionalClass'   : 'viewTransaction'
+                    ]
+                %}
+                {% set transactionsHtml = transactionsHtml ~
+                    adminltetags.useTag('buttons',
+                        [
+                            'component'                     : component,
+                            'componentName'                 : componentName,
+                            'componentId'                   : componentId,
+                            'parentComponentId'             : parent,
+                            'sectionId'                     : sectionId,
+                            'buttonType'                    : 'button',
+                            'buttons'                       : viewButton
+                        ]
+                    )
+                %}
+            {% elseif transaction['type'] == 'sell' %}
+                {% set dropdowns = [] %}
+                {% set dropdowns['remove-' ~ transaction['id']] = [
+                        'title'             : 'remove',
+                        'size'              : 'xs',
+                        'type'              : 'danger',
+                        'additionalClass'   : 'removeTransaction'
+                    ]
+                %}
+                {% set transactionsHtml = transactionsHtml ~
+                    adminltetags.useTag('buttons',
+                        [
+                            'component'                     : component,
+                            'componentName'                 : componentName,
+                            'componentId'                   : componentId,
+                            'parentComponentId'             : parent,
+                            'sectionId'                     : sectionId,
+                            'buttonType'                    : 'DropdownSplitButtons',
+                            'dropdownSplitButtonsSplit'     : true,
+                            'dropdownAlign'                 : 'right',
+                            'splitMainButtonAdditionalClass': 'viewTransaction',
+                            'splitMainButtonId'             : 'view-' ~ transaction['id'],
+                            'splitMainButtonTitle'          : 'View',
+                            'buttonFlat'                    : true,
+                            'buttonSize'                    : 'xs',
+                            'splitMainButtonType'           : 'info',
+                            'dropdowns'                     : dropdowns
+                        ]
+                    )
+                %}
+            {% endif %}
+            {% set transactionsHtml = transactionsHtml ~
+                '           </td>'
+            %}
+        {% endif %}
+        {% set transactionsHtml = transactionsHtml ~
             '   </tr>'
         %}
     {% endfor %}
@@ -136,7 +152,9 @@
                     <th class="text-uppercase">{{ currencySymbol }} Invested AMOUNT (available)</th>
                     <th class="text-uppercase">Latest Value/Close Date</th>
                     <th class="text-uppercase">{{ currencySymbol }} Latest Value (Diff/Xirr)</th>
-                    <th class="text-uppercase">ACTIONS</th>
+                    {% if mode == 'view' %}
+                        <th class="text-uppercase">ACTIONS</th>
+                    {% endif %}
                 </tr>
             </thead>
             <tbody>

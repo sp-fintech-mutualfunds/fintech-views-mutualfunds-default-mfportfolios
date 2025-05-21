@@ -1,0 +1,66 @@
+{% if portfolio['transactions'] is defined and portfolio['transactions']|length > 0 %}
+    <div class="row">
+        <div class="col">
+            {{adminltetags.useTag('fields',
+                [
+                    'component'                      : component,
+                    'componentName'                  : componentName,
+                    'componentId'                    : componentId,
+                    'sectionId'                      : sectionId,
+                    'fieldId'                        : 'portfolio_timeline',
+                    'fieldLabel'                     : 'Portfolio Timeline',
+                    'fieldType'                      : 'html',
+                    'fieldHelp'                      : false,
+                    'fieldHelpTooltipContent'        : '',
+                    'fieldRequired'                  : false,
+                    'fieldBazScan'                   : true,
+                    'fieldBazPostOnUpdate'           : true,
+                    'fieldHtmlContent'               : ''
+                ]
+            )}}
+        </div>
+    </div>
+    {% set timelineButtons =
+        [
+            'first-day' : [
+                'title'                   : false,
+                'size'                    : 'xs',
+                'type'                    : 'info',
+                'icon'                    : 'backward-fast',
+                'disabled'                : true
+            ],
+            'previous-day' : [
+                'title'                   : false,
+                'size'                    : 'xs',
+                'type'                    : 'info',
+                'icon'                    : 'backward-step',
+                'disabled'                : true
+            ],
+            'next-day' : [
+                'title'                   : false,
+                'size'                    : 'xs',
+                'type'                    : 'info',
+                'icon'                    : 'forward-step'
+            ],
+            'last-day' : [
+                'title'                   : false,
+                'size'                    : 'xs',
+                'type'                    : 'info',
+                'icon'                    : 'forward-fast'
+            ]
+        ]
+    %}
+    <div class="col mb-2">
+        {{adminltetags.useTag('buttons',
+            [
+            'component'                     : component,
+            'componentName'                 : componentName,
+            'componentId'                   : componentId,
+            'parentComponentId'             : parent,
+            'sectionId'                     : sectionId,
+            'buttonType'                    : 'button',
+            'buttons'                       : timelineButtons
+            ]
+        )}}
+    </div>
+{% endif %}
