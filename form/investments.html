@@ -5,7 +5,7 @@
         {% if investment['latest_value'] != 0 %}
             {% set latestValue = '<span class="text-' ~textColor ~ '">' ~ investment['latest_value'] ~ '</span>' %}
             {% if investment['xirr'] is defined %}
-                {% if str_contains(investment['xirr'], '-') %}
+                {% if str_contains(investment['xirr'], '-') or str_contains(investment['diff'], '-') %}
                     {% set textColor = 'danger' %}
                 {% endif %}
                 {% set latestValue = '<span class="text-' ~textColor ~ '">' ~ investment['latest_value'] ~ ' (' ~ investment['diff'] ~ '/' ~ investment['xirr'] ~ '%)</span>' %}

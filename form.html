@@ -975,7 +975,7 @@ dataCollectionSectionForm['funcs']['processSchemeNav'] = function(scheme, task =
 
         $('#{{componentId}}-{{sectionId}}-' + task + '-date').val(dataCollectionSectionForm['vars']['transactions'][taskId]['date']);
         dataCollectionSection['{{componentId}}-{{sectionId}}-' + task + '-date']['flatpickr'].setDate(dataCollectionSectionForm['vars']['transactions'][taskId]['date']);
-        $('#{{componentId}}-{{sectionId}}-' + task + '-amount').val(parseFloat(dataCollectionSectionForm['vars']['transactions'][taskId]['amount']));
+        $('#{{componentId}}-{{sectionId}}-' + task + '-amount').val(parseFloat(dataCollectionSectionForm['vars']['transactions'][taskId]['amount'].replace(/,/g, '')));
 
         if (dataCollectionSectionForm['vars']['scheme']['navs']['navs'][dataCollectionSectionForm['vars']['transactions'][taskId]['date']] &&
             dataCollectionSectionForm['vars']['scheme']['navs']['navs'][dataCollectionSectionForm['vars']['transactions'][taskId]['date']]['nav']
