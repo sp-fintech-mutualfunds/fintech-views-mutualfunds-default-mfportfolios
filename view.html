@@ -18,7 +18,10 @@
             'closeActionUrl'                : 'mf/portfolios'
         ]
     %}
-{% elseif mode == 'view' or mode == 'timeline' %}
+{% elseif mode == 'transact' or mode == 'timeline' %}
+    {% if mode == 'transact' %}
+        {% set title = title ~ ' - Transact mode' %}
+    {% endif %}
     {% if mode == 'timeline' %}
         {% set title = title ~ ' - Timeline mode' %}
         {% set cardType = 'info' %}

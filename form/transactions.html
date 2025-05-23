@@ -41,7 +41,7 @@
         '           <td>' ~ transaction['amount'] ~ ' (' ~ transaction['available_amount'] ~ ')</td>' ~
         '           <td>' ~ transaction['latest_value_date'] ~ '</td>' ~
         '           <td>' ~ latestValue ~ '</td>' %}
-        {% if mode == 'view' %}
+        {% if mode == 'transact' %}
             {% set transactionsHtml = transactionsHtml ~
                 '           <td>'
             %}
@@ -152,7 +152,7 @@
                     <th class="text-uppercase">{{ currencySymbol }} Invested AMOUNT (available)</th>
                     <th class="text-uppercase">Latest Value/Close Date</th>
                     <th class="text-uppercase">{{ currencySymbol }} Latest Value (Diff/Xirr)</th>
-                    {% if mode == 'view' %}
+                    {% if mode == 'transact' %}
                         <th class="text-uppercase">ACTIONS</th>
                     {% endif %}
                 </tr>

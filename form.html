@@ -15,7 +15,6 @@
     {% endif %}
     {% include 'portfolios/edit.html' %}
 {% else %}
-    {# {{ trace([portfolio['status']]) }} #}
     {% set portfolioColor = 'primary' %}
     {% if portfolio['status'] == 'positive' %}
         {% set portfolioColor = 'success' %}
@@ -57,47 +56,71 @@
             </div>
             <div class="row vdivide">
                 <div class="col">
-                    <div class="row">
-                        <div class="col">
-                            {{adminltetags.useTag('fields',
-                                [
-                                    'component'                      : component,
-                                    'componentName'                  : componentName,
-                                    'componentId'                    : componentId,
-                                    'sectionId'                      : sectionId,
-                                    'fieldId'                        : 'portfolio_name',
-                                    'fieldLabel'                     : 'Portfolio Name',
-                                    'fieldType'                      : 'html',
-                                    'fieldHelp'                      : false,
-                                    'fieldHelpTooltipContent'        : 'Portfolio Name',
-                                    'fieldRequired'                  : false,
-                                    'fieldBazScan'                   : true,
-                                    'fieldBazPostOnUpdate'           : true,
-                                    'fieldHtmlContent'               : portfolio['name']
-                                ]
-                            )}}
+                    {% if mode == 'timeline' %}
+                        {% include 'portfolios/timeline.html' %}
+                    {% else %}
+                        <div class="row">
+                            <div class="col">
+                                {{adminltetags.useTag('fields',
+                                    [
+                                        'component'                      : component,
+                                        'componentName'                  : componentName,
+                                        'componentId'                    : componentId,
+                                        'sectionId'                      : sectionId,
+                                        'fieldId'                        : 'portfolio_name',
+                                        'fieldLabel'                     : 'Portfolio Name',
+                                        'fieldType'                      : 'html',
+                                        'fieldHelp'                      : false,
+                                        'fieldHelpTooltipContent'        : 'Portfolio Name',
+                                        'fieldRequired'                  : false,
+                                        'fieldBazScan'                   : true,
+                                        'fieldBazPostOnUpdate'           : true,
+                                        'fieldHtmlContent'               : portfolio['name']
+                                    ]
+                                )}}
+                            </div>
+                            <div class="col">
+                                {{adminltetags.useTag('fields',
+                                    [
+                                        'component'                      : component,
+                                        'componentName'                  : componentName,
+                                        'componentId'                    : componentId,
+                                        'sectionId'                      : sectionId,
+                                        'fieldId'                        : 'portfolio_user',
+                                        'fieldLabel'                     : 'Portfolio User',
+                                        'fieldType'                      : 'html',
+                                        'fieldHelp'                      : false,
+                                        'fieldHelpTooltipContent'        : 'Portfolio User',
+                                        'fieldRequired'                  : false,
+                                        'fieldBazScan'                   : true,
+                                        'fieldBazPostOnUpdate'           : true,
+                                        'fieldHtmlContent'               : users[portfolio['user_id']]['name']
+                                    ]
+                                )}}
+                            </div>
                         </div>
-                        <div class="col">
-                            {{adminltetags.useTag('fields',
-                                [
-                                    'component'                      : component,
-                                    'componentName'                  : componentName,
-                                    'componentId'                    : componentId,
-                                    'sectionId'                      : sectionId,
-                                    'fieldId'                        : 'portfolio_user',
-                                    'fieldLabel'                     : 'Portfolio User',
-                                    'fieldType'                      : 'html',
-                                    'fieldHelp'                      : false,
-                                    'fieldHelpTooltipContent'        : 'Portfolio User',
-                                    'fieldRequired'                  : false,
-                                    'fieldBazScan'                   : true,
-                                    'fieldBazPostOnUpdate'           : true,
-                                    'fieldHtmlContent'               : users[portfolio['user_id']]['name']
-                                ]
-                            )}}
+                        <div class="row">
+                            <div class="col">
+                                {{adminltetags.useTag('fields',
+                                    [
+                                        'component'                      : component,
+                                        'componentName'                  : componentName,
+                                        'componentId'                    : componentId,
+                                        'sectionId'                      : sectionId,
+                                        'fieldId'                        : 'portfolio_description',
+                                        'fieldLabel'                     : 'Portfolio Description',
+                                        'fieldType'                      : 'html',
+                                        'fieldHelp'                      : false,
+                                        'fieldHelpTooltipContent'        : 'Portfolio Description',
+                                        'fieldRequired'                  : false,
+                                        'fieldBazScan'                   : true,
+                                        'fieldBazPostOnUpdate'           : true,
+                                        'fieldHtmlContent'               : portfolio['description']
+                                    ]
+                                )}}
+                            </div>
                         </div>
-                    </div>
-                    {% include 'portfolios/timeline.html' %}
+                    {% endif %}
                 </div>
                 <div class="col">
                     <div class="row">
@@ -235,7 +258,11 @@
         {% set allocation = portfolio['allocation'] %}
     {% endif %}
     <hr>
-    {% set url = links.url('mf/portfolios/q/id/' ~ portfolio['id']) %}
+    {% if mode == 'timeline' %}
+        {% set url = links.url('mf/portfolios/q/mode/timeline/id/' ~ portfolio['id']) %}
+    {% elseif mode == 'transact' %}
+        {% set url = links.url('mf/portfolios/q/mode/transact/id/' ~ portfolio['id']) %}
+    {% endif %}
     {{adminltetags.useTag('buttons',
         [
             'component'                      : component,
@@ -257,8 +284,19 @@
     )}}
     <div class="row">
         {% set transactionButtons = [] %}
-        {% if portfolio['investments']|length > 0 %}
-            {% if mode == 'view' %}
+        {% set sell = false %}
+        {% set recalculate = false %}
+        {% set importNav = false %}
+        {% if mode == 'transact' %}
+            {% if portfolio['investments']|length > 0 %}
+                {% set recalculate = true %}
+                {% for investment in portfolio['investments'] %}
+                    {% if investment['status'] == 'open' %}
+                        {% set sell = true %}
+                        {% set importNav = true %}
+                        {% break %}
+                    {% endif %}
+                {% endfor %}
                 {% set transactionButtons = array_merge(transactionButtons,
                         [
                             'timeline' : [
@@ -272,21 +310,26 @@
                         ]
                     )
                 %}
-            {% elseif mode == 'timeline' %}
-                {% set transactionButtons = array_merge(transactionButtons,
-                        [
-                            'view' : [
-                                'title'                   : 'Transact',
-                                'size'                    : 'xs',
-                                'type'                    : 'primary',
-                                'buttonAdditionalClass'   : 'contentAjaxLink',
-                                'icon'                    : 'exchange-alt',
-                                'url'                     : links.url('mf/portfolios/q/id/' ~ portfolio['id'])
-                            ]
-                        ]
-                    )
-                %}
             {% endif %}
+        {% elseif mode == 'timeline' %}
+            {% if portfolio['investments']|length > 0 %}
+                {% set recalculate = true %}
+            {% endif %}
+            {% set transactionButtons = array_merge(transactionButtons,
+                    [
+                        'transact' : [
+                            'title'                   : 'Transact',
+                            'size'                    : 'xs',
+                            'type'                    : 'primary',
+                            'buttonAdditionalClass'   : 'contentAjaxLink',
+                            'icon'                    : 'exchange-alt',
+                            'url'                     : links.url('mf/portfolios/q/id/' ~ portfolio['id'])
+                        ]
+                    ]
+                )
+            %}
+        {% endif %}
+        {% if importNav == true %}
             {% set transactionButtons = array_merge(transactionButtons,
                     [
                         'importInvestmentNavs' : [
@@ -295,7 +338,14 @@
                             'position'                : 'right',
                             'icon'                    : 'cog fa-spin',
                             'iconHidden'              : true
-                        ],
+                        ]
+                    ]
+                )
+            %}
+        {% endif %}
+        {% if recalculate == true %}
+            {% set transactionButtons = array_merge(transactionButtons,
+                    [
                         'recalculate' : [
                             'title'                   : 'Recalculate',
                             'size'                    : 'xs',
@@ -308,7 +358,7 @@
                 )
             %}
         {% endif %}
-        {% if mode == 'view' %}
+        {% if sell == true %}
             {% set transactionButtons = array_merge(transactionButtons,
                     [
                         'sell' : [
@@ -316,7 +366,14 @@
                             'size'                    : 'xs',
                             'type'                    : 'warning',
                             'position'                : 'right'
-                        ],
+                        ]
+                    ]
+                )
+            %}
+        {% endif %}
+        {% if mode == 'transact' %}
+            {% set transactionButtons = array_merge(transactionButtons,
+                    [
                         'buy' : [
                             'title'                   : 'Buy',
                             'size'                    : 'xs',
@@ -376,7 +433,7 @@
             </div>
         </div>
     {% endif %}
-    {% if mode == 'view' %}
+    {% if mode == 'transact' %}
         <div>
             {{adminltetags.useTag('modal',
                 [
@@ -496,7 +553,55 @@ dataCollectionSection =
         '{{componentId}}-{{sectionId}}-portfolio_name'                      : { },
         '{{componentId}}-{{sectionId}}-portfolio_user'                      : { },
         '{{componentId}}-{{sectionId}}-portfolio_description'               : { },
-        '{{componentId}}-{{sectionId}}-portfolio_timeline'                  : { },
+        '{{componentId}}-{{sectionId}}-portfolio_timeline'                  : {
+            dateFormat          : "Y-m-d",
+            altFormat           : "Y-m-d",
+            static              : true,
+            maxDate             : "today",
+            onChange: function(selectedDates, dateStr, instance) {
+                if (dateStr !== '') {
+                    var postData = { };
+                    postData[$('#security-token').attr('name')] = $('#security-token').val();
+                    postData['portfolio_id'] = $('#{{componentId}}-{{sectionId}}-id').val();
+                    postData['timelineDate'] = dateStr;
+
+                    dataCollectionSectionForm['funcs']['browseTimeline'](postData);
+                }
+            },
+            afterInit: function() {
+                dataCollectionSection['{{componentId}}-{{sectionId}}-portfolio_timeline']['flatpickr'].config.minDate = dataCollectionSectionForm['vars']['portfolio']['start_date'];
+                dataCollectionSection['{{componentId}}-{{sectionId}}-portfolio_timeline']['flatpickr'].setDate(dataCollectionSectionForm['vars']['portfolio']['timelineDate']);
+                dataCollectionSection['{{componentId}}-{{sectionId}}-portfolio_timeline']['flatpickr'].config.maxDate = 'today';
+            }
+        },
+        '{{componentId}}-{{sectionId}}-portfolio_timeline_browser'          : {
+            afterInit: function() {
+                $('#{{componentId}}-{{sectionId}}-browser-previous, #{{componentId}}-{{sectionId}}-browser-next').off();
+                $('#{{componentId}}-{{sectionId}}-browser-previous, #{{componentId}}-{{sectionId}}-browser-next').click(function(e) {
+                    e.preventDefault();
+
+                    var thisButton = $(this);
+                    $(thisButton).attr('disabled', true);
+
+                    var idArr = $(this)[0].id.split('-');
+
+                    var postData = { };
+                    postData[$('#security-token').attr('name')] = $('#security-token').val();
+                    postData['portfolio_id'] = $('#{{componentId}}-{{sectionId}}-id').val();
+                    postData['timelineDate'] = dataCollectionSectionForm['vars']['timelineDate'];
+                    postData['browse'] = $('#{{componentId}}-{{sectionId}}-portfolio_timeline_browser').val();
+                    postData['jump'] = idArr[idArr.length - 1];
+
+                    if (postData['jump'] === 'next') {
+                        $(thisButton).children('i').removeClass('fa-forward').addClass('fa-spin fa-cog');
+                    } else if (postData['jump'] === 'previous') {
+                        $(thisButton).children('i').removeClass('fa-rewind').addClass('fa-spin fa-cog');
+                    }
+
+                    dataCollectionSectionForm['funcs']['browseTimeline'](postData, thisButton);
+                });
+            }
+        },
         '{{componentId}}-{{sectionId}}-total_value'                         : { },
         '{{componentId}}-{{sectionId}}-invested_amount'                     : { },
         '{{componentId}}-{{sectionId}}-return_amount'                       : { },
@@ -697,8 +802,10 @@ dataCollectionSection =
     });
 
 dataCollectionSectionForm['vars'] = { };
+dataCollectionSectionForm['vars']['today'] = '{{today}}';
 dataCollectionSectionForm['vars']['mode'] = '{{mode}}';
 dataCollectionSectionForm['vars']['portfolio'] = JSON.parse('{{portfolio}}');
+dataCollectionSectionForm['vars']['timelineDate'] = dataCollectionSectionForm['vars']['portfolio']['timelineDate'];
 dataCollectionSectionForm['vars']['investments'] = JSON.parse('{{investments}}');
 dataCollectionSectionForm['vars']['transactions'] = JSON.parse('{{transactions}}');
 dataCollectionSectionForm['vars']['allocation'] = JSON.parse('{{allocation}}');
@@ -1171,8 +1278,16 @@ dataCollectionSectionForm['funcs']['enableBuySell'] = function(button) {
 
 dataCollectionSectionForm['funcs']['recalculatePortfolio'] = function() {
     var postData = { };
+
     postData[$('#security-token').attr('name')] = $('#security-token').val();
     postData['portfolio_id'] = $('#{{componentId}}-{{sectionId}}-id').val();
+
+    if (dataCollectionSectionForm['vars']['mode'] == 'timeline' &&
+        dataCollectionSectionForm['vars']['timelineDate'] &&
+        dataCollectionSectionForm['vars']['timelineDate'] !== ''
+    ) {
+        postData['timelineDate'] = dataCollectionSectionForm['vars']['timelineDate'];
+    }
 
     $.post('{{links.url("mf/portfolios/recalculatePortfolio")}}', postData, function(response) {
         $('#{{componentId}}-{{sectionId}}-recalculate').attr('disabled', false);
@@ -1188,7 +1303,19 @@ dataCollectionSectionForm['funcs']['recalculatePortfolio'] = function() {
                 text : response.responseMessage
             });
 
-            dataCollectionSectionForm['funcs']['browse']();
+            if (dataCollectionSectionForm['vars']['mode'] == 'timeline') {
+                $('#{{componentId}}-{{sectionId}}-portfolios-link')
+                    .attr(
+                        'href',
+                        dataCollection.env.httpScheme + '://' + dataCollection.env.httpHost + '/' + dataCollection.env.appRoute + '/' +
+                        'mf/portfolios/q/id/' + dataCollectionSectionForm['vars']['portfolio']['id'] + '/mode/timeline/date/' +
+                        dataCollectionSectionForm['vars']['timelineDate'] + '/' +
+                        $('#{{componentId}}-{{sectionId}}-portfolio_timeline_browser').val()
+                    );
+                dataCollectionSectionForm['funcs']['browse']();
+            } else {
+                dataCollectionSectionForm['funcs']['browse']();
+            }
         } else {
             paginatedPNotify('error', {
                 text : response.responseMessage
@@ -1905,6 +2032,97 @@ dataCollectionSectionForm['funcs']['init'] = function() {
     $('#{{componentId}}-{{sectionId}}-sell-units').keyup(function() {
         dataCollectionSectionForm['funcs']['calculateSellAmount']();
     });
+}
+
+dataCollectionSectionForm['funcs']['browseTimeline'] = function(postData, thisButton = null) {
+    $.post('{{links.url("mf/portfolios/getPortfolioTimelineDateByBrowseAction")}}', postData, function(response) {
+        if (response.tokenKey && response.token) {
+            $("#security-token").attr("name", response.tokenKey);
+            $("#security-token").val(response.token);
+        }
+
+        if (response.responseCode === 0) {
+            if (response.responseData.browse_date) {
+                if (postData['browse']) {
+                    browseToTimelineDate(response.responseData.browse_date, '/browse/' + postData['browse']);
+                } else {
+                    browseToTimelineDate(response.responseData.browse_date);
+                }
+            }
+        } else if (response.responseCode === 2) {
+            var swalSound = window['dataCollection'].env.sounds.swalSound;
+            var swalTitle = '<span class="text-warning">' + response.responseMessage + '</span>';
+            var swalHtml;
+            if (response.responseData.start_date) {
+                swalHtml = '<span class="text-info">Portfolio starts at ' + response.responseData.start_date + '</span>';
+            } else if (response.responseData.end_date) {
+                swalHtml = '<span class="text-info">Portfolio ends at ' + response.responseData.end_date + '</span>';
+            } else if (response.responseData.transaction_end_date) {
+                swalHtml = '<span class="text-info">Portfolio transactions end at ' + response.responseData.transaction_end_date + '</span>';
+            }
+            Swal.fire({
+                title                       : swalTitle,
+                html                        : swalHtml,
+                icon                        : 'warning',
+                background                  : 'rgba(0,0,0,.8)',
+                backdrop                    : 'rgba(0,0,0,.6)',
+                buttonsStyling              : false,
+                confirmButtonText           : 'Browse',
+                customClass                 : {
+                    'confirmButton'             : 'btn btn-info text-uppercase',
+                    'cancelButton'              : 'ml-2 btn btn-secondary text-uppercase',
+                },
+                showCancelButton            : true,
+                keydownListenerCapture      : true,
+                allowOutsideClick           : true,
+                allowEscapeKey              : true,
+                didOpen                     : function() {
+                    swalSound.play();
+                }
+            }).then((result) => {
+                if (result.value) {
+                    var dateToBrowse;
+
+                    if (response.responseData.start_date) {
+                        dateToBrowse = response.responseData.start_date;
+                    } else if (response.responseData.end_date) {
+                        dateToBrowse = response.responseData.end_date;
+                    } else if (response.responseData.transaction_end_date) {
+                        dateToBrowse = response.responseData.transaction_end_date;
+                    }
+
+                    browseToTimelineDate(dateToBrowse);
+                } else {
+                    if (thisButton) {
+                        $(thisButton).attr('disabled', false);
+
+                        if (postData['jump'] === 'next') {
+                            $(thisButton).children('i').removeClass('fa-spin fa-cog').addClass('fa-forward');
+                        } else if (postData['jump'] === 'previous') {
+                            $(thisButton).children('i').removeClass('fa-spin fa-cog').addClass('fa-rewind');
+                        }
+                    }
+                }
+            });
+        } else {
+            paginatedPNotify('error', {
+                text : response.responseMessage
+            });
+        }
+    }, 'json');
+}
+
+function browseToTimelineDate(dateToBrowse, additionalUrlString = '/') {
+    $('#{{componentId}}-{{sectionId}}-portfolios-link')
+        .attr(
+            'href',
+            dataCollection.env.httpScheme + '://' + dataCollection.env.httpHost + '/' + dataCollection.env.appRoute + '/' +
+            'mf/portfolios/q/id/' + dataCollectionSectionForm['vars']['portfolio']['id'] + '/mode/timeline/date/' +
+            dateToBrowse +
+            additionalUrlString
+        );
+
+    dataCollectionSectionForm['funcs']['browse']();
 }
 
 dataCollectionSectionForm['funcs']['browse'] = function() {

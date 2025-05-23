@@ -14,7 +14,7 @@
             {% set latestValue = '-' %}
             {% set investment['latest_value_date'] = '-' %}
         {% endif %}
-        {% if mode == 'view' %}
+        {% if mode == 'transact' %}
             {% set investmentButtons = [] %}
             {% set investmentButtons['buy-' ~ amfi_code] = [
                     'title'                   : 'Buy',
@@ -23,13 +23,15 @@
                     'type'                    : 'success'
                 ]
             %}
-            {% set investmentButtons['sell-' ~ amfi_code] = [
-                    'title'                   : 'Sell',
-                    'size'                    : 'xs',
-                    'buttonAdditionalClass'   : 'sellInvestment',
-                    'type'                    : 'warning'
-                ]
-            %}
+            {% if investment['status'] == 'open' %}
+                {% set investmentButtons['sell-' ~ amfi_code] = [
+                        'title'                   : 'Sell',
+                        'size'                    : 'xs',
+                        'buttonAdditionalClass'   : 'sellInvestment',
+                        'type'                    : 'warning'
+                    ]
+                %}
+            {% endif %}
         {% endif %}
         {% set investmentsHtml = investmentsHtml ~ '<tr>' ~
         '           <td>' ~ strtoupper(investment['status']) ~ '</td>' ~
@@ -40,7 +42,7 @@
         '           <td>' ~ investment['latest_value_date'] ~ '</td>' ~
         '           <td>' ~ latestValue ~ '</td>'
         %}
-        {% if mode == 'view' %}
+        {% if mode == 'transact' %}
             {% set investmentsHtml = investmentsHtml ~
                 '       <td>' ~ adminltetags.useTag('buttons',
                                     [
@@ -70,7 +72,7 @@
                     <th class="text-uppercase">{{ currencySymbol }} Sold AMOUNT</th>
                     <th class="text-uppercase">Latest Value Date</th>
                     <th class="text-uppercase">{{ currencySymbol }} Latest Value (Diff/Xirr)</th>
-                    {% if mode == 'view' %}
+                    {% if mode == 'transact' %}
                         <th class="text-uppercase">ACTIONS</th>
                     {% endif %}
                 </tr>

@@ -8,59 +8,75 @@
                     'componentId'                    : componentId,
                     'sectionId'                      : sectionId,
                     'fieldId'                        : 'portfolio_timeline',
-                    'fieldLabel'                     : 'Portfolio Timeline',
-                    'fieldType'                      : 'html',
-                    'fieldHelp'                      : false,
-                    'fieldHelpTooltipContent'        : '',
+                    'fieldLabel'                     : 'Timeline Date',
+                    'fieldType'                      : 'flatpickr',
+                    'fieldHelp'                      : true,
+                    'fieldHelpTooltipContent'        : 'Select date to go to the timeline date.',
                     'fieldRequired'                  : false,
                     'fieldBazScan'                   : true,
-                    'fieldBazPostOnUpdate'           : true,
-                    'fieldHtmlContent'               : ''
+                    'fieldBazPostOnUpdate'           : false
                 ]
             )}}
         </div>
     </div>
-    {% set timelineButtons =
-        [
-            'first-day' : [
-                'title'                   : false,
-                'size'                    : 'xs',
-                'type'                    : 'info',
-                'icon'                    : 'backward-fast',
-                'disabled'                : true
-            ],
-            'previous-day' : [
-                'title'                   : false,
-                'size'                    : 'xs',
-                'type'                    : 'info',
-                'icon'                    : 'backward-step',
-                'disabled'                : true
-            ],
-            'next-day' : [
-                'title'                   : false,
-                'size'                    : 'xs',
-                'type'                    : 'info',
-                'icon'                    : 'forward-step'
-            ],
-            'last-day' : [
-                'title'                   : false,
-                'size'                    : 'xs',
-                'type'                    : 'info',
-                'icon'                    : 'forward-fast'
-            ]
-        ]
-    %}
-    <div class="col mb-2">
-        {{adminltetags.useTag('buttons',
-            [
-            'component'                     : component,
-            'componentName'                 : componentName,
-            'componentId'                   : componentId,
-            'parentComponentId'             : parent,
-            'sectionId'                     : sectionId,
-            'buttonType'                    : 'button',
-            'buttons'                       : timelineButtons
-            ]
-        )}}
+    <div class="row">
+        <div class="col">
+            {% set previousDisabled = true %}
+            {% set nextDisabled = true %}
+
+            {% if portfolio['start_date'] == portfolio['timelineDate'] %}
+                {% set nextDisabled = false %}
+            {% else %}
+                {% if portfolio['end_date'] is defined and portfolio['end_date'] == portfolio['timelineDate'] %}
+                    {% set previousDisabled = false %}
+                {% elseif portfolio['end_date'] is not defined %}
+                    {% set previousDisabled = false %}
+                    {% set nextDisabled = false %}
+                {% endif %}
+            {% endif %}
+            {{adminltetags.useTag('fields',
+                [
+                    'component'                         : component,
+                    'componentName'                     : componentName,
+                    'componentId'                       : componentId,
+                    'sectionId'                         : sectionId,
+                    'parentComponentId'                 : parent,
+                    'fieldId'                           : 'portfolio_timeline_browser',
+                    'fieldLabel'                        : 'portfolio Timeline Browser',
+                    'fieldType'                         : 'input',
+                    'fieldGroupPreAddonButtons'         :
+                        [
+                            'browser-previous' : [
+                                'title'                   : 'previous',
+                                'size'                    : 'xs',
+                                'type'                    : 'info',
+                                'icon'                    : 'backward',
+                                'noMargin'                : true,
+                                'disabled'                : previousDisabled
+                            ]
+                        ],
+                    'fieldGroupPostAddonButtons'        :
+                        [
+                            'browser-next' : [
+                                'title'                   : 'next',
+                                'size'                    : 'xs',
+                                'type'                    : 'info',
+                                'icon'                    : 'forward',
+                                'noMargin'                : true,
+                                'disabled'                : nextDisabled
+                            ]
+                        ],
+                    'fieldInputType'                      : 'select',
+                    'fieldHelp'                           : true,
+                    'fieldBazScan'                        : true,
+                    'fieldHelpTooltipContent'             : 'Select the type and click next or previous. Ex. Selecting week and hitting next will browse the following weeks portfolio (if exists)',
+                    'fieldDataSelectOptions'              : timelineBorwserOptions,
+                    'fieldDataSelectOptionsArray'         : true,
+                    'fieldDataSelectOptionsKey'           : 'id',
+                    'fieldDataSelectOptionsValue'         : 'name',
+                    'fieldDataSelectOptionsSelected'      : timelineBrowse
+                ]
+            )}}
+        </div>
     </div>
 {% endif %}
