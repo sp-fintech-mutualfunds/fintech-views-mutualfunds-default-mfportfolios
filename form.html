@@ -1,522 +1,528 @@
-{% if mode == 'edit' %}
-    {% set disableUser = false %}
-    {% if portfolio['id'] is defined %}
-        {% set portfolioId = portfolio['id'] %}
-        {% set portfolioName = portfolio['name'] %}
-        {% set portfolioUser = portfolio['user_id'] %}
-        {% set portfolioDescription = portfolio['description'] %}
-        {% set disableUser = true %}
-    {% else %}
-        {% set portfolio = [] %}
-        {% set portfolioId = '' %}
-        {% set portfolioName = '' %}
-        {% set portfolioUser = '' %}
-        {% set portfolioDescription = '' %}
-    {% endif %}
-    {% include 'portfolios/edit.html' %}
+{% if mode == 'timeline' and timelineNeedsGeneration is defined and timelineNeedsGeneration == true %}
+    {% include 'portfolios/timelineprogress.html' %}
 {% else %}
-    {% set portfolioColor = 'primary' %}
-    {% if portfolio['status'] == 'positive' %}
-        {% set portfolioColor = 'success' %}
-    {% elseif portfolio['status'] == 'negative' %}
-        {% set portfolioColor = 'danger' %}
-    {% endif %}
-    {% set portfolioId = portfolio['id'] %}
-    {% set portfolioInvestedAmount = currencySymbol ~ portfolio['invested_amount'] %}
-    {% set portfolioSoldAmount = currencySymbol ~ portfolio['sold_amount'] %}
-    {% set portfolioReturnAmount = '<span class="text-' ~ portfolioColor ~ '">' ~ currencySymbol ~ portfolio['return_amount'] ~ '</span>' %}
-    {% set portfolioTotalValue = currencySymbol ~ portfolio['total_value'] %}
-    {% set portfolioProfitLoss = '<span class="text-' ~ portfolioColor ~ '">' ~ currencySymbol ~ portfolio['profit_loss'] ~ '</span>' %}
-    {% set portfolioXirr = '<span class="text-' ~ portfolioColor ~ '">' ~ portfolio['xirr'] ~ '%</span>' %}
-    <form data-validateon="section" id="{{componentId}}-{{sectionId}}-form">
-        <fieldset id="{{componentId}}-{{sectionId}}-fieldset">
-            <div class="row">
-                <div class="col">
-                    {{adminltetags.useTag('fields',
-                        [
-                            'component'                      : component,
-                            'componentName'                  : componentName,
-                            'componentId'                    : componentId,
-                            'sectionId'                      : sectionId,
-                            'fieldId'                        : 'id',
-                            'fieldLabel'                     : 'ID',
-                            'fieldType'                      : 'input',
-                            'fieldHelp'                      : true,
-                            'fieldHelpTooltipContent'        : 'ID',
-                            'fieldRequired'                  : true,
-                            'fieldBazScan'                   : true,
-                            'fieldBazPostOnCreate'           : false,
-                            'fieldBazPostOnUpdate'           : true,
-                            'fieldHidden'                    : true,
-                            'fieldDisabled'                  : true,
-                            'fieldValue'                     : portfolioId
+    {% if mode == 'edit' %}
+        {% set disableUser = false %}
+        {% if portfolio['id'] is defined %}
+            {% set portfolioId = portfolio['id'] %}
+            {% set portfolioName = portfolio['name'] %}
+            {% set portfolioUser = portfolio['user_id'] %}
+            {% set portfolioDescription = portfolio['description'] %}
+            {% set disableUser = true %}
+        {% else %}
+            {% set portfolio = [] %}
+            {% set portfolioId = '' %}
+            {% set portfolioName = '' %}
+            {% set portfolioUser = '' %}
+            {% set portfolioDescription = '' %}
+        {% endif %}
+        {% include 'portfolios/edit.html' %}
+    {% else %}
+        {% set portfolioColor = 'primary' %}
+        {% if portfolio['status'] == 'positive' %}
+            {% set portfolioColor = 'success' %}
+        {% elseif portfolio['status'] == 'negative' %}
+            {% set portfolioColor = 'danger' %}
+        {% endif %}
+        {% set portfolioId = portfolio['id'] %}
+        {% set portfolioInvestedAmount = currencySymbol ~ portfolio['invested_amount'] %}
+        {% set portfolioSoldAmount = currencySymbol ~ portfolio['sold_amount'] %}
+        {% set portfolioReturnAmount = '<span class="text-' ~ portfolioColor ~ '">' ~ currencySymbol ~ portfolio['return_amount'] ~ '</span>' %}
+        {% set portfolioTotalValue = currencySymbol ~ portfolio['total_value'] %}
+        {% set portfolioProfitLoss = '<span class="text-' ~ portfolioColor ~ '">' ~ currencySymbol ~ portfolio['profit_loss'] ~ '</span>' %}
+        {% set portfolioXirr = '<span class="text-' ~ portfolioColor ~ '">' ~ portfolio['xirr'] ~ '%</span>' %}
+        <form data-validateon="section" id="{{componentId}}-{{sectionId}}-form">
+            <fieldset id="{{componentId}}-{{sectionId}}-fieldset">
+                <div class="row">
+                    <div class="col">
+                        {{adminltetags.useTag('fields',
+                            [
+                                'component'                      : component,
+                                'componentName'                  : componentName,
+                                'componentId'                    : componentId,
+                                'sectionId'                      : sectionId,
+                                'fieldId'                        : 'id',
+                                'fieldLabel'                     : 'ID',
+                                'fieldType'                      : 'input',
+                                'fieldHelp'                      : true,
+                                'fieldHelpTooltipContent'        : 'ID',
+                                'fieldRequired'                  : true,
+                                'fieldBazScan'                   : true,
+                                'fieldBazPostOnCreate'           : false,
+                                'fieldBazPostOnUpdate'           : true,
+                                'fieldHidden'                    : true,
+                                'fieldDisabled'                  : true,
+                                'fieldValue'                     : portfolioId
+                            ]
+                        )}}
+                    </div>
+                </div>
+                <div class="row vdivide">
+                    <div class="col">
+                        {% if mode == 'timeline' %}
+                            {% include 'portfolios/timeline.html' %}
+                        {% else %}
+                            <div class="row">
+                                <div class="col">
+                                    {{adminltetags.useTag('fields',
+                                        [
+                                            'component'                      : component,
+                                            'componentName'                  : componentName,
+                                            'componentId'                    : componentId,
+                                            'sectionId'                      : sectionId,
+                                            'fieldId'                        : 'portfolio_name',
+                                            'fieldLabel'                     : 'Portfolio Name',
+                                            'fieldType'                      : 'html',
+                                            'fieldHelp'                      : false,
+                                            'fieldHelpTooltipContent'        : 'Portfolio Name',
+                                            'fieldRequired'                  : false,
+                                            'fieldBazScan'                   : true,
+                                            'fieldBazPostOnUpdate'           : true,
+                                            'fieldHtmlContent'               : portfolio['name']
+                                        ]
+                                    )}}
+                                </div>
+                                <div class="col">
+                                    {{adminltetags.useTag('fields',
+                                        [
+                                            'component'                      : component,
+                                            'componentName'                  : componentName,
+                                            'componentId'                    : componentId,
+                                            'sectionId'                      : sectionId,
+                                            'fieldId'                        : 'portfolio_user',
+                                            'fieldLabel'                     : 'Portfolio User',
+                                            'fieldType'                      : 'html',
+                                            'fieldHelp'                      : false,
+                                            'fieldHelpTooltipContent'        : 'Portfolio User',
+                                            'fieldRequired'                  : false,
+                                            'fieldBazScan'                   : true,
+                                            'fieldBazPostOnUpdate'           : true,
+                                            'fieldHtmlContent'               : users[portfolio['user_id']]['name']
+                                        ]
+                                    )}}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    {{adminltetags.useTag('fields',
+                                        [
+                                            'component'                      : component,
+                                            'componentName'                  : componentName,
+                                            'componentId'                    : componentId,
+                                            'sectionId'                      : sectionId,
+                                            'fieldId'                        : 'portfolio_description',
+                                            'fieldLabel'                     : 'Portfolio Description',
+                                            'fieldType'                      : 'html',
+                                            'fieldHelp'                      : false,
+                                            'fieldHelpTooltipContent'        : 'Portfolio Description',
+                                            'fieldRequired'                  : false,
+                                            'fieldBazScan'                   : true,
+                                            'fieldBazPostOnUpdate'           : true,
+                                            'fieldHtmlContent'               : portfolio['description']
+                                        ]
+                                    )}}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col">
+                        <div class="row">
+                            <div class="col">
+                                {{adminltetags.useTag('fields',
+                                    [
+                                        'component'                      : component,
+                                        'componentName'                  : componentName,
+                                        'componentId'                    : componentId,
+                                        'sectionId'                      : sectionId,
+                                        'fieldId'                        : 'invested_amount',
+                                        'fieldLabel'                     : 'Invested Amount',
+                                        'fieldType'                      : 'html',
+                                        'fieldHelp'                      : true,
+                                        'fieldHelpTooltipContent'        : 'Invested Amount',
+                                        'fieldRequired'                  : false,
+                                        'fieldBazScan'                   : true,
+                                        'fieldBazPostOnUpdate'           : true,
+                                        'fieldHtmlContent'               : portfolioInvestedAmount
+                                    ]
+                                )}}
+                            </div>
+                            <div class="col">
+                                {{adminltetags.useTag('fields',
+                                    [
+                                        'component'                      : component,
+                                        'componentName'                  : componentName,
+                                        'componentId'                    : componentId,
+                                        'sectionId'                      : sectionId,
+                                        'fieldId'                        : 'profit_loss',
+                                        'fieldLabel'                     : 'Profit/Loss',
+                                        'fieldType'                      : 'html',
+                                        'fieldHelp'                      : true,
+                                        'fieldHelpTooltipContent'        : 'Profit/Loss.',
+                                        'fieldRequired'                  : false,
+                                        'fieldBazScan'                   : true,
+                                        'fieldBazPostOnUpdate'           : true,
+                                        'fieldHtmlContent'               : portfolioProfitLoss
+                                    ]
+                                )}}
+                            </div>
+                            <div class="col">
+                                {{adminltetags.useTag('fields',
+                                    [
+                                        'component'                      : component,
+                                        'componentName'                  : componentName,
+                                        'componentId'                    : componentId,
+                                        'sectionId'                      : sectionId,
+                                        'fieldId'                        : 'xirr',
+                                        'fieldLabel'                     : 'Xirr',
+                                        'fieldType'                      : 'html',
+                                        'fieldHelp'                      : true,
+                                        'fieldHelpTooltipContent'        : 'XIRR of portfolio',
+                                        'fieldRequired'                  : false,
+                                        'fieldBazScan'                   : true,
+                                        'fieldBazPostOnUpdate'           : true,
+                                        'fieldHtmlContent'               : portfolioXirr
+                                    ]
+                                )}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                {{adminltetags.useTag('fields',
+                                    [
+                                        'component'                      : component,
+                                        'componentName'                  : componentName,
+                                        'componentId'                    : componentId,
+                                        'sectionId'                      : sectionId,
+                                        'fieldId'                        : 'return_amount',
+                                        'fieldLabel'                     : 'Return Amount',
+                                        'fieldType'                      : 'html',
+                                        'fieldHelp'                      : true,
+                                        'fieldHelpTooltipContent'        : 'Return Amount.',
+                                        'fieldRequired'                  : false,
+                                        'fieldBazScan'                   : true,
+                                        'fieldBazPostOnUpdate'           : true,
+                                        'fieldHtmlContent'               : portfolioReturnAmount
+                                    ]
+                                )}}
+                            </div>
+                            <div class="col">
+                                {{adminltetags.useTag('fields',
+                                    [
+                                        'component'                      : component,
+                                        'componentName'                  : componentName,
+                                        'componentId'                    : componentId,
+                                        'sectionId'                      : sectionId,
+                                        'fieldId'                        : 'sold_amount',
+                                        'fieldLabel'                     : 'Sold Amount',
+                                        'fieldType'                      : 'html',
+                                        'fieldHelp'                      : true,
+                                        'fieldHelpTooltipContent'        : 'Sold Amount',
+                                        'fieldRequired'                  : false,
+                                        'fieldBazScan'                   : true,
+                                        'fieldBazPostOnUpdate'           : true,
+                                        'fieldHtmlContent'               : portfolioSoldAmount
+                                    ]
+                                )}}
+                            </div>
+                            <div class="col">
+                                {{adminltetags.useTag('fields',
+                                    [
+                                        'component'                      : component,
+                                        'componentName'                  : componentName,
+                                        'componentId'                    : componentId,
+                                        'sectionId'                      : sectionId,
+                                        'fieldId'                        : 'total_value',
+                                        'fieldLabel'                     : 'Total value',
+                                        'fieldType'                      : 'html',
+                                        'fieldHelp'                      : true,
+                                        'fieldHelpTooltipContent'        : 'Total value',
+                                        'fieldRequired'                  : false,
+                                        'fieldBazScan'                   : true,
+                                        'fieldBazPostOnUpdate'           : true,
+                                        'fieldHtmlContent'               : portfolioTotalValue
+                                    ]
+                                )}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+        {% set investments = [] %}
+        {% set transactions = [] %}
+        {% set allocation = [] %}
+        {% if portfolio['investments'] is defined and portfolio['investments']|length > 0 %}
+            {% set investments = portfolio['investments'] %}
+        {% endif %}
+        {% if portfolio['transactions'] is defined and portfolio['transactions']|length > 0 %}
+            {% set transactions = portfolio['transactions'] %}
+        {% endif %}
+        {% if portfolio['allocation'] is defined and portfolio['allocation']|length > 0 %}
+            {% set allocation = portfolio['allocation'] %}
+        {% endif %}
+        <hr>
+        {% if mode == 'timeline' %}
+            {% set url = links.url('mf/portfolios/q/mode/timeline/id/' ~ portfolio['id']) %}
+        {% elseif mode == 'transact' %}
+            {% set url = links.url('mf/portfolios/q/mode/transact/id/' ~ portfolio['id']) %}
+        {% endif %}
+        {{adminltetags.useTag('buttons',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'buttonType'                    : 'button',
+                'buttons'                       :
+                    [
+                        'portfolios-link'    : [
+                            'title'                   : 'link',
+                            'size'                    : 'xs',
+                            'disabled'                : true,
+                            'hidden'                  : true,
+                            'url'                     : url
                         ]
-                    )}}
-                </div>
-            </div>
-            <div class="row vdivide">
-                <div class="col">
-                    {% if mode == 'timeline' %}
-                        {% include 'portfolios/timeline.html' %}
-                    {% else %}
-                        <div class="row">
-                            <div class="col">
-                                {{adminltetags.useTag('fields',
-                                    [
-                                        'component'                      : component,
-                                        'componentName'                  : componentName,
-                                        'componentId'                    : componentId,
-                                        'sectionId'                      : sectionId,
-                                        'fieldId'                        : 'portfolio_name',
-                                        'fieldLabel'                     : 'Portfolio Name',
-                                        'fieldType'                      : 'html',
-                                        'fieldHelp'                      : false,
-                                        'fieldHelpTooltipContent'        : 'Portfolio Name',
-                                        'fieldRequired'                  : false,
-                                        'fieldBazScan'                   : true,
-                                        'fieldBazPostOnUpdate'           : true,
-                                        'fieldHtmlContent'               : portfolio['name']
-                                    ]
-                                )}}
-                            </div>
-                            <div class="col">
-                                {{adminltetags.useTag('fields',
-                                    [
-                                        'component'                      : component,
-                                        'componentName'                  : componentName,
-                                        'componentId'                    : componentId,
-                                        'sectionId'                      : sectionId,
-                                        'fieldId'                        : 'portfolio_user',
-                                        'fieldLabel'                     : 'Portfolio User',
-                                        'fieldType'                      : 'html',
-                                        'fieldHelp'                      : false,
-                                        'fieldHelpTooltipContent'        : 'Portfolio User',
-                                        'fieldRequired'                  : false,
-                                        'fieldBazScan'                   : true,
-                                        'fieldBazPostOnUpdate'           : true,
-                                        'fieldHtmlContent'               : users[portfolio['user_id']]['name']
-                                    ]
-                                )}}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                {{adminltetags.useTag('fields',
-                                    [
-                                        'component'                      : component,
-                                        'componentName'                  : componentName,
-                                        'componentId'                    : componentId,
-                                        'sectionId'                      : sectionId,
-                                        'fieldId'                        : 'portfolio_description',
-                                        'fieldLabel'                     : 'Portfolio Description',
-                                        'fieldType'                      : 'html',
-                                        'fieldHelp'                      : false,
-                                        'fieldHelpTooltipContent'        : 'Portfolio Description',
-                                        'fieldRequired'                  : false,
-                                        'fieldBazScan'                   : true,
-                                        'fieldBazPostOnUpdate'           : true,
-                                        'fieldHtmlContent'               : portfolio['description']
-                                    ]
-                                )}}
-                            </div>
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="col">
-                    <div class="row">
-                        <div class="col">
-                            {{adminltetags.useTag('fields',
-                                [
-                                    'component'                      : component,
-                                    'componentName'                  : componentName,
-                                    'componentId'                    : componentId,
-                                    'sectionId'                      : sectionId,
-                                    'fieldId'                        : 'invested_amount',
-                                    'fieldLabel'                     : 'Invested Amount',
-                                    'fieldType'                      : 'html',
-                                    'fieldHelp'                      : true,
-                                    'fieldHelpTooltipContent'        : 'Invested Amount',
-                                    'fieldRequired'                  : false,
-                                    'fieldBazScan'                   : true,
-                                    'fieldBazPostOnUpdate'           : true,
-                                    'fieldHtmlContent'               : portfolioInvestedAmount
-                                ]
-                            )}}
-                        </div>
-                        <div class="col">
-                            {{adminltetags.useTag('fields',
-                                [
-                                    'component'                      : component,
-                                    'componentName'                  : componentName,
-                                    'componentId'                    : componentId,
-                                    'sectionId'                      : sectionId,
-                                    'fieldId'                        : 'profit_loss',
-                                    'fieldLabel'                     : 'Profit/Loss',
-                                    'fieldType'                      : 'html',
-                                    'fieldHelp'                      : true,
-                                    'fieldHelpTooltipContent'        : 'Profit/Loss.',
-                                    'fieldRequired'                  : false,
-                                    'fieldBazScan'                   : true,
-                                    'fieldBazPostOnUpdate'           : true,
-                                    'fieldHtmlContent'               : portfolioProfitLoss
-                                ]
-                            )}}
-                        </div>
-                        <div class="col">
-                            {{adminltetags.useTag('fields',
-                                [
-                                    'component'                      : component,
-                                    'componentName'                  : componentName,
-                                    'componentId'                    : componentId,
-                                    'sectionId'                      : sectionId,
-                                    'fieldId'                        : 'xirr',
-                                    'fieldLabel'                     : 'Xirr',
-                                    'fieldType'                      : 'html',
-                                    'fieldHelp'                      : true,
-                                    'fieldHelpTooltipContent'        : 'XIRR of portfolio',
-                                    'fieldRequired'                  : false,
-                                    'fieldBazScan'                   : true,
-                                    'fieldBazPostOnUpdate'           : true,
-                                    'fieldHtmlContent'               : portfolioXirr
-                                ]
-                            )}}
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            {{adminltetags.useTag('fields',
-                                [
-                                    'component'                      : component,
-                                    'componentName'                  : componentName,
-                                    'componentId'                    : componentId,
-                                    'sectionId'                      : sectionId,
-                                    'fieldId'                        : 'return_amount',
-                                    'fieldLabel'                     : 'Return Amount',
-                                    'fieldType'                      : 'html',
-                                    'fieldHelp'                      : true,
-                                    'fieldHelpTooltipContent'        : 'Return Amount.',
-                                    'fieldRequired'                  : false,
-                                    'fieldBazScan'                   : true,
-                                    'fieldBazPostOnUpdate'           : true,
-                                    'fieldHtmlContent'               : portfolioReturnAmount
-                                ]
-                            )}}
-                        </div>
-                        <div class="col">
-                            {{adminltetags.useTag('fields',
-                                [
-                                    'component'                      : component,
-                                    'componentName'                  : componentName,
-                                    'componentId'                    : componentId,
-                                    'sectionId'                      : sectionId,
-                                    'fieldId'                        : 'sold_amount',
-                                    'fieldLabel'                     : 'Sold Amount',
-                                    'fieldType'                      : 'html',
-                                    'fieldHelp'                      : true,
-                                    'fieldHelpTooltipContent'        : 'Sold Amount',
-                                    'fieldRequired'                  : false,
-                                    'fieldBazScan'                   : true,
-                                    'fieldBazPostOnUpdate'           : true,
-                                    'fieldHtmlContent'               : portfolioSoldAmount
-                                ]
-                            )}}
-                        </div>
-                        <div class="col">
-                            {{adminltetags.useTag('fields',
-                                [
-                                    'component'                      : component,
-                                    'componentName'                  : componentName,
-                                    'componentId'                    : componentId,
-                                    'sectionId'                      : sectionId,
-                                    'fieldId'                        : 'total_value',
-                                    'fieldLabel'                     : 'Total value',
-                                    'fieldType'                      : 'html',
-                                    'fieldHelp'                      : true,
-                                    'fieldHelpTooltipContent'        : 'Total value',
-                                    'fieldRequired'                  : false,
-                                    'fieldBazScan'                   : true,
-                                    'fieldBazPostOnUpdate'           : true,
-                                    'fieldHtmlContent'               : portfolioTotalValue
-                                ]
-                            )}}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </fieldset>
-    </form>
-    {% set investments = [] %}
-    {% set transactions = [] %}
-    {% set allocation = [] %}
-    {% if portfolio['investments'] is defined and portfolio['investments']|length > 0 %}
-        {% set investments = portfolio['investments'] %}
-    {% endif %}
-    {% if portfolio['transactions'] is defined and portfolio['transactions']|length > 0 %}
-        {% set transactions = portfolio['transactions'] %}
-    {% endif %}
-    {% if portfolio['allocation'] is defined and portfolio['allocation']|length > 0 %}
-        {% set allocation = portfolio['allocation'] %}
-    {% endif %}
-    <hr>
-    {% if mode == 'timeline' %}
-        {% set url = links.url('mf/portfolios/q/mode/timeline/id/' ~ portfolio['id']) %}
-    {% elseif mode == 'transact' %}
-        {% set url = links.url('mf/portfolios/q/mode/transact/id/' ~ portfolio['id']) %}
-    {% endif %}
-    {{adminltetags.useTag('buttons',
-        [
-            'component'                      : component,
-            'componentName'                  : componentName,
-            'componentId'                    : componentId,
-            'sectionId'                      : sectionId,
-            'buttonType'                    : 'button',
-            'buttons'                       :
-                [
-                    'portfolios-link'    : [
-                        'title'                   : 'link',
-                        'size'                    : 'xs',
-                        'disabled'                : true,
-                        'hidden'                  : true,
-                        'url'                     : url
                     ]
-                ]
-        ]
-    )}}
-    <div class="row">
-        {% set transactionButtons = [] %}
-        {% set sell = false %}
-        {% set recalculate = false %}
-        {% set importNav = false %}
-        {% if mode == 'transact' %}
-            {% if portfolio['investments']|length > 0 %}
-                {% set recalculate = true %}
-                {% for investment in portfolio['investments'] %}
-                    {% if investment['status'] == 'open' %}
-                        {% set sell = true %}
-                        {% set importNav = true %}
-                        {% break %}
-                    {% endif %}
-                {% endfor %}
+            ]
+        )}}
+        <div class="row">
+            {% set transactionButtons = [] %}
+            {% set sell = false %}
+            {% set recalculate = false %}
+            {% set importNav = false %}
+            {% if mode == 'transact' %}
+                {% if portfolio['investments']|length > 0 %}
+                    {% set recalculate = true %}
+                    {% for investment in portfolio['investments'] %}
+                        {% if investment['status'] == 'open' %}
+                            {% set sell = true %}
+                            {% set importNav = true %}
+                            {% break %}
+                        {% endif %}
+                    {% endfor %}
+                    {% set transactionButtons = array_merge(transactionButtons,
+                            [
+                                'timeline' : [
+                                    'title'                   : 'Timeline',
+                                    'size'                    : 'xs',
+                                    'type'                    : 'info',
+                                    'buttonAdditionalClass'   : 'contentAjaxLink',
+                                    'icon'                    : 'timeline',
+                                    'url'                     : links.url('mf/portfolios/q/mode/timeline/id/' ~ portfolio['id'])
+                                ]
+                            ]
+                        )
+                    %}
+                {% endif %}
+            {% elseif mode == 'timeline' %}
+                {% if portfolio['investments']|length > 0 %}
+                    {% set recalculate = true %}
+                {% endif %}
                 {% set transactionButtons = array_merge(transactionButtons,
                         [
-                            'timeline' : [
-                                'title'                   : 'Timeline',
+                            'transact' : [
+                                'title'                   : 'Transact',
                                 'size'                    : 'xs',
-                                'type'                    : 'info',
+                                'type'                    : 'primary',
                                 'buttonAdditionalClass'   : 'contentAjaxLink',
-                                'icon'                    : 'timeline',
-                                'url'                     : links.url('mf/portfolios/q/mode/timeline/id/' ~ portfolio['id'])
+                                'icon'                    : 'exchange-alt',
+                                'url'                     : links.url('mf/portfolios/q/id/' ~ portfolio['id'])
                             ]
                         ]
                     )
                 %}
             {% endif %}
-        {% elseif mode == 'timeline' %}
-            {% if portfolio['investments']|length > 0 %}
-                {% set recalculate = true %}
-            {% endif %}
-            {% set transactionButtons = array_merge(transactionButtons,
-                    [
-                        'transact' : [
-                            'title'                   : 'Transact',
-                            'size'                    : 'xs',
-                            'type'                    : 'primary',
-                            'buttonAdditionalClass'   : 'contentAjaxLink',
-                            'icon'                    : 'exchange-alt',
-                            'url'                     : links.url('mf/portfolios/q/id/' ~ portfolio['id'])
-                        ]
-                    ]
-                )
-            %}
-        {% endif %}
-        {% if importNav == true %}
-            {% set transactionButtons = array_merge(transactionButtons,
-                    [
-                        'importInvestmentNavs' : [
-                            'title'                   : 'Import Navs',
-                            'size'                    : 'xs',
-                            'position'                : 'right',
-                            'icon'                    : 'cog fa-spin',
-                            'iconHidden'              : true
-                        ]
-                    ]
-                )
-            %}
-        {% endif %}
-        {% if recalculate == true %}
-            {% set transactionButtons = array_merge(transactionButtons,
-                    [
-                        'recalculate' : [
-                            'title'                   : 'Recalculate',
-                            'size'                    : 'xs',
-                            'type'                    : 'info',
-                            'position'                : 'right',
-                            'icon'                    : 'cog fa-spin',
-                            'iconHidden'              : true
-                        ]
-                    ]
-                )
-            %}
-        {% endif %}
-        {% if sell == true %}
-            {% set transactionButtons = array_merge(transactionButtons,
-                    [
-                        'sell' : [
-                            'title'                   : 'Sell',
-                            'size'                    : 'xs',
-                            'type'                    : 'warning',
-                            'position'                : 'right'
-                        ]
-                    ]
-                )
-            %}
-        {% endif %}
-        {% if mode == 'transact' %}
-            {% set transactionButtons = array_merge(transactionButtons,
-                    [
-                        'buy' : [
-                            'title'                   : 'Buy',
-                            'size'                    : 'xs',
-                            'type'                    : 'success',
-                            'position'                : 'right'
-                        ]
-                    ]
-                )
-            %}
-        {% endif %}
-        <div class="col mb-2">
-            {{adminltetags.useTag('buttons',
-                [
-                'component'                     : component,
-                'componentName'                 : componentName,
-                'componentId'                   : componentId,
-                'parentComponentId'             : parent,
-                'sectionId'                     : sectionId,
-                'buttonType'                    : 'button',
-                'buttons'                       : transactionButtons
-                ]
-            )}}
-        </div>
-    </div>
-    <hr>
-    {% if portfolio['transactions'] is defined and portfolio['transactions']|length > 0 %}
-        <div class="row">
-            <div class="col">
-                {{adminltetags.useTag('tabs',
-                    [
-                        'component'                     : component,
-                        'componentName'                 : componentName,
-                        'componentId'                   : componentId,
-                        'sectionId'                     : 'main',
-                        'tabsId'                        : 'tabs',
-                        'tabsStyle'                     : 'card-outline-tabs',
-                        'tabsData'                      :
-                            [
-                                'investments'   :
-                                [
-                                    'tabTitle'          : 'Investments',
-                                    'tabInclude'        : 'portfolios/form/investments'
-                                ],
-                                'transactions'   :
-                                [
-                                    'tabTitle'          : 'Transactions',
-                                    'tabInclude'        : 'portfolios/form/transactions'
-                                ],
-                                'allocation'   :
-                                [
-                                    'tabTitle'          : 'Allocation',
-                                    'tabInclude'        : 'portfolios/form/allocation'
-                                ]
+            {% if importNav == true %}
+                {% set transactionButtons = array_merge(transactionButtons,
+                        [
+                            'importInvestmentNavs' : [
+                                'title'                   : 'Import Navs',
+                                'size'                    : 'xs',
+                                'position'                : 'right',
+                                'icon'                    : 'cog fa-spin',
+                                'iconHidden'              : true
                             ]
+                        ]
+                    )
+                %}
+            {% endif %}
+            {% if recalculate == true %}
+                {% set transactionButtons = array_merge(transactionButtons,
+                        [
+                            'recalculate' : [
+                                'title'                   : 'Recalculate',
+                                'size'                    : 'xs',
+                                'type'                    : 'info',
+                                'position'                : 'right',
+                                'icon'                    : 'cog fa-spin',
+                                'iconHidden'              : true
+                            ]
+                        ]
+                    )
+                %}
+            {% endif %}
+            {% if sell == true %}
+                {% set transactionButtons = array_merge(transactionButtons,
+                        [
+                            'sell' : [
+                                'title'                   : 'Sell',
+                                'size'                    : 'xs',
+                                'type'                    : 'warning',
+                                'position'                : 'right'
+                            ]
+                        ]
+                    )
+                %}
+            {% endif %}
+            {% if mode == 'transact' %}
+                {% set transactionButtons = array_merge(transactionButtons,
+                        [
+                            'buy' : [
+                                'title'                   : 'Buy',
+                                'size'                    : 'xs',
+                                'type'                    : 'success',
+                                'position'                : 'right'
+                            ]
+                        ]
+                    )
+                %}
+            {% endif %}
+            <div class="col mb-2">
+                {{adminltetags.useTag('buttons',
+                    [
+                    'component'                     : component,
+                    'componentName'                 : componentName,
+                    'componentId'                   : componentId,
+                    'parentComponentId'             : parent,
+                    'sectionId'                     : sectionId,
+                    'buttonType'                    : 'button',
+                    'buttons'                       : transactionButtons
                     ]
                 )}}
             </div>
         </div>
-    {% endif %}
-    {% if mode == 'transact' %}
-        <div>
-            {{adminltetags.useTag('modal',
-                [
-                    'component'                 : component,
-                    'componentName'             : componentName,
-                    'componentId'               : componentId,
-                    'sectionId'                 : sectionId,
-                    'modalId'                   : 'buy-modal',
-                    'modalBodyInclude'          : 'portfolios/transaction/buy',
-                    'modalSize'                 : 'xl',
-                    'modalType'                 : 'success',
-                    'modalHeader'               : true,
-                    'modalFooter'               : true,
-                    'modalHeaderCloseButton'    : true,
-                    'modalEscClose'             : true,
-                    'modalTitle'                : currencySymbol ~ ' BUY INVESTMENT',
-                    'modalFooterButtons'        :
+        <hr>
+        {% if mode == 'timeline' %}
+            {% include 'portfolios/timelinechart.html' %}
+        {% endif %}
+        {% if portfolio['transactions'] is defined and portfolio['transactions']|length > 0 %}
+            <div class="row">
+                <div class="col">
+                    {{adminltetags.useTag('tabs',
                         [
-                        'component'                     : component,
-                        'componentName'                 : componentName,
-                        'componentId'                   : componentId,
-                        'parentComponentId'             : parent,
-                        'sectionId'                     : sectionId,
-                        'buttonType'                    : 'button',
-                        'buttons'                       :
+                            'component'                     : component,
+                            'componentName'                 : componentName,
+                            'componentId'                   : componentId,
+                            'sectionId'                     : 'main',
+                            'tabsId'                        : 'tabs',
+                            'tabsStyle'                     : 'card-outline-tabs',
+                            'tabsData'                      :
                                 [
-                                    'buy-modal-button-save' : [
-                                        'title'                   : 'buy',
-                                        'type'                    : 'success',
-                                        'position'                : 'right',
-                                        'icon'                    : 'cog fa-spin',
-                                        'iconHidden'              : true
+                                    'investments'   :
+                                    [
+                                        'tabTitle'          : 'Investments',
+                                        'tabInclude'        : 'portfolios/form/investments'
+                                    ],
+                                    'transactions'   :
+                                    [
+                                        'tabTitle'          : 'Transactions',
+                                        'tabInclude'        : 'portfolios/form/transactions'
+                                    ],
+                                    'allocation'   :
+                                    [
+                                        'tabTitle'          : 'Allocation',
+                                        'tabInclude'        : 'portfolios/form/allocation'
                                     ]
                                 ]
                         ]
-                ]
-            )}}
-        </div>
-        <div>
-            {{adminltetags.useTag('modal',
-                [
-                    'component'                 : component,
-                    'componentName'             : componentName,
-                    'componentId'               : componentId,
-                    'sectionId'                 : sectionId,
-                    'modalId'                   : 'sell-modal',
-                    'modalBodyInclude'          : 'portfolios/transaction/sell',
-                    'modalSize'                 : 'xl',
-                    'modalType'                 : 'warning',
-                    'modalHeader'               : true,
-                    'modalFooter'               : true,
-                    'modalHeaderCloseButton'    : true,
-                    'modalEscClose'             : true,
-                    'modalTitle'                : currencySymbol ~ ' SELL INVESTMENT',
-                    'modalFooterButtons'        :
-                        [
-                        'component'                     : component,
-                        'componentName'                 : componentName,
-                        'componentId'                   : componentId,
-                        'parentComponentId'             : parent,
-                        'sectionId'                     : sectionId,
-                        'buttonType'                    : 'button',
-                        'buttons'                       :
-                                [
-                                    'sell-modal-button-save' : [
-                                        'title'                   : 'sell',
-                                        'type'                    : 'warning',
-                                        'position'                : 'right',
-                                        'icon'                    : 'cog fa-spin',
-                                        'iconHidden'              : true
+                    )}}
+                </div>
+            </div>
+        {% endif %}
+        {% if mode == 'transact' %}
+            <div>
+                {{adminltetags.useTag('modal',
+                    [
+                        'component'                 : component,
+                        'componentName'             : componentName,
+                        'componentId'               : componentId,
+                        'sectionId'                 : sectionId,
+                        'modalId'                   : 'buy-modal',
+                        'modalBodyInclude'          : 'portfolios/transaction/buy',
+                        'modalSize'                 : 'xl',
+                        'modalType'                 : 'success',
+                        'modalHeader'               : true,
+                        'modalFooter'               : true,
+                        'modalHeaderCloseButton'    : true,
+                        'modalEscClose'             : true,
+                        'modalTitle'                : currencySymbol ~ ' BUY INVESTMENT',
+                        'modalFooterButtons'        :
+                            [
+                            'component'                     : component,
+                            'componentName'                 : componentName,
+                            'componentId'                   : componentId,
+                            'parentComponentId'             : parent,
+                            'sectionId'                     : sectionId,
+                            'buttonType'                    : 'button',
+                            'buttons'                       :
+                                    [
+                                        'buy-modal-button-save' : [
+                                            'title'                   : 'buy',
+                                            'type'                    : 'success',
+                                            'position'                : 'right',
+                                            'icon'                    : 'cog fa-spin',
+                                            'iconHidden'              : true
+                                        ]
                                     ]
-                                ]
-                        ]
-                ]
-            )}}
-        </div>
-    {% endif %}
-    {% set portfolio = escaper.js(json_encode(portfolio, 16)) %}
-    {% set investments = escaper.js(json_encode(investments, 16)) %}
-    {% set transactions = escaper.js(json_encode(transactions, 16)) %}
-    {% set allocation = escaper.js(json_encode(allocation, 16)) %}
-    {% set amcs = escaper.js(json_encode(amcs, 16)) %}
-    <script>
+                            ]
+                    ]
+                )}}
+            </div>
+            <div>
+                {{adminltetags.useTag('modal',
+                    [
+                        'component'                 : component,
+                        'componentName'             : componentName,
+                        'componentId'               : componentId,
+                        'sectionId'                 : sectionId,
+                        'modalId'                   : 'sell-modal',
+                        'modalBodyInclude'          : 'portfolios/transaction/sell',
+                        'modalSize'                 : 'xl',
+                        'modalType'                 : 'warning',
+                        'modalHeader'               : true,
+                        'modalFooter'               : true,
+                        'modalHeaderCloseButton'    : true,
+                        'modalEscClose'             : true,
+                        'modalTitle'                : currencySymbol ~ ' SELL INVESTMENT',
+                        'modalFooterButtons'        :
+                            [
+                            'component'                     : component,
+                            'componentName'                 : componentName,
+                            'componentId'                   : componentId,
+                            'parentComponentId'             : parent,
+                            'sectionId'                     : sectionId,
+                            'buttonType'                    : 'button',
+                            'buttons'                       :
+                                    [
+                                        'sell-modal-button-save' : [
+                                            'title'                   : 'sell',
+                                            'type'                    : 'warning',
+                                            'position'                : 'right',
+                                            'icon'                    : 'cog fa-spin',
+                                            'iconHidden'              : true
+                                        ]
+                                    ]
+                            ]
+                    ]
+                )}}
+            </div>
+        {% endif %}
+        {% set portfolio = escaper.js(json_encode(portfolio, 16)) %}
+        {% set investments = escaper.js(json_encode(investments, 16)) %}
+        {% set transactions = escaper.js(json_encode(transactions, 16)) %}
+        {% set allocation = escaper.js(json_encode(allocation, 16)) %}
+        {% set amcs = escaper.js(json_encode(amcs, 16)) %}
+        <script>
 /*global paginatedPNotify BazProgress BazContentFields BazHelpers BazContentLoader Pace BazCore dataCollection Swal Chart */
 var dataCollectionComponent, dataCollectionSection, dataCollectionSectionForm;
 
@@ -2147,4 +2153,5 @@ $(document).ready(function() {
     dataCollectionSectionForm['funcs']['init']();
 });
 </script>
+    {% endif %}
 {% endif %}

@@ -1,0 +1,94 @@
+<div class="row">
+    <div class="col">
+        <div id="timeline-progress" class="mb-3" hidden></div>
+    </div>
+</div>
+{% set portfolio = escaper.js(json_encode(portfolio, 16)) %}
+<script>
+/*global paginatedPNotify BazProgress BazContentFields BazHelpers BazContentLoader Pace Swal */
+var dataCollectionComponent, dataCollectionSection, dataCollectionSectionForm;
+if (!window['dataCollection']) {
+    window['dataCollection'] = { };
+}
+if (!window['dataCollection']['{{componentId}}']) {
+    dataCollectionComponent =
+        window['dataCollection']['{{componentId}}'] = { };
+} else {
+    dataCollectionComponent =
+        window['dataCollection']['{{componentId}}'];
+}
+if (!dataCollectionComponent['{{componentId}}-{{sectionId}}']) {
+    dataCollectionSection =
+        dataCollectionComponent['{{componentId}}-{{sectionId}}'] = { };
+} else {
+    dataCollectionSection =
+        dataCollectionComponent['{{componentId}}-{{sectionId}}'];
+}
+if (!dataCollectionSection['{{componentId}}-{{sectionId}}-form']) {
+    dataCollectionSectionForm =
+        dataCollectionSection['{{componentId}}-{{sectionId}}-form'] = { };
+} else {
+    dataCollectionSectionForm =
+        dataCollectionSection['{{componentId}}-{{sectionId}}-form'];
+}
+
+dataCollectionSectionForm['vars'] = { };
+dataCollectionSectionForm['vars']['portfolio'] = JSON.parse('{{portfolio}}');
+dataCollectionSectionForm['funcs'] = { };
+dataCollectionSectionForm['funcs']['init'] = function() {
+    BazProgress.buildProgressBar($('#timeline-progress'), false, true, true, true);
+
+    var swalSound = window['dataCollection'].env.sounds.swalSound;
+
+    Swal.fire({
+        html                        : '<span class="text-white">Portfolio timeline needs to be regenerated!</span>',
+        icon                        : 'info',
+        background                  : 'rgba(0,0,0,.8)',
+        backdrop                    : 'rgba(0,0,0,.6)',
+        buttonsStyling              : false,
+        confirmButtonText           : 'Proceed',
+        customClass                 : {
+            'confirmButton'             : 'btn btn-info text-uppercase',
+            'cancelButton'              : 'ml-2 btn btn-secondary text-uppercase',
+        },
+        showCancelButton            : true,
+        keydownListenerCapture      : true,
+        allowOutsideClick           : true,
+        allowEscapeKey              : true,
+        didOpen                     : function() {
+            swalSound.play();
+        }
+    }).then((result) => {
+        if (result.value) {
+            dataCollectionSectionForm['funcs']['processTimeline']();
+        } else {
+            //eslint-disable-next-line
+            console.log('meme');
+        }
+    });
+}
+
+dataCollectionSectionForm['funcs']['processTimeline'] = function() {
+    BazProgress.switchProgressBarColor();
+
+    $('#timeline-progress').attr('hidden', false);
+
+    var postData = { };
+    postData[$('#security-token').attr('name')] = $('#security-token').val();
+    postData['portfolio_id'] = dataCollectionSectionForm['vars']['portfolio']['id'];
+
+    $.post('{{links.url("mf/portfolios/procsessTimelineNeedsGeneration")}}', postData, function(response) {
+        if (response.tokenKey && response.token) {
+            $('#security-token').attr('name', response.tokenKey);
+            $('#security-token').val(response.token);
+        }
+
+        //eslint-disable-next-line
+        console.log(response);
+    }, 'json');
+}
+
+$(document).ready(function() {
+    dataCollectionSectionForm['funcs']['init']();
+});
+</script>
