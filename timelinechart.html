@@ -1,1 +1,157 @@
-{{ var_dump(portfolio['performance_chunks']) }}
+<!-- htmlhint tag-pair:false --><!-- htmlmin:ignore -->
+{% if portfolio['performance_chunks']['all']|length > 1 %}
+    {% set timelineButtons = [] %}
+    {% if portfolio['performance_chunks'] is defined %}
+        {% if portfolio['performance_chunks']['week'] is defined and portfolio['performance_chunks']['week']|length > 0 %}
+            {% if portfolio['performance_chunks']['week']|length != portfolio['performance_chunks']['all']|length %}
+                {% set timelineButtons = array_merge(timelineButtons,
+                    [
+                        'one-week' : [
+                            'title'                   : '1W',
+                            'type'                    : 'primary',
+                            'value'                   : 'one-week',
+                            'disabled'                : true
+                        ]
+                    ]
+                ) %}
+            {% endif %}
+        {% endif %}
+        {% if portfolio['performance_chunks']['month'] is defined and portfolio['performance_chunks']['month']|length > 0 %}
+            {% if portfolio['performance_chunks']['month']|length != portfolio['performance_chunks']['all']|length %}
+                {% set timelineButtons = array_merge(timelineButtons,
+                    [
+                        'one-month' : [
+                            'title'                   : '1M',
+                            'type'                    : 'primary',
+                            'value'                   : 'one-month'
+                        ]
+                    ]
+                ) %}
+            {% endif %}
+        {% endif %}
+        {% if portfolio['performance_chunks']['year'] is defined and portfolio['performance_chunks']['year']|length > 0 %}
+            {% if portfolio['performance_chunks']['year']|length != portfolio['performance_chunks']['all']|length %}
+                {% set timelineButtons = array_merge(timelineButtons,
+                    [
+                        'one-year' : [
+                            'title'                   : '1Y',
+                            'type'                    : 'primary',
+                            'value'                   : 'one-year'
+                        ]
+                    ]
+                ) %}
+            {% endif %}
+        {% endif %}
+        {% if portfolio['performance_chunks']['threeYear'] is defined and portfolio['performance_chunks']['threeYear']|length > 0 %}
+            {% if portfolio['performance_chunks']['threeYear']|length != portfolio['performance_chunks']['all']|length %}
+                {% set timelineButtons = array_merge(timelineButtons,
+                    [
+                        'three-year' : [
+                            'title'                   : '3Y',
+                            'type'                    : 'primary',
+                            'value'                   : 'three-year'
+                        ]
+                    ]
+                ) %}
+            {% endif %}
+        {% endif %}
+        {% if portfolio['performance_chunks']['fiveYear'] is defined and portfolio['performance_chunks']['fiveYear']|length > 0 %}
+            {% if portfolio['performance_chunks']['fiveYear']|length != portfolio['performance_chunks']['all']|length %}
+                {% set timelineButtons = array_merge(timelineButtons,
+                    [
+                        'five-year' : [
+                            'title'                   : '5Y',
+                            'type'                    : 'primary',
+                            'value'                   : 'five-year'
+                        ]
+                    ]
+                ) %}
+            {% endif %}
+        {% endif %}
+        {% if portfolio['performance_chunks']['tenYear'] is defined and portfolio['performance_chunks']['tenYear']|length > 0 %}
+            {% if portfolio['performance_chunks']['tenYear']|length != portfolio['performance_chunks']['all']|length %}
+                {% set timelineButtons = array_merge(timelineButtons,
+                    [
+                        'ten-year' : [
+                            'title'                   : '10Y',
+                            'type'                    : 'primary',
+                            'value'                   : 'ten-year'
+                        ]
+                    ]
+                ) %}
+            {% endif %}
+        {% endif %}
+        {% set timelineButtons = array_merge(timelineButtons,
+            [
+                'all' : [
+                    'title'                   : 'ALL',
+                    'type'                    : 'primary',
+                    'value'                   : 'all'
+                ]
+            ]
+        ) %}
+    {% endif %}
+    <div class="row">
+        <div id="timeline-buttons" class="col" hidden>
+            {{adminltetags.useTag('buttons',
+                [
+                    'component'                         : component,
+                    'componentName'                     : componentName,
+                    'componentId'                       : componentId,
+                    'sectionId'                         : sectionId,
+                    'buttonType'                        : 'ButtonGroup',
+                    'buttonId'                          : 'timeline',
+                    'groupButtonType'                   : 'radio',
+                    'groupRadioButtonChecked'           : 'all',
+                    'buttons'                           : timelineButtons
+                ]
+            )}}
+        </div>
+        <div id="datatype-buttons" class="col text-center" hidden>
+            {{adminltetags.useTag('buttons',
+                [
+                    'component'                         : component,
+                    'componentName'                     : componentName,
+                    'componentId'                       : componentId,
+                    'sectionId'                         : sectionId,
+                    'buttonType'                        : 'ButtonGroup',
+                    'buttonId'                          : 'datatype',
+                    'groupButtonType'                   : 'radio',
+                    'groupRadioButtonChecked'           : 'return_amount',
+                    'buttons'                           :
+                    [
+                        'return_amount' : [
+                            'title'                   : 'RETURN AMOUNT',
+                            'type'                    : 'primary',
+                            'value'                   : 'return_amount'
+                        ],
+                        'invested_amount' : [
+                            'title'                   : 'INVESTED AMOUNT',
+                            'type'                    : 'primary',
+                            'value'                   : 'invested_amount'
+                        ],
+                        'profit_loss' : [
+                            'title'                   : 'PROFIT LOSS',
+                            'type'                    : 'primary',
+                            'value'                   : 'profit_loss'
+                        ]
+                    ]
+                ]
+            )}}
+        </div>
+    </div>
+    <br>
+    {% set performanceChunks = json_encode(portfolio['performance_chunks'], 16) %}
+    <div class="row" id="timeline-chart" hidden>
+        <div class="col">
+            <canvas id="timelineChart" style="max-height:400px;"></canvas>
+        </div>
+    </div>
+    <div class="row text-center" id="timeline-loader">
+        <div class="col">
+            <i class="fa fa-cog fa-spin"></i> Loading chart...
+        </div>
+    </div>
+    <hr>
+{% endif %}
+<!-- htmlmin:ignore -->

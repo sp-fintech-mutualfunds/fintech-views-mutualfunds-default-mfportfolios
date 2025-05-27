@@ -1,0 +1,48 @@
+<div class="col">
+    <div class="row">
+        <div class="col">
+            {{adminltetags.useTag('fields',
+                [
+                    'component'                             : component,
+                    'componentName'                         : componentName,
+                    'componentId'                           : componentId,
+                    'sectionId'                             : sectionId,
+                    'fieldId'                               : 'strategies',
+                    'fieldLabel'                            : 'Strategies',
+                    'fieldType'                             : 'select2',
+                    'fieldHelp'                             : true,
+                    'fieldAdditionalClass'                  : 'mb-0',
+                    'fieldHelpTooltipContent'               : "Select strategy to apply",
+                    'fieldRequired'                         : true,
+                    'fieldBazScan'                          : true,
+                    'fieldBazPostOnCreate'                  : true,
+                    'fieldBazPostOnUpdate'                  : true,
+                    'fieldDataSelect2Options'               : strategies,
+                    'fieldDataSelect2OptionsKey'            : 'id',
+                    'fieldDataSelect2OptionsValue'          : 'display_name',
+                    'fieldDataSelect2OptionsArray'          : true,
+                    'fieldDataSelect2OptionsSelected'       : selectedStrategy
+                ]
+            )}}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            {{adminltetags.useTag('fields',
+                [
+                    'component'                      : component,
+                    'componentName'                  : componentName,
+                    'componentId'                    : componentId,
+                    'sectionId'                      : sectionId,
+                    'fieldId'                        : 'strategies_description',
+                    'fieldLabel'                     : false,
+                    'fieldType'                      : 'html',
+                    'fieldHelp'                      : false,
+                    'fieldHelpTooltipContent'        : '',
+                    'fieldBazJstreeSearch'           : false,
+                    'fieldBazScan'                   : false
+                ]
+            )}}
+        </div>
+    </div>
+</div>

@@ -3,9 +3,32 @@
         <div id="timeline-progress" class="mb-3" hidden></div>
     </div>
 </div>
+<div class="row text-center">
+    <div class="col">
+        {% set url = links.url('mf/portfolios/q/mode/timeline/id/' ~ portfolio['id']) %}
+        {{adminltetags.useTag('buttons',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'buttonType'                    : 'button',
+                'buttons'                       :
+                    [
+                        'access-timeline'    : [
+                            'title'     : 'Access Timeline',
+                            'type'      : 'success',
+                            'hidden'    : true,
+                            'url'       : url
+                        ]
+                    ]
+            ]
+        )}}
+    </div>
+</div>
 {% set portfolio = escaper.js(json_encode(portfolio, 16)) %}
 <script>
-/*global paginatedPNotify BazProgress BazContentFields BazHelpers BazContentLoader Pace Swal */
+/*global paginatedPNotify BazProgress BazContentFields BazHelpers BazContentLoader BazCore Pace Swal */
 var dataCollectionComponent, dataCollectionSection, dataCollectionSectionForm;
 if (!window['dataCollection']) {
     window['dataCollection'] = { };
@@ -62,8 +85,12 @@ dataCollectionSectionForm['funcs']['init'] = function() {
         if (result.value) {
             dataCollectionSectionForm['funcs']['processTimeline']();
         } else {
-            //eslint-disable-next-line
-            console.log('meme');
+            $('#{{componentId}}-{{sectionId}}-access-timeline').attr('href',
+                window['dataCollection'].env.httpScheme + '://' + window['dataCollection'].env.httpHost + '/' + window['dataCollection'].env.appRoute + '/' +
+                'mf/portfolios'
+            );
+
+            dataCollectionSectionForm['funcs']['browse']();
         }
     });
 }
@@ -83,9 +110,34 @@ dataCollectionSectionForm['funcs']['processTimeline'] = function() {
             $('#security-token').val(response.token);
         }
 
-        //eslint-disable-next-line
-        console.log(response);
+        if (response.responseCode == 0) {
+            $('#{{componentId}}-{{sectionId}}-access-timeline').attr('hidden', false);
+            $('#{{componentId}}-{{sectionId}}-access-timeline').off();
+            $('#{{componentId}}-{{sectionId}}-access-timeline').click(function(e) {
+                e.preventDefault();
+
+                dataCollectionSectionForm['funcs']['browse']();
+            });
+        }
     }, 'json');
+}
+
+dataCollectionSectionForm['funcs']['browse'] = function() {
+    BazContentLoader.loadAjax($('#{{componentId}}-{{sectionId}}-access-timeline'), {
+        ajaxBefore                      : function () {
+                                            Pace.restart();
+                                            $("#baz-content").empty();
+                                            $("#loader").attr('hidden', false);
+                                        },
+        ajaxFinished                    : function () {
+                                            BazCore.updateBreadcrumb();
+                                            $("#loader").attr('hidden', true);
+                                        },
+        ajaxError                       : function () {
+                                            $("#loader").attr('hidden', true);
+                                            BazCore.updateBreadcrumb();
+                                        }
+    });
 }
 
 $(document).ready(function() {
