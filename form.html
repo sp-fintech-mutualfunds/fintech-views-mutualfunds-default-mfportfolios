@@ -583,11 +583,6 @@
                             )}}
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col">
-                            <div id="strategies-progress" class="mb-3 mt-3" hidden></div>
-                        </div>
-                    </div>
                 {% else %}
                     <div class="row text-center m-2" id="{{componentId}}-{{sectionId}}-strategies-noinfo">
                         <div class="col">
@@ -595,6 +590,11 @@
                         </div>
                     </div>
                 {% endif %}
+                <div class="row">
+                    <div class="col">
+                        <div id="strategies-progress" class="mb-3 mt-3" hidden></div>
+                    </div>
+                </div>
             </div>
             <div>
                 {{adminltetags.useTag('modal',
@@ -697,6 +697,49 @@ dataCollectionSection =
                     dataCollectionSectionForm['funcs']['applyStrategy']();
                 });
 
+                if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#{{componentId}}-{{sectionId}}-strategies-transactions-table')) {
+                    dataCollectionSectionForm['vars']['strategiesTransactionsTable'] = $('#{{componentId}}-{{sectionId}}-strategies-transactions-table').DataTable({
+                        dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
+                             '<"row mb-1"<"col"tr>>' +
+                             '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
+                        columns: [
+                            {orderable: false},
+                            {orderable: false},
+                            {orderable: false},
+                            {orderable: false}
+                        ],
+                        order: false,
+                        lengthMenu: [
+                            [20, 50, 100, -1],
+                            [20, 50, 100, 'All']
+                        ],
+                        buttons: [
+                            {
+                                extend          : 'collection',
+                                text            : 'Export',
+                                className       : 'btn-sm btn-info',
+                                buttons         : [{
+                                                    text            : 'Excel',
+                                                    title           : 'Export transactions list',
+                                                    extend          : 'excelHtml5',
+                                                    footer          : false,
+                                                    exportOptions   : {
+                                                                        columns: ':visible'
+                                                                    }
+                                                },
+                                                {
+                                                    text            : 'CSV',
+                                                    extend          : 'csvHtml5',
+                                                    fieldSeparator  : ',',
+                                                    exportOptions   : {
+                                                                        columns: ':visible'
+                                                                    }
+                                                }
+                                                ]
+                            }
+                        ]
+                    });
+                }
                 BazProgress.buildProgressBar($('#strategies-progress'), false, true, true, true);
             }
         },
@@ -957,7 +1000,6 @@ if (!dataCollectionSectionForm['funcs']) {
 dataCollectionSectionForm['vars']['today'] = '{{today}}';
 dataCollectionSectionForm['vars']['mode'] = '{{mode}}';
 dataCollectionSectionForm['vars']['portfolio'] = JSON.parse('{{portfolio}}');
-dataCollectionSectionForm['vars']['strategies'] = JSON.parse('{{strategies}}');
 dataCollectionSectionForm['vars']['strategies'] = JSON.parse('{{strategies}}');
 dataCollectionSectionForm['vars']['timelineDate'] = dataCollectionSectionForm['vars']['portfolio']['timelineDate'];
 dataCollectionSectionForm['vars']['investments'] = JSON.parse('{{investments}}');
@@ -1606,6 +1648,7 @@ dataCollectionSectionForm['funcs']['init'] = function() {
                     {orderable: false},
                     {orderable: false},
                     {orderable: false},
+                    {orderable: false},
                     {orderable: false}
                 ];
 
@@ -1619,6 +1662,7 @@ dataCollectionSectionForm['funcs']['init'] = function() {
                         {orderable: false},
                         {orderable: false},
                         {orderable: false},
+                        {orderable: false}
                     ];
             }
 
@@ -2370,27 +2414,20 @@ dataCollectionSectionForm['funcs']['initChart'] = function() {
     dataCollectionSectionForm['vars']['tenYearPerformanceData'] = { };
     dataCollectionSectionForm['vars']['allData'] = [];
     dataCollectionSectionForm['vars']['allPerformanceData'] = { };
-    dataCollectionSectionForm['vars']['dataType'] = 'return_amount';
+    dataCollectionSectionForm['vars']['dataType'] = 'invested_return_amount';
     dataCollectionSectionForm['vars']['timeline'] = 'week';
 
     (async function() {
-        var initDataObj, performanceText;
-        // if (dataCollectionSectionForm['vars']['performance_chunks']['week'] &&
-        //     Object.keys(dataCollectionSectionForm['vars']['performance_chunks']['week']).length > 0
-        // ) {
-        //     initDataObj = dataCollectionSectionForm['vars']['performance_chunks']['week'];
-        //     performanceText = 'NAVS (WEEK)';
-        //     dataCollectionSectionForm['vars']['timeline'] = 'week';
-        // } else {
-        // }
+        var initDataObj;
+        var dataSets = [];
+
         initDataObj = dataCollectionSectionForm['vars']['performance_chunks']['all'];
-        performanceText = 'ALL';
-        dataCollectionSectionForm['vars']['timeline'] = 'all';
 
         for (var initData in initDataObj) {
             dataCollectionSectionForm['vars']['initPerformanceData'] = { };
             dataCollectionSectionForm['vars']['initPerformanceData']['date'] = initData;
-            dataCollectionSectionForm['vars']['initPerformanceData'][dataCollectionSectionForm['vars']['dataType']] = initDataObj[initData][dataCollectionSectionForm['vars']['dataType']];
+            dataCollectionSectionForm['vars']['initPerformanceData']['invested_amount'] = initDataObj[initData]['invested_amount'];
+            dataCollectionSectionForm['vars']['initPerformanceData']['return_amount'] = initDataObj[initData]['return_amount'];
 
             dataCollectionSectionForm['vars']['initData'].push(dataCollectionSectionForm['vars']['initPerformanceData']);
         }
@@ -2403,19 +2440,48 @@ dataCollectionSectionForm['funcs']['initChart'] = function() {
                         for (var weekDate in dataCollectionSectionForm['vars']['performance_chunks']['week']) {
                             dataCollectionSectionForm['vars']['weekPerformanceData'] = { };
                             dataCollectionSectionForm['vars']['weekPerformanceData']['date'] = weekDate;
-                            dataCollectionSectionForm['vars']['weekPerformanceData'][dataCollectionSectionForm['vars']['dataType']] = dataCollectionSectionForm['vars']['performance_chunks']['week'][weekDate][dataCollectionSectionForm['vars']['dataType']];
+                            if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
+                                dataCollectionSectionForm['vars']['weekPerformanceData']['invested_amount'] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['week'][weekDate]['invested_amount'];
+                                dataCollectionSectionForm['vars']['weekPerformanceData']['return_amount'] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['week'][weekDate]['return_amount'];
+                            } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
+                                dataCollectionSectionForm['vars']['weekPerformanceData'][dataCollectionSectionForm['vars']['dataType']] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['week'][weekDate][dataCollectionSectionForm['vars']['dataType']];
+                            }
 
                             dataCollectionSectionForm['vars']['weekData'].push(dataCollectionSectionForm['vars']['weekPerformanceData']);
                         }
 
+                        dataSets = [];
+                        if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
+                            dataSets =
+                                [
+                                    {
+                                        label: 'INVESTED AMOUNT',
+                                        data: dataCollectionSectionForm['vars']['weekData'].map(row => row['invested_amount']),
+                                        pointRadius: 0
+                                    },
+                                    {
+                                        label: 'RETURN AMOUNT',
+                                        data: dataCollectionSectionForm['vars']['weekData'].map(row => row['return_amount']),
+                                        pointRadius: 0
+                                    }
+                                ]
+
+                        } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
+                            dataSets =
+                                [
+                                    {
+                                        label: 'PROFIT/LOSS (WEEK)',
+                                        data: dataCollectionSectionForm['vars']['weekData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
+                                        pointRadius: 0
+                                    }
+                                ];
+                        }
+
                         chart.data.labels = dataCollectionSectionForm['vars']['weekData'].map(row => row.date);
-                        chart.data.datasets = [
-                                {
-                                    label: 'NAVS (WEEK)',
-                                    data: dataCollectionSectionForm['vars']['weekData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
-                                    pointRadius: 0
-                                }
-                            ];
+                        chart.data.datasets = dataSets;
                         chart.update();
                     }
                 };
@@ -2429,19 +2495,48 @@ dataCollectionSectionForm['funcs']['initChart'] = function() {
                         for (var monthDate in dataCollectionSectionForm['vars']['performance_chunks']['month']) {
                             dataCollectionSectionForm['vars']['monthPerformanceData'] = { };
                             dataCollectionSectionForm['vars']['monthPerformanceData']['date'] = monthDate;
-                            dataCollectionSectionForm['vars']['monthPerformanceData'][dataCollectionSectionForm['vars']['dataType']] = dataCollectionSectionForm['vars']['performance_chunks']['month'][monthDate][dataCollectionSectionForm['vars']['dataType']];
+                            if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
+                                dataCollectionSectionForm['vars']['monthPerformanceData']['invested_amount'] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['month'][monthDate]['invested_amount'];
+                                dataCollectionSectionForm['vars']['monthPerformanceData']['return_amount'] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['month'][monthDate]['return_amount'];
+                            } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
+                                dataCollectionSectionForm['vars']['monthPerformanceData'][dataCollectionSectionForm['vars']['dataType']] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['month'][monthDate][dataCollectionSectionForm['vars']['dataType']];
+                            }
 
                             dataCollectionSectionForm['vars']['monthData'].push(dataCollectionSectionForm['vars']['monthPerformanceData']);
                         }
 
+                        dataSets = [];
+                        if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
+                            dataSets =
+                                [
+                                    {
+                                        label: 'INVESTED AMOUNT',
+                                        data: dataCollectionSectionForm['vars']['monthData'].map(row => row['invested_amount']),
+                                        pointRadius: 0
+                                    },
+                                    {
+                                        label: 'RETURN AMOUNT',
+                                        data: dataCollectionSectionForm['vars']['monthData'].map(row => row['return_amount']),
+                                        pointRadius: 0
+                                    }
+                                ]
+
+                        } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
+                            dataSets =
+                                [
+                                    {
+                                        label: 'PROFIT/LOSS (MONTH)',
+                                        data: dataCollectionSectionForm['vars']['monthData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
+                                        pointRadius: 0
+                                    }
+                                ];
+                        }
+
                         chart.data.labels = dataCollectionSectionForm['vars']['monthData'].map(row => row.date);
-                        chart.data.datasets = [
-                                {
-                                    label: 'NAVS (MONTH)',
-                                    data: dataCollectionSectionForm['vars']['monthData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
-                                    pointRadius: 0
-                                }
-                            ];
+                        chart.data.datasets = dataSets;
                         chart.update();
                     }
                 };
@@ -2455,19 +2550,48 @@ dataCollectionSectionForm['funcs']['initChart'] = function() {
                         for (var yearDate in dataCollectionSectionForm['vars']['performance_chunks']['year']) {
                             dataCollectionSectionForm['vars']['yearPerformanceData'] = { };
                             dataCollectionSectionForm['vars']['yearPerformanceData']['date'] = yearDate;
-                            dataCollectionSectionForm['vars']['yearPerformanceData'][dataCollectionSectionForm['vars']['dataType']] = dataCollectionSectionForm['vars']['performance_chunks']['year'][yearDate][dataCollectionSectionForm['vars']['dataType']];
+                            if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
+                                dataCollectionSectionForm['vars']['yearPerformanceData']['invested_amount'] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['year'][yearDate]['invested_amount'];
+                                dataCollectionSectionForm['vars']['yearPerformanceData']['return_amount'] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['year'][yearDate]['return_amount'];
+                            } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
+                                dataCollectionSectionForm['vars']['yearPerformanceData'][dataCollectionSectionForm['vars']['dataType']] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['year'][yearDate][dataCollectionSectionForm['vars']['dataType']];
+                            }
 
                             dataCollectionSectionForm['vars']['yearData'].push(dataCollectionSectionForm['vars']['yearPerformanceData']);
                         }
 
+                        dataSets = [];
+                        if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
+                            dataSets =
+                                [
+                                    {
+                                        label: 'INVESTED AMOUNT',
+                                        data: dataCollectionSectionForm['vars']['yearData'].map(row => row['invested_amount']),
+                                        pointRadius: 0
+                                    },
+                                    {
+                                        label: 'RETURN AMOUNT',
+                                        data: dataCollectionSectionForm['vars']['yearData'].map(row => row['return_amount']),
+                                        pointRadius: 0
+                                    }
+                                ]
+
+                        } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
+                            dataSets =
+                                [
+                                    {
+                                        label: 'PROFIT/LOSS (YEAR)',
+                                        data: dataCollectionSectionForm['vars']['yearData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
+                                        pointRadius: 0
+                                    }
+                                ];
+                        }
+
                         chart.data.labels = dataCollectionSectionForm['vars']['yearData'].map(row => row.date);
-                        chart.data.datasets = [
-                                {
-                                    label: 'NAVS (1 YEAR)',
-                                    data: dataCollectionSectionForm['vars']['yearData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
-                                    pointRadius: 0
-                                }
-                            ];
+                        chart.data.datasets = dataSets;
                         chart.update();
                     }
                 };
@@ -2481,19 +2605,48 @@ dataCollectionSectionForm['funcs']['initChart'] = function() {
                         for (var threeYearDate in dataCollectionSectionForm['vars']['performance_chunks']['threeYear']) {
                             dataCollectionSectionForm['vars']['threeYearPerformanceData'] = { };
                             dataCollectionSectionForm['vars']['threeYearPerformanceData']['date'] = threeYearDate;
-                            dataCollectionSectionForm['vars']['threeYearPerformanceData'][dataCollectionSectionForm['vars']['dataType']] = dataCollectionSectionForm['vars']['performance_chunks']['threeYear'][threeYearDate][dataCollectionSectionForm['vars']['dataType']];
+                            if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
+                                dataCollectionSectionForm['vars']['threeYearPerformanceData']['invested_amount'] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['threeYear'][threeYearDate]['invested_amount'];
+                                dataCollectionSectionForm['vars']['threeYearPerformanceData']['return_amount'] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['threeYear'][threeYearDate]['return_amount'];
+                            } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
+                                dataCollectionSectionForm['vars']['threeYearPerformanceData'][dataCollectionSectionForm['vars']['dataType']] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['threeYear'][threeYearDate][dataCollectionSectionForm['vars']['dataType']];
+                            }
 
                             dataCollectionSectionForm['vars']['threeYearData'].push(dataCollectionSectionForm['vars']['threeYearPerformanceData']);
                         }
 
+                        dataSets = [];
+                        if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
+                            dataSets =
+                                [
+                                    {
+                                        label: 'INVESTED AMOUNT',
+                                        data: dataCollectionSectionForm['vars']['threeYearData'].map(row => row['invested_amount']),
+                                        pointRadius: 0
+                                    },
+                                    {
+                                        label: 'RETURN AMOUNT',
+                                        data: dataCollectionSectionForm['vars']['threeYearData'].map(row => row['return_amount']),
+                                        pointRadius: 0
+                                    }
+                                ]
+
+                        } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
+                            dataSets =
+                                [
+                                    {
+                                        label: 'PROFIT/LOSS (3 YEARS)',
+                                        data: dataCollectionSectionForm['vars']['threeYearData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
+                                        pointRadius: 0
+                                    }
+                                ];
+                        }
+
                         chart.data.labels = dataCollectionSectionForm['vars']['threeYearData'].map(row => row.date);
-                        chart.data.datasets = [
-                                {
-                                    label: 'NAVS (3 YEARS)',
-                                    data: dataCollectionSectionForm['vars']['threeYearData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
-                                    pointRadius: 0
-                                }
-                            ];
+                        chart.data.datasets = dataSets;
                         chart.update();
                     }
                 };
@@ -2507,19 +2660,48 @@ dataCollectionSectionForm['funcs']['initChart'] = function() {
                         for (var fiveYearDate in dataCollectionSectionForm['vars']['performance_chunks']['fiveYear']) {
                             dataCollectionSectionForm['vars']['fiveYearPerformanceData'] = { };
                             dataCollectionSectionForm['vars']['fiveYearPerformanceData']['date'] = fiveYearDate;
-                            dataCollectionSectionForm['vars']['fiveYearPerformanceData'][dataCollectionSectionForm['vars']['dataType']] = dataCollectionSectionForm['vars']['performance_chunks']['fiveYear'][fiveYearDate][dataCollectionSectionForm['vars']['dataType']];
+                            if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
+                                dataCollectionSectionForm['vars']['fiveYearPerformanceData']['invested_amount'] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['fiveYear'][fiveYearDate]['invested_amount'];
+                                dataCollectionSectionForm['vars']['fiveYearPerformanceData']['return_amount'] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['fiveYear'][fiveYearDate]['return_amount'];
+                            } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
+                                dataCollectionSectionForm['vars']['fiveYearPerformanceData'][dataCollectionSectionForm['vars']['dataType']] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['fiveYear'][fiveYearDate][dataCollectionSectionForm['vars']['dataType']];
+                            }
 
                             dataCollectionSectionForm['vars']['fiveYearData'].push(dataCollectionSectionForm['vars']['fiveYearPerformanceData']);
                         }
 
+                        dataSets = [];
+                        if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
+                            dataSets =
+                                [
+                                    {
+                                        label: 'INVESTED AMOUNT',
+                                        data: dataCollectionSectionForm['vars']['fiveYearData'].map(row => row['invested_amount']),
+                                        pointRadius: 0
+                                    },
+                                    {
+                                        label: 'RETURN AMOUNT',
+                                        data: dataCollectionSectionForm['vars']['fiveYearData'].map(row => row['return_amount']),
+                                        pointRadius: 0
+                                    }
+                                ]
+
+                        } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
+                            dataSets =
+                                [
+                                    {
+                                        label: 'PROFIT/LOSS (5 YEARS)',
+                                        data: dataCollectionSectionForm['vars']['fiveYearData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
+                                        pointRadius: 0
+                                    }
+                                ];
+                        }
+
                         chart.data.labels = dataCollectionSectionForm['vars']['fiveYearData'].map(row => row.date);
-                        chart.data.datasets = [
-                                {
-                                    label: 'NAVS (5 YEARS)',
-                                    data: dataCollectionSectionForm['vars']['fiveYearData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
-                                    pointRadius: 0
-                                }
-                            ];
+                        chart.data.datasets = dataSets;
                         chart.update();
                     }
                 };
@@ -2533,19 +2715,48 @@ dataCollectionSectionForm['funcs']['initChart'] = function() {
                         for (var tenYearDate in dataCollectionSectionForm['vars']['performance_chunks']['tenYear']) {
                             dataCollectionSectionForm['vars']['tenYearPerformanceData'] = { };
                             dataCollectionSectionForm['vars']['tenYearPerformanceData']['date'] = tenYearDate;
-                            dataCollectionSectionForm['vars']['tenYearPerformanceData'][dataCollectionSectionForm['vars']['dataType']] = dataCollectionSectionForm['vars']['performance_chunks']['tenYear'][tenYearDate][dataCollectionSectionForm['vars']['dataType']];
+                            if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
+                                dataCollectionSectionForm['vars']['tenYearPerformanceData']['invested_amount'] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['tenYear'][tenYearDate]['invested_amount'];
+                                dataCollectionSectionForm['vars']['tenYearPerformanceData']['return_amount'] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['tenYear'][tenYearDate]['return_amount'];
+                            } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
+                                dataCollectionSectionForm['vars']['tenYearPerformanceData'][dataCollectionSectionForm['vars']['dataType']] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['tenYear'][tenYearDate][dataCollectionSectionForm['vars']['dataType']];
+                            }
 
                             dataCollectionSectionForm['vars']['tenYearData'].push(dataCollectionSectionForm['vars']['tenYearPerformanceData']);
                         }
 
+                        dataSets = [];
+                        if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
+                            dataSets =
+                                [
+                                    {
+                                        label: 'INVESTED AMOUNT',
+                                        data: dataCollectionSectionForm['vars']['tenYearData'].map(row => row['invested_amount']),
+                                        pointRadius: 0
+                                    },
+                                    {
+                                        label: 'RETURN AMOUNT',
+                                        data: dataCollectionSectionForm['vars']['tenYearData'].map(row => row['return_amount']),
+                                        pointRadius: 0
+                                    }
+                                ]
+
+                        } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
+                            dataSets =
+                                [
+                                    {
+                                        label: 'PROFIT/LOSS (10 YEARS)',
+                                        data: dataCollectionSectionForm['vars']['tenYearData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
+                                        pointRadius: 0
+                                    }
+                                ];
+                        }
+
                         chart.data.labels = dataCollectionSectionForm['vars']['tenYearData'].map(row => row.date);
-                        chart.data.datasets = [
-                                {
-                                    label: 'NAVS (10 YEARS)',
-                                    data: dataCollectionSectionForm['vars']['tenYearData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
-                                    pointRadius: 0
-                                }
-                            ];
+                        chart.data.datasets = dataSets;
                         chart.update();
                     }
                 };
@@ -2559,19 +2770,48 @@ dataCollectionSectionForm['funcs']['initChart'] = function() {
                         for (var allDate in dataCollectionSectionForm['vars']['performance_chunks']['all']) {
                             dataCollectionSectionForm['vars']['allPerformanceData'] = { };
                             dataCollectionSectionForm['vars']['allPerformanceData']['date'] = allDate;
-                            dataCollectionSectionForm['vars']['allPerformanceData'][dataCollectionSectionForm['vars']['dataType']] = dataCollectionSectionForm['vars']['performance_chunks']['all'][allDate][dataCollectionSectionForm['vars']['dataType']];
+                            if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
+                                dataCollectionSectionForm['vars']['allPerformanceData']['invested_amount'] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['all'][allDate]['invested_amount'];
+                                dataCollectionSectionForm['vars']['allPerformanceData']['return_amount'] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['all'][allDate]['return_amount'];
+                            } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
+                                dataCollectionSectionForm['vars']['allPerformanceData'][dataCollectionSectionForm['vars']['dataType']] =
+                                    dataCollectionSectionForm['vars']['performance_chunks']['all'][allDate][dataCollectionSectionForm['vars']['dataType']];
+                            }
 
                             dataCollectionSectionForm['vars']['allData'].push(dataCollectionSectionForm['vars']['allPerformanceData']);
                         }
 
+                        dataSets = [];
+                        if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
+                            dataSets =
+                                [
+                                    {
+                                        label: 'INVESTED AMOUNT',
+                                        data: dataCollectionSectionForm['vars']['allData'].map(row => row['invested_amount']),
+                                        pointRadius: 0
+                                    },
+                                    {
+                                        label: 'RETURN AMOUNT',
+                                        data: dataCollectionSectionForm['vars']['allData'].map(row => row['return_amount']),
+                                        pointRadius: 0
+                                    }
+                                ]
+
+                        } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
+                            dataSets =
+                                [
+                                    {
+                                        label: 'PROFIT/LOSS (ALL)',
+                                        data: dataCollectionSectionForm['vars']['allData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
+                                        pointRadius: 0
+                                    }
+                                ];
+                        }
+
                         chart.data.labels = dataCollectionSectionForm['vars']['allData'].map(row => row.date);
-                        chart.data.datasets = [
-                                {
-                                    label: 'ALL',
-                                    data: dataCollectionSectionForm['vars']['allData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
-                                    pointRadius: 0
-                                }
-                            ];
+                        chart.data.datasets = dataSets;
                         chart.update();
                     }
                 };
@@ -2592,8 +2832,13 @@ dataCollectionSectionForm['funcs']['initChart'] = function() {
                     labels: dataCollectionSectionForm['vars']['initData'].map(row => row.date),
                     datasets: [
                         {
-                            label: performanceText,
-                            data: dataCollectionSectionForm['vars']['initData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
+                            label: 'INVESTED AMOUNT',
+                            data: dataCollectionSectionForm['vars']['initData'].map(row => row['invested_amount']),
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'RETURN AMOUNT',
+                            data: dataCollectionSectionForm['vars']['initData'].map(row => row['return_amount']),
                             pointRadius: 0
                         }
                     ]
@@ -2606,7 +2851,6 @@ dataCollectionSectionForm['funcs']['initChart'] = function() {
                             $('#timeline-loader').attr('hidden', true);
                             $('#import-loader').attr('hidden', true);
                             $('#timeline-chart').attr('hidden', false);
-                            $('#navs-table').attr('hidden', false);
                         }
                     }
                 ]

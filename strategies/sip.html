@@ -549,7 +549,6 @@ dataCollectionSection =
                             }, 'json');
                         }
                     });
-
                 }
 
                 $('#{{componentId}}-{{sectionId}}-view-strategy-transactions').click(function() {
@@ -661,32 +660,69 @@ dataCollectionSection =
                         }
 
                         if (response.responseCode === 0) {
-                            if (response.responseData && response.responseData.transactions) {
-                                $('#{{componentId}}-{{sectionId}}-strategies-transactions-table tbody').empty();
-                                var tbody = '';
-                                for (var transaction in response.responseData.transactions) {
-                                    tbody += '<tr>';
-                                    tbody += '   <td>';
-                                    tbody += '      <span>' + response.responseData.transactions[transaction]['type'].toUpperCase() + '</span>';
-                                    tbody += '   </td>';
-                                    tbody += '   <td>';
-                                    tbody += '      <span>' + response.responseData.transactions[transaction]['date'] + '</span>';
-                                    tbody += '   </td>';
-                                    tbody += '   <td>';
-                                    tbody += '      <span>' + $('#{{componentId}}-{{sectionId}}-scheme_id').select2('data')[0].text + '</span>';
-                                    tbody += '   </td>';
-                                    tbody += '   <td>';
-                                    tbody += '      <span>' + response.responseData.transactions[transaction]['amount'] + '</span>';
-                                    tbody += '   </td>';
-                                    tbody += '</tr>';
+                            if (response.responseData) {
+                                $('#{{componentId}}-{{sectionId}}-strategies_total_buy_transactions').empty().html('0');
+                                $('#{{componentId}}-{{sectionId}}-strategies_total_sell_transactions').empty().html('0');
+                                $('#{{componentId}}-{{sectionId}}-strategies_first_transaction_date').empty().html('-');
+                                $('#{{componentId}}-{{sectionId}}-strategies_last_transaction_date').empty().html('-');
+
+                                if (response.responseData.total_transactions_count.buy) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies_total_buy_transactions').empty().html(response.responseData.total_transactions_count.buy);
                                 }
-
-                                $('#{{componentId}}-{{sectionId}}-strategies-transactions-table tbody').html(tbody);
-
-                                $('#{{componentId}}-{{sectionId}}-strategies-transactions-modal').modal('show');
-                                $('#{{componentId}}-{{sectionId}}-strategies-transactions-modal').on('hide.bs.modal', function (e) {
+                                if (response.responseData.total_transactions_count.sell) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies_total_sell_transactions').empty().html(response.responseData.total_transactions_count.sell);
+                                }
+                                if (response.responseData.total_transactions_amount) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies_total_transactions_amount').empty().html(dataCollectionSectionForm['vars']['currencySymbol'] + response.responseData.total_transactions_amount);
+                                }
+                                if (response.responseData.first_date) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies_first_transaction_date').empty().html(response.responseData.first_date);
+                                }
+                                if (response.responseData.last_date) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies_last_transaction_date').empty().html(response.responseData.last_date);
+                                }
+                                if (response.responseData.transactions) {
                                     $('#{{componentId}}-{{sectionId}}-strategies-transactions-table tbody').empty();
-                                });
+                                    // var tbody = '';
+                                    var transactions = [];
+                                    var scheme = $('#{{componentId}}-{{sectionId}}-scheme_id').select2('data')[0].text;
+                                    for (var transaction in response.responseData.transactions) {
+                                        var newTransaction = [];
+                                        newTransaction.push(response.responseData.transactions[transaction]['type'].toUpperCase());
+                                        newTransaction.push(response.responseData.transactions[transaction]['date']);
+                                        newTransaction.push(scheme);
+                                        newTransaction.push(response.responseData.transactions[transaction]['amount']);
+                                        transactions.push(newTransaction);
+                                        // tbody += '<tr>';
+                                        // tbody += '   <td>';
+                                        // tbody += '      <span>' + response.responseData.transactions[transaction]['type'].toUpperCase() + '</span>';
+                                        // tbody += '   </td>';
+                                        // tbody += '   <td>';
+                                        // tbody += '      <span>' + response.responseData.transactions[transaction]['date'] + '</span>';
+                                        // tbody += '   </td>';
+                                        // tbody += '   <td>';
+                                        // tbody += '      <span>' + $('#{{componentId}}-{{sectionId}}-scheme_id').select2('data')[0].text + '</span>';
+                                        // tbody += '   </td>';
+                                        // tbody += '   <td>';
+                                        // tbody += '      <span>' + response.responseData.transactions[transaction]['amount'] + '</span>';
+                                        // tbody += '   </td>';
+                                        // tbody += '</tr>';
+                                    }
+
+                                    // $('#{{componentId}}-{{sectionId}}-strategies-transactions-table tbody').html(tbody);
+                                    //eslint-disable-next-line
+                                    // console.log(dataCollectionSectionForm['vars']['strategiesTransactionsTable'].rows());
+                                    dataCollectionSectionForm['vars']['strategiesTransactionsTable'].rows().clear().draw();
+                                    dataCollectionSectionForm['vars']['strategiesTransactionsTable'].rows.add(transactions).draw();
+                                    //eslint-disable-next-line
+                                    // console.log(transactions);
+                                    //eslint-disable-next-line
+                                    // console.log(dataCollectionSectionForm['vars']['strategiesTransactionsTable'].rows());
+                                    $('#{{componentId}}-{{sectionId}}-strategies-transactions-modal').modal('show');
+                                    $('#{{componentId}}-{{sectionId}}-strategies-transactions-modal').on('hide.bs.modal', function (e) {
+                                        $('#{{componentId}}-{{sectionId}}-strategies-transactions-table tbody').empty();
+                                    });
+                                }
                             }
                         } else {
                             paginatedPNotify('error', {
