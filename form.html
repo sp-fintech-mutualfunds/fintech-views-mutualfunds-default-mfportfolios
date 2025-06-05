@@ -105,6 +105,9 @@
                             </div>
                             <div class="row">
                                 <div class="col">
+                                    {% if portfolio['description'] == '' %}
+                                        {% set portfolio['description'] = '-' %}
+                                    {% endif %}
                                     {{adminltetags.useTag('fields',
                                         [
                                             'component'                      : component,
@@ -157,15 +160,15 @@
                                             'componentName'                  : componentName,
                                             'componentId'                    : componentId,
                                             'sectionId'                      : sectionId,
-                                            'fieldId'                        : 'profit_loss',
-                                            'fieldLabel'                     : 'Profit/Loss',
+                                            'fieldId'                        : 'xirr',
+                                            'fieldLabel'                     : 'Xirr',
                                             'fieldType'                      : 'html',
                                             'fieldHelp'                      : true,
-                                            'fieldHelpTooltipContent'        : 'Profit/Loss.',
+                                            'fieldHelpTooltipContent'        : 'XIRR of portfolio',
                                             'fieldRequired'                  : false,
                                             'fieldBazScan'                   : true,
                                             'fieldBazPostOnUpdate'           : true,
-                                            'fieldHtmlContent'               : portfolioProfitLoss
+                                            'fieldHtmlContent'               : portfolioXirr
                                         ]
                                     )}}
                                 </div>
@@ -176,15 +179,15 @@
                                             'componentName'                  : componentName,
                                             'componentId'                    : componentId,
                                             'sectionId'                      : sectionId,
-                                            'fieldId'                        : 'xirr',
-                                            'fieldLabel'                     : 'Xirr',
+                                            'fieldId'                        : 'total_value',
+                                            'fieldLabel'                     : 'Total value',
                                             'fieldType'                      : 'html',
                                             'fieldHelp'                      : true,
-                                            'fieldHelpTooltipContent'        : 'XIRR of portfolio',
+                                            'fieldHelpTooltipContent'        : 'Total value',
                                             'fieldRequired'                  : false,
                                             'fieldBazScan'                   : true,
                                             'fieldBazPostOnUpdate'           : true,
-                                            'fieldHtmlContent'               : portfolioXirr
+                                            'fieldHtmlContent'               : portfolioTotalValue
                                         ]
                                     )}}
                                 </div>
@@ -235,15 +238,15 @@
                                             'componentName'                  : componentName,
                                             'componentId'                    : componentId,
                                             'sectionId'                      : sectionId,
-                                            'fieldId'                        : 'total_value',
-                                            'fieldLabel'                     : 'Total value',
+                                            'fieldId'                        : 'profit_loss',
+                                            'fieldLabel'                     : 'Profit/Loss',
                                             'fieldType'                      : 'html',
                                             'fieldHelp'                      : true,
-                                            'fieldHelpTooltipContent'        : 'Total value',
+                                            'fieldHelpTooltipContent'        : 'Profit/Loss.',
                                             'fieldRequired'                  : false,
                                             'fieldBazScan'                   : true,
                                             'fieldBazPostOnUpdate'           : true,
-                                            'fieldHtmlContent'               : portfolioTotalValue
+                                            'fieldHtmlContent'               : portfolioProfitLoss
                                         ]
                                     )}}
                                 </div>
@@ -412,7 +415,7 @@
             <hr>
         {% endif %}
         {% if mode == 'timeline' %}
-            {% include 'portfolios/timelinechart.html' %}
+            {# {% include 'portfolios/timelinechart.html' %} #}
         {% endif %}
         {% if mode != 'strategies' %}
             {% if portfolio['transactions'] is defined and portfolio['transactions']|length > 0 %}
@@ -668,18 +671,6 @@ dataCollectionSection =
                     id = e.params.data.id;
 
                     if (dataCollectionSectionForm['vars']['strategies'][id]) {
-                        if (dataCollectionSectionForm['vars']['strategies'][id]['description'] &&
-                            dataCollectionSectionForm['vars']['strategies'][id]['description'] !== ''
-                        ) {
-                            $('#{{componentId}}-{{sectionId}}-strategies_description').html(
-                                '<small class="text-info"><i class="fa-solid fa-circle-info"></i> ' +
-                                dataCollectionSectionForm['vars']['strategies'][id]['description'] +
-                                '</small>'
-                            );
-                        } else {
-                            $('#{{componentId}}-{{sectionId}}-strategies_description').html('');
-                        }
-
                         $('#{{componentId}}-{{sectionId}}-portfolios-link')
                             .attr(
                                 'href',
@@ -699,9 +690,6 @@ dataCollectionSection =
 
                 if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#{{componentId}}-{{sectionId}}-strategies-transactions-table')) {
                     dataCollectionSectionForm['vars']['strategiesTransactionsTable'] = $('#{{componentId}}-{{sectionId}}-strategies-transactions-table').DataTable({
-                        dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
-                             '<"row mb-1"<"col"tr>>' +
-                             '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
                         columns: [
                             {orderable: false},
                             {orderable: false},
@@ -713,6 +701,9 @@ dataCollectionSection =
                             [20, 50, 100, -1],
                             [20, 50, 100, 'All']
                         ],
+                        dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
+                             '<"row mb-1"<"col"tr>>' +
+                             '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
                         buttons: [
                             {
                                 extend          : 'collection',
@@ -743,6 +734,18 @@ dataCollectionSection =
                 BazProgress.buildProgressBar($('#strategies-progress'), false, true, true, true);
             }
         },
+        '{{componentId}}-{{sectionId}}-clone_portfolio'                     : {
+            afterInit: function() {
+                $('#{{componentId}}-{{sectionId}}-clone_portfolio').click(function() {
+                    if ($(this)[0].checked === true) {
+                        $('#{{componentId}}-{{sectionId}}-clone_portfolio_name').attr('disabled', false);
+                    } else {
+                        $('#{{componentId}}-{{sectionId}}-clone_portfolio_name').attr('disabled', true);
+                    }
+                });
+            }
+        },
+        '{{componentId}}-{{sectionId}}-clone_portfolio_name'                : { },
         '{{componentId}}-{{sectionId}}-portfolio_timeline'                  : {
             dateFormat          : "Y-m-d",
             altFormat           : "Y-m-d",
@@ -758,6 +761,15 @@ dataCollectionSection =
                     dataCollectionSectionForm['funcs']['browseTimeline'](postData);
                 }
             },
+            disable: [
+                function(date) {
+                    // return true to disable
+                    return (date.getDay() === 0);
+                }
+            ],
+            locale: {
+                "firstDayOfWeek": 1 // start week on Monday
+            },
             afterInit: function() {
                 dataCollectionSection['{{componentId}}-{{sectionId}}-portfolio_timeline']['flatpickr'].config.minDate = dataCollectionSectionForm['vars']['portfolio']['start_date'];
                 dataCollectionSection['{{componentId}}-{{sectionId}}-portfolio_timeline']['flatpickr'].setDate(dataCollectionSectionForm['vars']['portfolio']['timelineDate']);
@@ -766,8 +778,10 @@ dataCollectionSection =
         },
         '{{componentId}}-{{sectionId}}-portfolio_timeline_browser'          : {
             afterInit: function() {
-                $('#{{componentId}}-{{sectionId}}-browser-previous, #{{componentId}}-{{sectionId}}-browser-next').off();
-                $('#{{componentId}}-{{sectionId}}-browser-previous, #{{componentId}}-{{sectionId}}-browser-next').click(function(e) {
+                $('#{{componentId}}-{{sectionId}}-browse-previous, #{{componentId}}-{{sectionId}}-browse-next, ' +
+                  '#{{componentId}}-{{sectionId}}-browse-start, #{{componentId}}-{{sectionId}}-browse-today').off();
+                $('#{{componentId}}-{{sectionId}}-browse-previous, #{{componentId}}-{{sectionId}}-browse-next, ' +
+                  '#{{componentId}}-{{sectionId}}-browse-start, #{{componentId}}-{{sectionId}}-browse-today').click(function(e) {
                     e.preventDefault();
 
                     var thisButton = $(this);
@@ -779,13 +793,20 @@ dataCollectionSection =
                     postData[$('#security-token').attr('name')] = $('#security-token').val();
                     postData['portfolio_id'] = $('#{{componentId}}-{{sectionId}}-id').val();
                     postData['timelineDate'] = dataCollectionSectionForm['vars']['timelineDate'];
-                    postData['browse'] = $('#{{componentId}}-{{sectionId}}-portfolio_timeline_browser').val();
                     postData['jump'] = idArr[idArr.length - 1];
 
-                    if (postData['jump'] === 'next') {
-                        $(thisButton).children('i').removeClass('fa-forward').addClass('fa-spin fa-cog');
+                    if (postData['jump'] === 'start') {
+                        $(thisButton).children('i').removeClass('fa-backward-fast').addClass('fa-spin fa-cog');
+                        postData['timelineDate'] = dataCollectionSectionForm['vars']['portfolio']['start_date'];
                     } else if (postData['jump'] === 'previous') {
-                        $(thisButton).children('i').removeClass('fa-rewind').addClass('fa-spin fa-cog');
+                        $(thisButton).children('i').removeClass('fa-backward-step').addClass('fa-spin fa-cog');
+                        postData['browse'] = $('#{{componentId}}-{{sectionId}}-portfolio_timeline_browser').val();
+                    } else if (postData['jump'] === 'next') {
+                        $(thisButton).children('i').removeClass('fa-forward-step').addClass('fa-spin fa-cog');
+                        postData['browse'] = $('#{{componentId}}-{{sectionId}}-portfolio_timeline_browser').val();
+                    } else if (postData['jump'] === 'today') {
+                        $(thisButton).children('i').removeClass('fa-forward-fast').addClass('fa-spin fa-cog');
+                        postData['timelineDate'] = dataCollectionSectionForm['vars']['today'];
                     }
 
                     dataCollectionSectionForm['funcs']['browseTimeline'](postData, thisButton);
@@ -816,7 +837,39 @@ dataCollectionSection =
             placeholder: "SELECT SCHEME TO SELL",
             afterInit: function() {
                 $('#{{componentId}}-{{sectionId}}-sell_transaction_id').on('select2:select', function(e) {
-                    dataCollectionSectionForm['funcs']['getSchemeNav']($(e.params.data.element).data()['value'], 'sell');
+                    if (dataCollectionSectionForm['vars']['mode'] === 'strategies') {
+                        $('#{{componentId}}-{{sectionId}}-sell-available_amount').html(
+                            dataCollectionSectionForm['vars']['currencySymbol'] +
+                            dataCollectionSectionForm['vars']['investments'][$(e.params.data.element).data()['value']]['latest_value']
+                        );
+                        $('#{{componentId}}-{{sectionId}}-sell-available_units').html(
+                            dataCollectionSectionForm['vars']['investments'][$(e.params.data.element).data()['value']]['units']
+                        );
+                        $('#{{componentId}}-{{sectionId}}-sell-isin').html(
+                            dataCollectionSectionForm['vars']['investments'][$(e.params.data.element).data()['value']]['scheme']['isin']
+                        );
+
+                        if (dataCollectionSection['{{componentId}}-{{sectionId}}-start-date']) {
+                            dataCollectionSection['{{componentId}}-{{sectionId}}-start-date']['flatpickr'].config.minDate =
+                                dataCollectionSectionForm['vars']['investments'][$(e.params.data.element).data()['value']]['start_date'];
+                            dataCollectionSection['{{componentId}}-{{sectionId}}-start-date']['flatpickr'].config.maxDate =
+                                dataCollectionSectionForm['vars']['investments'][$(e.params.data.element).data()['value']]['latest_value_date'];
+                        }
+                        if (dataCollectionSection['{{componentId}}-{{sectionId}}-end-date']) {
+                            dataCollectionSection['{{componentId}}-{{sectionId}}-end-date']['flatpickr'].config.minDate =
+                                dataCollectionSectionForm['vars']['investments'][$(e.params.data.element).data()['value']]['start_date'];
+                            dataCollectionSection['{{componentId}}-{{sectionId}}-end-date']['flatpickr'].config.maxDate =
+                                dataCollectionSectionForm['vars']['investments'][$(e.params.data.element).data()['value']]['latest_value_date'];
+                        }
+                        if (dataCollectionSection['{{componentId}}-{{sectionId}}-sell_dates']) {
+                            dataCollectionSection['{{componentId}}-{{sectionId}}-sell_dates']['flatpickr'].config.minDate =
+                                dataCollectionSectionForm['vars']['investments'][$(e.params.data.element).data()['value']]['start_date'];
+                            dataCollectionSection['{{componentId}}-{{sectionId}}-sell_dates']['flatpickr'].config.maxDate =
+                                dataCollectionSectionForm['vars']['investments'][$(e.params.data.element).data()['value']]['latest_value_date'];
+                        }
+                    } else {
+                        dataCollectionSectionForm['funcs']['getSchemeNav']($(e.params.data.element).data()['value'], 'sell');
+                    }
                 });
             }
         },
@@ -893,6 +946,15 @@ dataCollectionSection =
                     $('#{{componentId}}-{{sectionId}}-buy-amount').attr('disabled', true);
                     $('#{{componentId}}-{{sectionId}}-buy-selected_nav').html('-');
                 }
+            },
+            disable: [
+                function(date) {
+                    // return true to disable
+                    return (date.getDay() === 0);
+                }
+            ],
+            locale: {
+                "firstDayOfWeek": 1 // start week on Monday
             }
         },
         '{{componentId}}-{{sectionId}}-sell-date'                           : {
@@ -931,6 +993,15 @@ dataCollectionSection =
                     $('#{{componentId}}-{{sectionId}}-sell_all').attr('disabled', true);
                     $('#{{componentId}}-{{sectionId}}-sell-selected_nav').html('-');
                 }
+            },
+            disable: [
+                function(date) {
+                    // return true to disable
+                    return (date.getDay() === 0);
+                }
+            ],
+            locale: {
+                "firstDayOfWeek": 1 // start week on Monday
             }
         },
         '{{componentId}}-{{sectionId}}-buy-selected_nav'                    : { },
@@ -1161,10 +1232,26 @@ dataCollectionSectionForm['funcs']['processSchemeNav'] = function(scheme, task =
             dataCollectionSection['{{componentId}}-{{sectionId}}-' + task + '-date']['flatpickr'].config.maxDate = scheme.navs.last_updated;
         }
         if (dataCollectionSectionForm['vars']['mode'] === 'strategies') {
-            dataCollectionSection['{{componentId}}-{{sectionId}}-start-date']['flatpickr'].config.minDate = Object.keys(scheme.navs.navs)[0];
-            dataCollectionSection['{{componentId}}-{{sectionId}}-start-date']['flatpickr'].config.maxDate = scheme.navs.last_updated;
-            dataCollectionSection['{{componentId}}-{{sectionId}}-end-date']['flatpickr'].config.minDate = Object.keys(scheme.navs.navs)[0];
-            dataCollectionSection['{{componentId}}-{{sectionId}}-end-date']['flatpickr'].config.maxDate = scheme.navs.last_updated;
+            if (dataCollectionSection['{{componentId}}-{{sectionId}}-start-date']) {
+                dataCollectionSection['{{componentId}}-{{sectionId}}-start-date']['flatpickr'].config.minDate = Object.keys(scheme.navs.navs)[0];
+                dataCollectionSection['{{componentId}}-{{sectionId}}-start-date']['flatpickr'].config.maxDate = scheme.navs.last_updated;
+            }
+            if (dataCollectionSection['{{componentId}}-{{sectionId}}-end-date']) {
+                dataCollectionSection['{{componentId}}-{{sectionId}}-end-date']['flatpickr'].config.minDate = Object.keys(scheme.navs.navs)[0];
+                dataCollectionSection['{{componentId}}-{{sectionId}}-end-date']['flatpickr'].config.maxDate = scheme.navs.last_updated;
+            }
+            if (dataCollectionSection['{{componentId}}-{{sectionId}}-investment_date']) {
+                dataCollectionSection['{{componentId}}-{{sectionId}}-investment_date']['flatpickr'].config.minDate = Object.keys(scheme.navs.navs)[0];
+                dataCollectionSection['{{componentId}}-{{sectionId}}-investment_date']['flatpickr'].config.maxDate = scheme.navs.last_updated;
+            }
+            if (dataCollectionSection['{{componentId}}-{{sectionId}}-buy_dates']) {
+                dataCollectionSection['{{componentId}}-{{sectionId}}-buy_dates']['flatpickr'].config.minDate = Object.keys(scheme.navs.navs)[0];
+                dataCollectionSection['{{componentId}}-{{sectionId}}-buy_dates']['flatpickr'].config.maxDate = scheme.navs.last_updated;
+            }
+            if (dataCollectionSection['{{componentId}}-{{sectionId}}-sell_dates']) {
+                dataCollectionSection['{{componentId}}-{{sectionId}}-sell_dates']['flatpickr'].config.minDate = Object.keys(scheme.navs.navs)[0];
+                dataCollectionSection['{{componentId}}-{{sectionId}}-sell_dates']['flatpickr'].config.maxDate = scheme.navs.last_updated;
+            }
         }
         $('#{{componentId}}-{{sectionId}}-' + task + '-import').attr('disabled', false);
     } else {
@@ -1174,10 +1261,26 @@ dataCollectionSectionForm['funcs']['processSchemeNav'] = function(scheme, task =
             dataCollectionSection['{{componentId}}-{{sectionId}}-' + task + '-date']['flatpickr'].config.maxDate = "today";
         }
         if (dataCollectionSectionForm['vars']['mode'] === 'strategies') {
-            dataCollectionSection['{{componentId}}-{{sectionId}}-start-date']['flatpickr'].config.minDate = '2000-01-01';
-            dataCollectionSection['{{componentId}}-{{sectionId}}-start-date']['flatpickr'].config.maxDate = "today";
-            dataCollectionSection['{{componentId}}-{{sectionId}}-end-date']['flatpickr'].config.minDate = '2000-01-01';
-            dataCollectionSection['{{componentId}}-{{sectionId}}-end-date']['flatpickr'].config.maxDate = "today";
+            if (dataCollectionSection['{{componentId}}-{{sectionId}}-start-date']) {
+                dataCollectionSection['{{componentId}}-{{sectionId}}-start-date']['flatpickr'].config.minDate = '2000-01-01';
+                dataCollectionSection['{{componentId}}-{{sectionId}}-start-date']['flatpickr'].config.maxDate = "today";
+            }
+            if (dataCollectionSection['{{componentId}}-{{sectionId}}-end-date']) {
+                dataCollectionSection['{{componentId}}-{{sectionId}}-end-date']['flatpickr'].config.minDate = '2000-01-01';
+                dataCollectionSection['{{componentId}}-{{sectionId}}-end-date']['flatpickr'].config.maxDate = "today";
+            }
+            if (dataCollectionSection['{{componentId}}-{{sectionId}}-investment_date']) {
+                dataCollectionSection['{{componentId}}-{{sectionId}}-investment_date']['flatpickr'].config.minDate = '2000-01-01';
+                dataCollectionSection['{{componentId}}-{{sectionId}}-investment_date']['flatpickr'].config.maxDate = "today";
+            }
+            if (dataCollectionSection['{{componentId}}-{{sectionId}}-buy_dates']) {
+                dataCollectionSection['{{componentId}}-{{sectionId}}-buy_dates']['flatpickr'].config.minDate = '2000-01-01';
+                dataCollectionSection['{{componentId}}-{{sectionId}}-buy_dates']['flatpickr'].config.maxDate = "today";
+            }
+            if (dataCollectionSection['{{componentId}}-{{sectionId}}-sell_dates']) {
+                dataCollectionSection['{{componentId}}-{{sectionId}}-sell_dates']['flatpickr'].config.minDate = '2000-01-01';
+                dataCollectionSection['{{componentId}}-{{sectionId}}-sell_dates']['flatpickr'].config.maxDate = "today";
+            }
         }
         $('#{{componentId}}-{{sectionId}}-' + task + '-import').attr('disabled', true);
     }
@@ -1295,7 +1398,10 @@ dataCollectionSectionForm['funcs']['processSchemeNav'] = function(scheme, task =
 
 dataCollectionSectionForm['funcs']['importNavs'] = function(thisButton, postData, lastNavToImport = false) {
     if (postData['scheme_id'] === '' || !postData['scheme_id']) {
-        paginatedPNotify('error', 'Provide proper scheme ID. Contact developer.');
+        $(thisButton).removeClass('disabled');
+        $(thisButton).children('i').attr('hidden', true);
+
+        paginatedPNotify('error', 'Provide choose correct scheme.');
 
         return;
     }
@@ -1544,13 +1650,13 @@ dataCollectionSectionForm['funcs']['recalculatePortfolio'] = function() {
     }, 'json');
 }
 
-dataCollectionSectionForm['funcs']['calculateCategoriesVariance'] = function(type, mainCategory, withCategory) {
+dataCollectionSectionForm['funcs']['calculateCategoriesPercentDiff'] = function(type, mainCategory, withCategory) {
     var postData = { };
     postData[$('#security-token').attr('name')] = $('#security-token').val();
     postData['mainCategory'] = mainCategory[5];
     postData['withCategory'] = withCategory[5];
 
-    $.post('{{links.url("mf/categories/calculateCategoriesVariance")}}', postData, function(response) {
+    $.post('{{links.url("mf/categories/calculateCategoriesPercentDiff")}}', postData, function(response) {
         if (response.responseCode == 0) {
             var html;
 
@@ -1560,7 +1666,7 @@ dataCollectionSectionForm['funcs']['calculateCategoriesVariance'] = function(typ
                 html = '<span>Compare ' + withCategory[1] + ' with ' + mainCategory[1] + '</span>';
             }
 
-            html += ' <span class="text-bold">' + response.responseData.percentage + '</span>';
+            html += ' <span class="text-bold">' + response.responseData.diff + '</span>';
 
             if (type === 'categories') {
                 $('#{{componentId}}-{{sectionId}}-categories_percentage_variance').html(html);
@@ -1617,6 +1723,7 @@ dataCollectionSectionForm['funcs']['init'] = function() {
             {
                 type: type,
                 options : {
+                    locale: 'en-IN',
                     responsive: true,
                     animation: false,
                     plugins: {
@@ -1672,6 +1779,34 @@ dataCollectionSectionForm['funcs']['init'] = function() {
                 lengthMenu: [
                     [20, 50, 100, -1],
                     [20, 50, 100, 'All']
+                ],
+                dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
+                     '<"row mb-1"<"col"tr>>' +
+                     '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
+                buttons: [
+                    {
+                        extend          : 'collection',
+                        text            : 'Export',
+                        className       : 'btn-sm btn-info',
+                        buttons         : [{
+                                            text            : 'Excel',
+                                            title           : 'Export transactions list',
+                                            extend          : 'excelHtml5',
+                                            footer          : false,
+                                            exportOptions   : {
+                                                                columns: ':visible'
+                                                            }
+                                        },
+                                        {
+                                            text            : 'CSV',
+                                            extend          : 'csvHtml5',
+                                            fieldSeparator  : ',',
+                                            exportOptions   : {
+                                                                columns: ':visible'
+                                                            }
+                                        }
+                                        ]
+                    }
                 ]
             });
         }
@@ -1711,6 +1846,34 @@ dataCollectionSectionForm['funcs']['init'] = function() {
                 lengthMenu: [
                     [20, 50, 100, -1],
                     [20, 50, 100, 'All']
+                ],
+                dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
+                     '<"row mb-1"<"col"tr>>' +
+                     '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
+                buttons: [
+                    {
+                        extend          : 'collection',
+                        text            : 'Export',
+                        className       : 'btn-sm btn-info',
+                        buttons         : [{
+                                            text            : 'Excel',
+                                            title           : 'Export transactions list',
+                                            extend          : 'excelHtml5',
+                                            footer          : false,
+                                            exportOptions   : {
+                                                                columns: ':visible'
+                                                            }
+                                        },
+                                        {
+                                            text            : 'CSV',
+                                            extend          : 'csvHtml5',
+                                            fieldSeparator  : ',',
+                                            exportOptions   : {
+                                                                columns: ':visible'
+                                                            }
+                                        }
+                                        ]
+                    }
                 ]
             });
         }
@@ -1732,6 +1895,34 @@ dataCollectionSectionForm['funcs']['init'] = function() {
                         lengthMenu: [
                             [20, 50, 100, -1],
                             [20, 50, 100, 'All']
+                        ],
+                        dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
+                             '<"row mb-1"<"col"tr>>' +
+                             '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
+                        buttons: [
+                            {
+                                extend          : 'collection',
+                                text            : 'Export',
+                                className       : 'btn-sm btn-info',
+                                buttons         : [{
+                                                    text            : 'Excel',
+                                                    title           : 'Export transactions list',
+                                                    extend          : 'excelHtml5',
+                                                    footer          : false,
+                                                    exportOptions   : {
+                                                                        columns: ':visible'
+                                                                    }
+                                                },
+                                                {
+                                                    text            : 'CSV',
+                                                    extend          : 'csvHtml5',
+                                                    fieldSeparator  : ',',
+                                                    exportOptions   : {
+                                                                        columns: ':visible'
+                                                                    }
+                                                }
+                                                ]
+                            }
                         ]
                     });
                 }
@@ -1838,7 +2029,35 @@ dataCollectionSectionForm['funcs']['init'] = function() {
                         ],
                         select: {
                             style: 'multi'
-                        }
+                        },
+                        dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
+                             '<"row mb-1"<"col"tr>>' +
+                             '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
+                        buttons: [
+                            {
+                                extend          : 'collection',
+                                text            : 'Export',
+                                className       : 'btn-sm btn-info',
+                                buttons         : [{
+                                                    text            : 'Excel',
+                                                    title           : 'Export transactions list',
+                                                    extend          : 'excelHtml5',
+                                                    footer          : false,
+                                                    exportOptions   : {
+                                                                        columns: ':visible'
+                                                                    }
+                                                },
+                                                {
+                                                    text            : 'CSV',
+                                                    extend          : 'csvHtml5',
+                                                    fieldSeparator  : ',',
+                                                    exportOptions   : {
+                                                                        columns: ':visible'
+                                                                    }
+                                                }
+                                                ]
+                            }
+                        ]
                     });
 
                     categoriesTable.on('select', function(e, dt, type, ix) {
@@ -1850,7 +2069,7 @@ dataCollectionSectionForm['funcs']['init'] = function() {
                             var select1 = dt.rows({selected: true}).data()[0];
                             var select2 = dt.rows({selected: true}).data()[1];
 
-                            dataCollectionSectionForm['funcs']['calculateCategoriesVariance']('categories', select1, select2);
+                            dataCollectionSectionForm['funcs']['calculateCategoriesPercentDiff']('categories', select1, select2);
                         }
                     });
 
@@ -1919,7 +2138,35 @@ dataCollectionSectionForm['funcs']['init'] = function() {
                         ],
                         select: {
                             style: 'multi'
-                        }
+                        },
+                        dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
+                             '<"row mb-1"<"col"tr>>' +
+                             '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
+                        buttons: [
+                            {
+                                extend          : 'collection',
+                                text            : 'Export',
+                                className       : 'btn-sm btn-info',
+                                buttons         : [{
+                                                    text            : 'Excel',
+                                                    title           : 'Export transactions list',
+                                                    extend          : 'excelHtml5',
+                                                    footer          : false,
+                                                    exportOptions   : {
+                                                                        columns: ':visible'
+                                                                    }
+                                                },
+                                                {
+                                                    text            : 'CSV',
+                                                    extend          : 'csvHtml5',
+                                                    fieldSeparator  : ',',
+                                                    exportOptions   : {
+                                                                        columns: ':visible'
+                                                                    }
+                                                }
+                                                ]
+                            }
+                        ]
                     });
 
                     subcategoriesTable.on('select', function(e, dt, type, ix) {
@@ -1931,7 +2178,7 @@ dataCollectionSectionForm['funcs']['init'] = function() {
                             var select1 = dt.rows({selected: true}).data()[0];
                             var select2 = dt.rows({selected: true}).data()[1];
 
-                            dataCollectionSectionForm['funcs']['calculateCategoriesVariance']('subcategories', select1, select2);
+                            dataCollectionSectionForm['funcs']['calculateCategoriesPercentDiff']('subcategories', select1, select2);
                         }
                     });
 
@@ -2344,10 +2591,14 @@ dataCollectionSectionForm['funcs']['browseTimeline'] = function(postData, thisBu
                     if (thisButton) {
                         $(thisButton).attr('disabled', false);
 
-                        if (postData['jump'] === 'next') {
-                            $(thisButton).children('i').removeClass('fa-spin fa-cog').addClass('fa-forward');
+                        if (postData['jump'] === 'start') {
+                            $(thisButton).children('i').removeClass('fa-spin fa-cog').addClass('fa-backward-fast');
                         } else if (postData['jump'] === 'previous') {
-                            $(thisButton).children('i').removeClass('fa-spin fa-cog').addClass('fa-rewind');
+                            $(thisButton).children('i').removeClass('fa-spin fa-cog').addClass('fa-backward-step');
+                        } else if (postData['jump'] === 'next') {
+                            $(thisButton).children('i').removeClass('fa-spin fa-cog').addClass('fa-forward-step');
+                        } else if (postData['jump'] === 'today') {
+                            $(thisButton).children('i').removeClass('fa-spin fa-cog').addClass('fa-forward-fast');
                         }
                     }
                 }

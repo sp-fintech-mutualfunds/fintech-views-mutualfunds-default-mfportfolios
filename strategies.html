@@ -28,6 +28,9 @@
     </div>
     <div class="row">
         <div class="col">
+            {% if strategyDescription is defined and strategyDescription != '' %}
+                {% set strategyDescription = '<small class="text-info"><i class="fa-solid fa-circle-info"></i> ' ~ strategyDescription ~ '</small>' %}
+            {% endif %}
             {{adminltetags.useTag('fields',
                 [
                     'component'                      : component,
@@ -40,9 +43,63 @@
                     'fieldHelp'                      : false,
                     'fieldHelpTooltipContent'        : '',
                     'fieldBazJstreeSearch'           : false,
-                    'fieldBazScan'                   : false
+                    'fieldBazScan'                   : false,
+                    'fieldHtmlContent'               : strategyDescription
                 ]
             )}}
         </div>
     </div>
 </div>
+{% if strategy is defined and strategy != '' %}
+    <div class="col">
+        <div class="row">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'clone_portfolio',
+                        'fieldLabel'                     : 'Apply strategy to clone?',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'It is recommended to use this option as this will clone the portfolio and apply the strategy to the clone portfolio.',
+                        'fieldType'                      : 'checkbox',
+                        'fieldCheckboxType'              : 'success',
+                        'fieldCheckboxChecked'           : true,
+                        'fieldCheckboxAdditionClass'     : 'text-sm text-uppercase',
+                        'fieldBazPostOnCreate'           : true,
+                        'fieldBazPostOnUpdate'           : true,
+                        'fieldBazJstreeSearch'           : true,
+                        'fieldBazScan'                   : true
+                    ]
+                )}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'clone_portfolio_name',
+                        'fieldLabel'                     : 'Clone Portfolio Name',
+                        'fieldType'                      : 'input',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'Clone Portfolio Name',
+                        'fieldRequired'                  : true,
+                        'fieldBazScan'                   : true,
+                        'fieldBazJstreeSearch'           : true,
+                        'fieldBazPostOnCreate'           : false,
+                        'fieldBazPostOnUpdate'           : false,
+                        'fieldDataInputMinLength'        : 1,
+                        'fieldDataInputMaxLength'        : 50,
+                        'fieldValue'                     : clonePortfolioName
+                    ]
+                )}}
+            </div>
+        </div>
+    </div>
+{% endif %}

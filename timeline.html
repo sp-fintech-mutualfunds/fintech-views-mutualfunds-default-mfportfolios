@@ -23,7 +23,6 @@
         <div class="col">
             {% set previousDisabled = true %}
             {% set nextDisabled = true %}
-
             {% if portfolio['start_date'] == portfolio['timelineDate'] %}
                 {% set nextDisabled = false %}
             {% else %}
@@ -46,22 +45,38 @@
                     'fieldType'                         : 'input',
                     'fieldGroupPreAddonButtons'         :
                         [
-                            'browser-previous' : [
+                            'browse-start' : [
+                                'title'                   : 'start',
+                                'size'                    : 'xs',
+                                'type'                    : 'primary',
+                                'icon'                    : 'backward-fast',
+                                'noMargin'                : true,
+                                'disabled'                : previousDisabled
+                            ],
+                            'browse-previous' : [
                                 'title'                   : 'previous',
                                 'size'                    : 'xs',
                                 'type'                    : 'info',
-                                'icon'                    : 'backward',
+                                'icon'                    : 'backward-step',
                                 'noMargin'                : true,
                                 'disabled'                : previousDisabled
                             ]
                         ],
                     'fieldGroupPostAddonButtons'        :
                         [
-                            'browser-next' : [
+                            'browse-next' : [
                                 'title'                   : 'next',
                                 'size'                    : 'xs',
                                 'type'                    : 'info',
-                                'icon'                    : 'forward',
+                                'icon'                    : 'forward-step',
+                                'noMargin'                : true,
+                                'disabled'                : nextDisabled
+                            ],
+                            'browse-today' : [
+                                'title'                   : 'today',
+                                'size'                    : 'xs',
+                                'type'                    : 'primary',
+                                'icon'                    : 'forward-fast',
                                 'noMargin'                : true,
                                 'disabled'                : nextDisabled
                             ]

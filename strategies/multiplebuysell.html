@@ -1,0 +1,964 @@
+{% set sellHidden = 'hidden' %}
+{% set buyHidden = 'hidden' %}
+{% set selectionHidden = 'hidden' %}
+<div class="row vdivide">
+    {% set investments = [] %}
+    {% if portfolio['investments']|length > 0 %}
+        {% for amfi_code, investment in portfolio['investments'] %}
+            {% if investment['status'] == 'close' %}
+                {% continue %}
+            {% endif %}
+            {% set investments[amfi_code] = investment %}
+        {% endfor %}
+    {% endif %}
+    {% if investments|length > 0 %}
+        {% set selectionHidden = '' %}
+    {% else %}
+        {% set buyHidden = '' %}
+    {% endif %}
+    <div class="col-md-3" {{selectionHidden}}>
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'multiplebuysell-task',
+                'fieldLabel'                     : 'task',
+                'fieldType'                      : 'radio',
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'Select task.',
+                'fieldRequired'                  : true,
+                'fieldBazPostOnCreate'           : true,
+                'fieldBazPostOnUpdate'           : true,
+                'fieldBazScan'                   : true,
+                'fieldRadioButtons'              :
+                    [
+                        'buy' :
+                            [
+                                'title'          : 'BUY',
+                                'type'           : 'info',
+                                'dataValue'      : 'buy'
+                            ],
+                        'sell' :
+                            [
+                                'title'          : 'SELL',
+                                'type'           : 'info',
+                                'dataValue'      : 'sell'
+                            ]
+                    ],
+                'fieldRadioChecked'              : ''
+            ]
+        )}}
+    </div>
+    <div class="col tasks" id="{{componentId}}-{{sectionId}}-buy" {{buyHidden}}>
+        <div class="row">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'amc_id',
+                        'fieldLabel'                     : 'AMC',
+                        'fieldType'                      : 'select2',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'Select AMC to search scheme',
+                        'fieldRequired'                  : true,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnCreate'           : false,
+                        'fieldBazPostOnUpdate'           : false,
+                        'fieldDataSelect2Options'        : amcs,
+                        'fieldDataSelect2OptionsKey'     : 'id',
+                        'fieldDataSelect2OptionsValue'   : 'name',
+                        'fieldDataSelect2OptionsArray'   : true,
+                        'fieldDataSelect2OptionsSelected': ''
+                    ]
+                )}}
+            </div>
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'scheme_id',
+                        'fieldLabel'                     : 'Scheme',
+                        'fieldType'                      : 'select2',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'Select Scheme',
+                        'fieldRequired'                  : true,
+                        'fieldDisabled'                  : true,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnCreate'           : false,
+                        'fieldBazPostOnUpdate'           : false,
+                        'fieldDataSelect2Options'        : [],
+                        'fieldDataSelect2OptionsKey'     : 'id',
+                        'fieldDataSelect2OptionsValue'   : 'name',
+                        'fieldDataSelect2OptionsArray'   : true,
+                        'fieldDataSelect2OptionsSelected': ''
+                    ]
+                )}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'buy_dates',
+                        'fieldLabel'                     : 'Buy Date(s)',
+                        'fieldType'                      : 'flatpickr',
+                        'fieldFlatpickrClearButton'      : true,
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'Select multiple dates will add multiple transactions',
+                        'fieldRequired'                  : true,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnCreate'           : false,
+                        'fieldBazPostOnUpdate'           : true,
+                        'fieldValue'                     : ''
+                    ]
+                )}}
+            </div>
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'buy_amounts',
+                        'fieldLabel'                     : 'Buy Amount(s)',
+                        'fieldType'                      : 'input',
+                        'fieldGroupPreAddonText'         : currencySymbol,
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'Depending on the number of dates selected, if the amount is same for all dates, just add 1 amount. If each date has a different amount, add different amount separated by a comma.',
+                        'fieldRequired'                  : true,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnCreate'           : false,
+                        'fieldBazPostOnUpdate'           : false,
+                        'fieldValue'                     : ''
+                    ]
+                )}}
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col">
+                {{adminltetags.useTag('buttons',
+                    [
+                        'componentId'           : componentId,
+                        'sectionId'             : sectionId,
+                        'buttonType'            : 'button',
+                        'buttons'               :
+                            [
+                                'buy-multiple' : [
+                                    'title'                   : 'Buy',
+                                    'size'                    : 'sm',
+                                    'type'                    : 'success'
+                                ],
+                                'buy-import' : [
+                                    'title'                   : 'Import Navs',
+                                    'position'                : 'right',
+                                    'size'                    : 'sm',
+                                    'disabled'                : true,
+                                    'icon'                    : 'cog fa-spin',
+                                    'iconHidden'              : true
+                                ]
+                            ]
+                    ]
+                )}}
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'buy-amfi_code',
+                        'fieldLabel'                     : 'AMFI Code',
+                        'fieldType'                      : 'input',
+                        'fieldHelp'                      : true,
+                        'fieldDisabled'                  : true,
+                        'fieldHidden'                    : true,
+                        'fieldHelpTooltipContent'        : 'AMFI Code for the scheme',
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnCreate'           : false,
+                        'fieldBazPostOnUpdate'           : false,
+                        'fieldValue'                     : ''
+                    ]
+                )}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'buy-isin',
+                        'fieldLabel'                     : 'ISIN',
+                        'fieldType'                      : 'html',
+                        'fieldAdditionalClass'           : 'mb-0',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'ISIN for the scheme',
+                        'fieldRequired'                  : false,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnUpdate'           : true,
+                        'fieldHtmlContent'               : '-'
+                    ]
+                )}}
+            </div>
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'buy-first_nav_date',
+                        'fieldLabel'                     : 'First NAV date',
+                        'fieldType'                      : 'html',
+                        'fieldAdditionalClass'           : 'mb-0',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'First NAV date for the scheme',
+                        'fieldRequired'                  : false,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnUpdate'           : true,
+                        'fieldHtmlContent'               : '-'
+                    ]
+                )}}
+            </div>
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'buy-latest_nav_date',
+                        'fieldLabel'                     : 'Latest NAV date',
+                        'fieldType'                      : 'html',
+                        'fieldAdditionalClass'           : 'mb-0',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'Latest NAV date for the scheme',
+                        'fieldRequired'                  : false,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnUpdate'           : true,
+                        'fieldHtmlContent'               : '-'
+                    ]
+                )}}
+            </div>
+        </div>
+    </div>
+    <div class="col tasks" id="{{componentId}}-{{sectionId}}-sell" {{sellHidden}}>
+        <div class="row">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'sell_transaction_id',
+                        'fieldLabel'                     : 'Select Investment to sell from',
+                        'fieldType'                      : 'select2',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'Select a transaction to sell',
+                        'fieldRequired'                  : true,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnCreate'           : false,
+                        'fieldBazPostOnUpdate'           : false,
+                        'fieldDataSelect2Options'        : investments,
+                        'fieldDataSelect2OptionsKey'     : 'amfi_code',
+                        'fieldDataSelect2OptionsValue'   : 'scheme/name',
+                        'fieldDataSelect2OptionsArray'   : true,
+                        'fieldDataSelect2OptionsSelected': ''
+                    ]
+                )}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'sell_dates',
+                        'fieldLabel'                     : 'Sell Date(s)',
+                        'fieldType'                      : 'flatpickr',
+                        'fieldFlatpickrClearButton'      : true,
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'Select multiple dates will add multiple transactions',
+                        'fieldRequired'                  : true,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnCreate'           : false,
+                        'fieldBazPostOnUpdate'           : true,
+                        'fieldValue'                     : ''
+                    ]
+                )}}
+            </div>
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'sell_amounts',
+                        'fieldLabel'                     : 'Sell Amount(s)',
+                        'fieldType'                      : 'input',
+                        'fieldGroupPreAddonText'         : currencySymbol,
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'Depending on the number of dates selected, if the amount is same for all dates, just add 1 amount. If each date has a different amount, add different amount separated by a comma.',
+                        'fieldRequired'                  : true,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnCreate'           : false,
+                        'fieldBazPostOnUpdate'           : false,
+                        'fieldValue'                     : ''
+                    ]
+                )}}
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col">
+                {{adminltetags.useTag('buttons',
+                    [
+                        'componentId'           : componentId,
+                        'sectionId'             : sectionId,
+                        'buttonType'            : 'button',
+                        'buttons'               :
+                            [
+                                'sell-multiple' : [
+                                    'title'                   : 'Sell',
+                                    'size'                    : 'sm',
+                                    'type'                    : 'warning'
+                                ]
+                            ]
+                    ]
+                )}}
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'sell-amfi_code',
+                        'fieldLabel'                     : 'AMFI Code',
+                        'fieldType'                      : 'input',
+                        'fieldHelp'                      : true,
+                        'fieldDisabled'                  : true,
+                        'fieldHidden'                    : true,
+                        'fieldHelpTooltipContent'        : 'AMFI Code for the scheme',
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnCreate'           : false,
+                        'fieldBazPostOnUpdate'           : false,
+                        'fieldValue'                     : ''
+                    ]
+                )}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'sell-isin',
+                        'fieldLabel'                     : 'ISIN',
+                        'fieldType'                      : 'html',
+                        'fieldAdditionalClass'           : 'mb-0',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'ISIN for the scheme',
+                        'fieldRequired'                  : false,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnUpdate'           : true,
+                        'fieldHtmlContent'               : '-'
+                    ]
+                )}}
+            </div>
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'sell-available_amount',
+                        'fieldLabel'                     : 'Available Amount',
+                        'fieldType'                      : 'html',
+                        'fieldAdditionalClass'           : 'mb-0',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'Available Amount',
+                        'fieldRequired'                  : false,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnUpdate'           : true,
+                        'fieldHtmlContent'               : '-'
+                    ]
+                )}}
+            </div>
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'sell-available_units',
+                        'fieldLabel'                     : 'Available Units',
+                        'fieldType'                      : 'html',
+                        'fieldAdditionalClass'           : 'mb-0',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'Available units',
+                        'fieldRequired'                  : false,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnUpdate'           : true,
+                        'fieldHtmlContent'               : '-'
+                    ]
+                )}}
+            </div>
+        </div>
+    </div>
+</div>
+<hr>
+<div class="row">
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'multiplebuysell-transactions',
+                'fieldLabel'                     : 'Multiple Buy/Sell Transactions',
+                'fieldType'                      : 'html',
+                'fieldAdditionalClass'           : 'mb-0',
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'List of transactions that will be applied via this stategy to the portfolio. Add transactions via task.',
+                'fieldRequired'                  : false,
+                'fieldBazScan'                   : false,
+                'fieldBazPostOnUpdate'           : true
+            ]
+        )}}
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <table id="{{componentId}}-{{sectionId}}-multiplebuysell-transactions-table" class="table table-sm table-hover responsive nowrap mb-0" width="100%" cellspacing="0">
+            <thead>
+                <tr>
+                    <th class="text-uppercase">amfi code</th>
+                    <th class="text-uppercase">DATE</th>
+                    <th class="text-uppercase">TYPE</th>
+                    <th class="text-uppercase">SCHEME</th>
+                    <th class="text-uppercase">{{ currencySymbol }} AMOUNT</th>
+                    <th class="text-uppercase">ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+<hr>
+<script>
+/* globals paginatedPNotify Swal */
+var dataCollectionComponent, dataCollectionSection, dataCollectionSectionForm;
+
+if (!window['dataCollection']['{{componentId}}']) {
+    dataCollectionComponent =
+        window['dataCollection']['{{componentId}}'] = { };
+} else {
+    dataCollectionComponent =
+        window['dataCollection']['{{componentId}}'];
+}
+if (!dataCollectionComponent['{{componentId}}-{{sectionId}}']) {
+    dataCollectionSection =
+        dataCollectionComponent['{{componentId}}-{{sectionId}}'] = { };
+} else {
+    dataCollectionSection =
+        dataCollectionComponent['{{componentId}}-{{sectionId}}'];
+}
+if (!dataCollectionSection['{{componentId}}-{{sectionId}}-form']) {
+    dataCollectionSectionForm =
+        dataCollectionSection['{{componentId}}-{{sectionId}}-form'] = { };
+} else {
+    dataCollectionSectionForm =
+        dataCollectionSection['{{componentId}}-{{sectionId}}-form'];
+}
+
+dataCollectionSection =
+    $.extend(dataCollectionSection, {
+        '{{componentId}}-{{sectionId}}-buy_amounts'                      : { },
+        '{{componentId}}-{{sectionId}}-buy_dates'                        : {
+            mode                : "multiple",
+            dateFormat          : "Y-m-d",
+            altFormat           : "Y-m-d",
+            static              : true,
+            minDate             : "2000-01-01",
+            maxDate             : "today",
+            onChange: function(selectedDates, dateStr, instance) {
+                if (dateStr !== '') {
+                    dataCollectionSectionForm['vars']['buy_dates'] = dateStr;
+                } else {
+                    dataCollectionSectionForm['vars']['buy_dates'] = null;
+                }
+            },
+            disable: [
+                function(date) {
+                    // return true to disable
+                    return (date.getDay() === 0);
+                }
+            ],
+            locale: {
+                "firstDayOfWeek": 1 // start week on Monday
+            }
+        },
+        '{{componentId}}-{{sectionId}}-sell_amounts'                        : { },
+        '{{componentId}}-{{sectionId}}-sell_dates'                          : {
+            mode                : "multiple",
+            dateFormat          : "Y-m-d",
+            altFormat           : "Y-m-d",
+            static              : true,
+            minDate             : "2000-01-01",
+            maxDate             : "today",
+            onChange: function(selectedDates, dateStr, instance) {
+                if (dateStr !== '') {
+                    dataCollectionSectionForm['vars']['sell_dates'] = dateStr;
+                } else {
+                    dataCollectionSectionForm['vars']['sell_dates'] = null;
+                }
+            },
+            disable: [
+                function(date) {
+                    // return true to disable
+                    return (date.getDay() === 0);
+                }
+            ],
+            locale: {
+                "firstDayOfWeek": 1 // start week on Monday
+            }
+        },
+        '{{componentId}}-{{sectionId}}-multiplebuysell-task'                    : {
+            afterInit : function() {
+                $('#{{componentId}}-{{sectionId}}-multiplebuysell-task').click(function() {
+                    processSchedules();
+                });
+
+                function processSchedules() {
+                    dataCollectionSectionForm['vars']['task'] = $('#{{componentId}}-{{sectionId}}-multiplebuysell-task').find('input[type=radio]:checked').data('value');
+
+                    if ($('#{{componentId}}-{{sectionId}}-multiplebuysell-task').find('input[type=radio]:checked').data('value') == 'sell') {
+                        $('.tasks').attr('hidden', true);
+                        $('#{{componentId}}-{{sectionId}}-sell').attr('hidden', false);
+                    } else if ($('#{{componentId}}-{{sectionId}}-multiplebuysell-task').find('input[type=radio]:checked').data('value') == 'buy') {
+                        $('.tasks').attr('hidden', true);
+                        $('#{{componentId}}-{{sectionId}}-buy').attr('hidden', false);
+                    }
+                }
+
+                processSchedules();
+
+                dataCollectionSectionForm['funcs']['applyStrategy'] = function() {
+                    var postData = dataCollectionSectionForm['vars']['strategyPostData']();
+
+                    if (!postData) {
+                        return false;
+                    }
+
+                    if ($('#{{componentId}}-{{sectionId}}-clone_portfolio')[0].checked) {
+                        postData['clone_portfolio'] = true;
+                        postData['clone_portfolio_name'] = $('#{{componentId}}-{{sectionId}}-clone_portfolio_name').val();
+                    }
+
+                    $.post('{{links.url("mf/portfolios/applyStrategy")}}', postData, function(response) {
+                        if (response.tokenKey && response.token) {
+                            $("#security-token").attr("name", response.tokenKey);
+                            $("#security-token").val(response.token);
+                        }
+
+                        if (response.responseCode === 0) {
+                            $('#strategies-progress').attr('hidden', true);
+                            $('#strategies-buttons').attr('hidden', true);
+                            $('#portfolio-access-buttons').attr('hidden', false);
+                            $('#{{componentId}}-{{sectionId}}-transact-mode, #{{componentId}}-{{sectionId}}-timeline-mode').off();
+                            $('#{{componentId}}-{{sectionId}}-transact-mode, #{{componentId}}-{{sectionId}}-timeline-mode').click(function() {
+                                if ($(this)[0].id === '{{componentId}}-{{sectionId}}-transact-mode') {
+                                    $('#{{componentId}}-{{sectionId}}-portfolios-link')
+                                        .attr(
+                                            'href',
+                                            window['dataCollection'].env.httpScheme + '://' + window['dataCollection'].env.httpHost + '/' + window['dataCollection'].env.appRoute + '/' +
+                                            'mf/portfolios/q/id/' + response.responseData['portfolio_id'] + '/mode/transact'
+                                        );
+                                } else if ($(this)[0].id === '{{componentId}}-{{sectionId}}-timeline-mode') {
+                                    $('#{{componentId}}-{{sectionId}}-portfolios-link')
+                                        .attr(
+                                            'href',
+                                            window['dataCollection'].env.httpScheme + '://' + window['dataCollection'].env.httpHost + '/' + window['dataCollection'].env.appRoute + '/' +
+                                            'mf/portfolios/q/id/' + response.responseData['portfolio_id'] + '/mode/timeline'
+                                        );
+                                }
+
+                                dataCollectionSectionForm['funcs']['browse']();
+                            });
+                        } else {
+                            paginatedPNotify('error', {
+                                text : response.responseMessage
+                            });
+                        }
+                    }, 'json');
+                }
+
+                $('#{{componentId}}-{{sectionId}}-view-strategy-transactions').click(function() {
+                    dataCollectionSectionForm['funcs']['getStrategiesTransactions']();
+                });
+
+                dataCollectionSectionForm['vars']['strategyPostData'] = function() {
+                    var postData = { };
+                    postData[$('#security-token').attr('name')] = $('#security-token').val();
+                    postData['portfolio_id'] = $('#{{componentId}}-{{sectionId}}-id').val();
+                    postData['strategy_id'] = $('#{{componentId}}-{{sectionId}}-strategies').val();
+                    postData['data'] =  dataCollectionSectionForm['vars']['multiplebuysellTransactionsTable'].rows().data().toArray();
+
+                    if (postData['data'].length === 0) {
+                        paginatedPNotify('error', {
+                            text : 'Please add buy/sell orders'
+                        });
+
+                        return false;
+                    }
+
+                    return postData;
+                };
+
+                dataCollectionSectionForm['funcs']['getStrategiesTransactions'] = function() {
+                    var postData = dataCollectionSectionForm['vars']['strategyPostData']();
+
+                    if (!postData) {
+                        return false;
+                    }
+
+                    $.post('{{links.url("mf/portfolios/getStrategiesTransactions")}}', postData, function(response) {
+                        if (response.tokenKey && response.token) {
+                            $("#security-token").attr("name", response.tokenKey);
+                            $("#security-token").val(response.token);
+                        }
+
+                        if (response.responseCode === 0) {
+                            if (response.responseData) {
+                                $('#{{componentId}}-{{sectionId}}-strategies_total_buy_transactions').empty().html('0');
+                                $('#{{componentId}}-{{sectionId}}-strategies_total_sell_transactions').empty().html('0');
+                                $('#{{componentId}}-{{sectionId}}-strategies_first_transaction_date').empty().html('-');
+                                $('#{{componentId}}-{{sectionId}}-strategies_last_transaction_date').empty().html('-');
+
+                                if (response.responseData.total_transactions_count.buy) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies_total_buy_transactions').empty().html(response.responseData.total_transactions_count.buy);
+                                }
+                                if (response.responseData.total_transactions_count.sell) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies_total_sell_transactions').empty().html(response.responseData.total_transactions_count.sell);
+                                }
+                                if (response.responseData.total_transactions_amount) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies_total_transactions_amount').empty().html(response.responseData.total_transactions_amount);
+                                }
+                                if (response.responseData.first_date) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies_first_transaction_date').empty().html(response.responseData.first_date);
+                                }
+                                if (response.responseData.last_date) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies_last_transaction_date').empty().html(response.responseData.last_date);
+                                }
+                                if (response.responseData.transactions) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies-transactions-table tbody').empty();
+                                    var transactions = [];
+
+                                    for (var transactionDate in response.responseData.transactions) {
+                                        for (var transactionType in response.responseData.transactions[transactionDate]) {
+                                            if (response.responseData.transactions[transactionDate][transactionType].length > 0) {
+                                                $(response.responseData.transactions[transactionDate][transactionType]).each(function(index, order) {
+                                                    var newTransaction = [];
+                                                    newTransaction.push(order['type'].toUpperCase());
+                                                    newTransaction.push(order['date']);
+                                                    newTransaction.push(order['scheme']);
+                                                    newTransaction.push(order['amount']);
+                                                    transactions.push(newTransaction);
+                                                });
+                                            }
+                                        }
+                                    }
+
+                                    dataCollectionSectionForm['vars']['strategiesTransactionsTable'].rows().clear().draw();
+                                    dataCollectionSectionForm['vars']['strategiesTransactionsTable'].rows.add(transactions).draw();
+                                    $('#{{componentId}}-{{sectionId}}-strategies-transactions-modal').modal('show');
+                                    $('#{{componentId}}-{{sectionId}}-strategies-transactions-modal').on('hide.bs.modal', function (e) {
+                                        $('#{{componentId}}-{{sectionId}}-strategies-transactions-table tbody').empty();
+                                    });
+                                }
+                            }
+                        } else {
+                            paginatedPNotify('error', {
+                                text : response.responseMessage
+                            });
+                        }
+                    }, 'json');
+                }
+
+                if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#{{componentId}}-{{sectionId}}-multiplebuysell-transactions-table')) {
+                    dataCollectionSectionForm['vars']['multiplebuysellTransactionsTable'] = $('#{{componentId}}-{{sectionId}}-multiplebuysell-transactions-table').DataTable({
+                        columns:
+                            [
+                                {data: 'amfi_code', orderable: false, visible: false},
+                                {data: 'date', orderable: false},
+                                {data: 'type', orderable: false},
+                                {data: 'scheme', orderable: false},
+                                {data: 'amount', orderable: false},
+                                {data: 'action', orderable: false}
+                            ],
+                        order: false,
+                        lengthMenu: [
+                            [20, 50, 100, -1],
+                            [20, 50, 100, 'All']
+                        ],
+                        dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
+                             '<"row mb-1"<"col"tr>>' +
+                             '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
+                        buttons: [
+                            {
+                                extend          : 'collection',
+                                text            : 'Export',
+                                className       : 'btn-sm btn-info',
+                                buttons         : [{
+                                                    text            : 'Excel',
+                                                    title           : 'Export transactions list',
+                                                    extend          : 'excelHtml5',
+                                                    footer          : false,
+                                                    exportOptions   : {
+                                                                        columns: ':visible'
+                                                                    }
+                                                },
+                                                {
+                                                    text            : 'CSV',
+                                                    extend          : 'csvHtml5',
+                                                    fieldSeparator  : ',',
+                                                    exportOptions   : {
+                                                                        columns: ':visible'
+                                                                    }
+                                                }
+                                                ]
+                            }
+                        ]
+                    });
+                }
+
+                dataCollectionSectionForm['vars']['multiplebuysellTransactions'] = { };
+                for (var investment in dataCollectionSectionForm['vars']['portfolio']['investments']) {
+                    dataCollectionSectionForm['vars']['multiplebuysellTransactions'][investment] = { };
+                    dataCollectionSectionForm['vars']['multiplebuysellTransactions'][investment]['transactions_value'] = 0;
+                    dataCollectionSectionForm['vars']['multiplebuysellTransactions'][investment]['available_value'] =
+                        parseFloat(dataCollectionSectionForm['vars']['portfolio']['investments'][investment]['latest_value'].replace(/,/g, ''));
+                }
+
+                $('#{{componentId}}-{{sectionId}}-buy-multiple, #{{componentId}}-{{sectionId}}-sell-multiple').off();
+                $('#{{componentId}}-{{sectionId}}-buy-multiple, #{{componentId}}-{{sectionId}}-sell-multiple').click(function(e) {
+                    e.preventDefault();
+
+                    var schemeId, buyDates, buyAmounts, sellDates, sellAmounts;
+                    // var rowsId = 1;
+
+                    // if (dataCollectionSectionForm['vars']['multiplebuysellTransactionsTable'].data().length > 0) {
+                    //     var dataArr = dataCollectionSectionForm['vars']['multiplebuysellTransactionsTable'].rows().data().toArray();
+                    //     rowsId = dataArr[dataArr.length - 1]['id'] + 1;
+                    // }
+
+                    if ($(this)[0].id === '{{componentId}}-{{sectionId}}-buy-multiple') {
+                        schemeId = dataCollectionSectionForm['vars']['scheme']['amfi_code'];
+                        buyDates = $('#{{componentId}}-{{sectionId}}-buy_dates').val();
+                        buyAmounts = $('#{{componentId}}-{{sectionId}}-buy_amounts').val();
+
+                        if (buyDates === '') {
+                            paginatedPNotify('error', 'Provide choose correct dates.');
+
+                            return;
+                        }
+
+                        if (buyAmounts === '') {
+                            paginatedPNotify('error', 'Provide enter correct amount(s)');
+
+                            return;
+                        }
+
+                        var buyObj = { };
+                        var buyDatesArr = [];
+                        if (buyDates.includes(',')) {
+                            buyDates = buyDates.replace(/ /g, '');
+                            buyDatesArr = buyDates.split(',');
+                        } else {
+                            buyDatesArr.push(buyDates.replace(/ /g, ''));
+                        }
+                        var buyAmountsArr = [];
+                        if (buyAmounts.includes(',')) {
+                            buyAmounts = buyAmounts.replace(/ /g, '');
+                            var buyAmountsArrSplit = buyAmounts.split(',');
+
+                            $(buyAmountsArrSplit).each(function(index, amount) {
+                                amount = parseFloat(amount);
+
+                                if (isNaN(amount)) {
+                                    paginatedPNotify('error', 'Provide enter correct amount(s)');
+
+                                    return;
+                                }
+
+                                buyAmountsArr[index] = amount;
+                            });
+                        } else {
+                            buyAmounts = parseFloat(buyAmounts.replace(/ /g, ''))
+
+                            if (isNaN(buyAmounts)) {
+                                paginatedPNotify('error', 'Provide enter correct amount(s)');
+
+                                return;
+                            }
+
+                            buyAmountsArr.push(buyAmounts);
+                        }
+
+                        $(buyDatesArr).each(function(index, date) {
+                            buyObj = { };
+                            // buyObj['id'] = rowsId;
+                            buyObj['amfi_code'] = schemeId;
+                            buyObj['date'] = date;
+                            buyObj['type'] = 'BUY';
+                            buyObj['scheme'] = dataCollectionSectionForm['vars']['scheme']['name'];
+                            if (buyDatesArr.length !== buyAmountsArr.length) {
+                                buyObj['amount'] = buyAmountsArr[0];
+                            } else {
+                                buyObj['amount'] = buyAmountsArr[index];
+                            }
+                            buyObj['action'] = '<button class="btn btn-xs btn-danger removeMultipleBuySellTransaction"><i class="fa fa-trash"></i></button>';
+
+                            dataCollectionSectionForm['vars']['multiplebuysellTransactionsTable'].row.add(buyObj);
+
+                            // rowsId++;
+                        });
+                    } else if ($(this)[0].id === '{{componentId}}-{{sectionId}}-sell-multiple') {
+                        schemeId = $('#{{componentId}}-{{sectionId}}-sell_transaction_id option:selected').data()['value'];
+                        sellDates = $('#{{componentId}}-{{sectionId}}-sell_dates').val();
+                        sellAmounts = $('#{{componentId}}-{{sectionId}}-sell_amounts').val();
+
+                        if (sellDates === '') {
+                            paginatedPNotify('error', 'Provide choose correct dates.');
+
+                            return;
+                        }
+
+                        if (sellAmounts === '') {
+                            paginatedPNotify('error', 'Provide enter correct amount(s)');
+
+                            return;
+                        }
+
+                        var sellObj = { };
+                        var sellDatesArr = [];
+                        if (sellDates.includes(',')) {
+                            sellDates = sellDates.replace(/ /g, '');
+                            sellDatesArr = sellDates.split(',');
+                        } else {
+                            sellDatesArr.push(sellDates.replace(/ /g, ''));
+                        }
+                        var sellAmountsArr = [];
+                        if (sellAmounts.includes(',')) {
+                            sellAmounts = sellAmounts.replace(/ /g, '');
+                            var sellAmountsArrSplit = sellAmounts.split(',');
+
+                            $(sellAmountsArrSplit).each(function(index, amount) {
+                                amount = parseFloat(amount);
+
+                                if (isNaN(amount)) {
+                                    paginatedPNotify('error', 'Provide enter correct amount(s)');
+
+                                    return;
+                                }
+
+                                sellAmountsArr[index] = amount;
+                            });
+                        } else {
+                            sellAmounts = parseFloat(sellAmounts.replace(/ /g, ''))
+
+                            if (isNaN(sellAmounts)) {
+                                paginatedPNotify('error', 'Provide enter correct amount(s)');
+
+                                return;
+                            }
+
+                            sellAmountsArr.push(sellAmounts);
+                        }
+
+                        $(sellDatesArr).each(function(index, date) {
+                            sellObj = { };
+                            // sellObj['id'] = rowsId;
+                            sellObj['amfi_code'] = schemeId;
+                            sellObj['date'] = date;
+                            sellObj['type'] = 'SELL';
+                            sellObj['scheme'] = $('#{{componentId}}-{{sectionId}}-sell_transaction_id').text().trim();
+                            if (sellDatesArr.length !== sellAmountsArr.length) {
+                                sellObj['amount'] = sellAmountsArr[0];
+                            } else {
+                                sellObj['amount'] = sellAmountsArr[index];
+                            }
+                            sellObj['action'] = '<button class="btn btn-xs btn-danger removeMultipleBuySellTransaction"><i class="fa fa-trash"></i></button>';
+
+                            dataCollectionSectionForm['vars']['multiplebuysellTransactionsTable'].row.add(sellObj);
+
+                            // rowsId++;
+                        });
+                    }
+
+                    if (schemeId === '' || !schemeId) {
+                        paginatedPNotify('error', 'Provide choose correct scheme.');
+
+                        return;
+                    }
+
+                    if (!dataCollectionSectionForm['vars']['multiplebuysellTransactions'][schemeId]) {
+                        dataCollectionSectionForm['vars']['multiplebuysellTransactions'][schemeId] = { };
+                        dataCollectionSectionForm['vars']['multiplebuysellTransactions'][schemeId]['transactions_value'] = 0;
+                        dataCollectionSectionForm['vars']['multiplebuysellTransactions'][schemeId]['available_value'] = 0;
+                    }
+
+                    dataCollectionSectionForm['vars']['multiplebuysellTransactionsTable'].order([2, 'asc'],[1, 'asc']).draw();
+
+                    $('.removeMultipleBuySellTransaction').off();
+                    $('.removeMultipleBuySellTransaction').click(function(e) {
+                        e.preventDefault();
+
+                        dataCollectionSectionForm['vars']['multiplebuysellTransactionsTable'].row($(this).parents('tr')).remove().draw();
+                    });
+                });
+            }
+        },
+        '{{componentId}}-{{sectionId}}-form'                                    : {
+            ignore      : ':submit, :reset, :image, :hidden, .ignore, .cr-slider',
+            rules: {
+            },
+            messages: {
+            }
+        }
+    });
+</script>

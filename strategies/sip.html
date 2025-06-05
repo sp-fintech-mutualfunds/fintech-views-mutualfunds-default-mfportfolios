@@ -1,8 +1,3 @@
-{% set weeklyHidden = 'hidden' %}
-{% set weeklyDays = ['1'] %}
-{% set monthlyHidden = 'hidden' %}
-{% set monthlyMonths = ['1'] %}
-{% set monthlyDay = '1' %}
 <div class="row">
     <div class="col">
         {{adminltetags.useTag('fields',
@@ -306,135 +301,7 @@
     </div>
 </div>
 <hr>
-<div class="row vdivide mt-3">
-    <div class="col-md-3">
-        {{adminltetags.useTag('fields',
-            [
-                'component'                      : component,
-                'componentName'                  : componentName,
-                'componentId'                    : componentId,
-                'sectionId'                      : sectionId,
-                'fieldId'                        : 'sip-schedule',
-                'fieldLabel'                     : 'SIP Schedule',
-                'fieldType'                      : 'radio',
-                'fieldHelp'                      : true,
-                'fieldHelpTooltipContent'        : 'Select SIP Schedule.',
-                'fieldRequired'                  : true,
-                'fieldBazPostOnCreate'           : true,
-                'fieldBazPostOnUpdate'           : true,
-                'fieldBazScan'                   : true,
-                'fieldRadioButtons'              :
-                    [
-                        'weekly' :
-                            [
-                                'title'          : 'Weekly',
-                                'type'           : 'info',
-                                'dataValue'      : 'weekly'
-                            ],
-                        'monthly' :
-                            [
-                                'title'          : 'Monthly',
-                                'type'           : 'info',
-                                'dataValue'      : 'monthly'
-                            ]
-                    ],
-                'fieldRadioChecked'              : 'monthly'
-            ]
-        )}}
-    </div>
-    <div class="col schedules" id="{{componentId}}-{{sectionId}}-weekly" {{weeklyHidden}}>
-        <div class="row">
-            <div class="col">
-                {{adminltetags.useTag('fields',
-                    [
-                        'component'                             : component,
-                        'componentName'                         : componentName,
-                        'componentId'                           : componentId,
-                        'sectionId'                             : sectionId,
-                        'fieldId'                               : 'weekly_days',
-                        'fieldLabel'                            : 'Days',
-                        'fieldType'                             : 'select2',
-                        'fieldHelp'                             : true,
-                        'fieldHelpTooltipContent'               : 'Days of the week.',
-                        'fieldRequired'                         : true,
-                        'fieldBazScan'                          : true,
-                        'fieldBazPostOnCreate'                  : true,
-                        'fieldBazPostOnUpdate'                  : true,
-                        'fieldDataSelect2Multiple'              : true,
-                        'fieldDataSelect2Options'               : weekdays,
-                        'fieldDataSelect2OptionsKey'            : 'id',
-                        'fieldDataSelect2OptionsValue'          : 'name',
-                        'fieldDataSelect2OptionsArray'          : true,
-                        'fieldDataSelect2OptionsSelected'       : weeklyDays
-                    ]
-                )}}
-            </div>
-        </div>
-        <div class="callout callout-info">
-            <h5>Weekly</h5>
-            <p>Transaction will be created on <span class="text-info" id="{{componentId}}-{{sectionId}}-weekly-days-span">Monday</span>.</p>
-        </div>
-    </div>
-    <div class="col schedules" id="{{componentId}}-{{sectionId}}-monthly" {{monthlyHidden}}>
-        <div class="row">
-            <div class="col">
-                {{adminltetags.useTag('fields',
-                    [
-                        'component'                             : component,
-                        'componentName'                         : componentName,
-                        'componentId'                           : componentId,
-                        'sectionId'                             : sectionId,
-                        'fieldId'                               : 'monthly_months',
-                        'fieldLabel'                            : 'Months',
-                        'fieldType'                             : 'select2',
-                        'fieldHelp'                             : true,
-                        'fieldHelpTooltipContent'               : 'Months of the year.',
-                        'fieldRequired'                         : true,
-                        'fieldBazScan'                          : true,
-                        'fieldBazPostOnCreate'                  : true,
-                        'fieldBazPostOnUpdate'                  : true,
-                        'fieldDataSelect2Multiple'              : true,
-                        'fieldDataSelect2Options'               : months,
-                        'fieldDataSelect2OptionsKey'            : 'id',
-                        'fieldDataSelect2OptionsValue'          : 'name',
-                        'fieldDataSelect2OptionsArray'          : true,
-                        'fieldDataSelect2OptionsSelected'       : monthlyMonths
-                    ]
-                )}}
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                {{adminltetags.useTag('fields',
-                    [
-                        'component'                             : component,
-                        'componentName'                         : componentName,
-                        'componentId'                           : componentId,
-                        'sectionId'                             : sectionId,
-                        'fieldId'                               : 'monthly_day',
-                        'fieldLabel'                            : 'Day',
-                        'fieldType'                             : 'input',
-                        'fieldInputTypeTextFilter'              : 'positiveInt',
-                        'fieldHelp'                             : true,
-                        'fieldHelpTooltipContent'               : 'Day between 1 and 31',
-                        'fieldRequired'                         : true,
-                        'fieldBazScan'                          : true,
-                        'fieldBazPostOnCreate'                  : true,
-                        'fieldBazPostOnUpdate'                  : true,
-                        'fieldBazJstreeSearch'                  : true,
-                        'fieldDataInputMinNumber'               : 1,
-                        'fieldDataInputMaxNumber'               : 31,
-                        'fieldValue'                            : monthlyDay
-                    ]
-                )}}
-            </div>
-        </div>
-        <div class="callout callout-info">
-            <h5>Monthly</h5>
-            <p>Transaction will be created in <span class="text-info" id="{{componentId}}-{{sectionId}}-monthly-months-span">January</span> on day <span class="text-info" id="{{componentId}}-{{sectionId}}-monthly-day-span"> 1 </span> of the month.</p>
-        </div>
-    </div>
-</div>
+{% include 'portfolios/strategies/common/schedule.html' %}
 <hr>
 <script>
 /* globals paginatedPNotify Swal */
@@ -466,7 +333,6 @@ dataCollectionSection =
     $.extend(dataCollectionSection, {
         '{{componentId}}-{{sectionId}}-amount'                                  : {
             afterInit: function() {
-                //Strategies
                 dataCollectionSectionForm['vars']['startDate'] = null;
                 dataCollectionSectionForm['vars']['endDate'] = null;
                 dataCollectionSectionForm['vars']['schedule'] = null;
@@ -561,15 +427,7 @@ dataCollectionSection =
                             text : 'Please select scheme'
                         });
 
-                        return;
-                    }
-
-                    if ($('#{{componentId}}-{{sectionId}}-amount').val() === '') {
-                        paginatedPNotify('error', {
-                            text : 'Please enter amount'
-                        });
-
-                        return;
+                        return false;
                     }
 
                     if (!dataCollectionSectionForm['vars']['startDate'] || !dataCollectionSectionForm['vars']['endDate']) {
@@ -577,7 +435,15 @@ dataCollectionSection =
                             text : 'Please select start and end date'
                         });
 
-                        return;
+                        return false;
+                    }
+
+                    if ($('#{{componentId}}-{{sectionId}}-amount').val() === '') {
+                        paginatedPNotify('error', {
+                            text : 'Please enter amount'
+                        });
+
+                        return false;
                     }
 
                     if (!dataCollectionSectionForm['vars']['schedule']) {
@@ -585,7 +451,7 @@ dataCollectionSection =
                             text : 'Please select schedule'
                         });
 
-                        return;
+                        return false;
                     }
 
                     if (dataCollectionSectionForm['vars']['schedule'] === 'weekly') {
@@ -594,7 +460,7 @@ dataCollectionSection =
                                 text : 'Please select weekly schedule days'
                             });
 
-                            return;
+                            return false;
                         }
                     }
 
@@ -604,14 +470,14 @@ dataCollectionSection =
                                 text : 'Please select monthly schedule months'
                             });
 
-                            return;
+                            return false;
                         }
                         if ($('#{{componentId}}-{{sectionId}}-monthly_day').val() === '') {
                             paginatedPNotify('error', {
                                 text : 'Please enter monthly schedule day'
                             });
 
-                            return;
+                            return false;
                         }
                     }
 
@@ -641,7 +507,7 @@ dataCollectionSection =
                                 text : 'Please provide increment value'
                             });
 
-                            return;
+                            return false;
                         }
 
                         postData['increment_amount'] = $('#{{componentId}}-{{sectionId}}-sip-increment-amount').val();
@@ -652,6 +518,10 @@ dataCollectionSection =
 
                 dataCollectionSectionForm['funcs']['getStrategiesTransactions'] = function() {
                     var postData = dataCollectionSectionForm['vars']['strategyPostData']();
+
+                    if (!postData) {
+                        return false;
+                    }
 
                     $.post('{{links.url("mf/portfolios/getStrategiesTransactions")}}', postData, function(response) {
                         if (response.tokenKey && response.token) {
@@ -745,6 +615,15 @@ dataCollectionSection =
                 } else {
                     dataCollectionSectionForm['vars']['startDate'] = null;
                 }
+            },
+            disable: [
+                function(date) {
+                    // return true to disable
+                    return (date.getDay() === 0);
+                }
+            ],
+            locale: {
+                "firstDayOfWeek": 1 // start week on Monday
             }
         },
         '{{componentId}}-{{sectionId}}-end-date'                                : {
@@ -759,6 +638,15 @@ dataCollectionSection =
                 } else {
                     dataCollectionSectionForm['vars']['endDate'] = null;
                 }
+            },
+            disable: [
+                function(date) {
+                    // return true to disable
+                    return (date.getDay() === 0);
+                }
+            ],
+            locale: {
+                "firstDayOfWeek": 1 // start week on Monday
             }
         },
         '{{componentId}}-{{sectionId}}-weekly_days'                             : {
@@ -768,19 +656,19 @@ dataCollectionSection =
             placeholder: 'SELECT MONTHS'
         },
         '{{componentId}}-{{sectionId}}-monthly_day'                             : { },
-        '{{componentId}}-{{sectionId}}-sip-schedule'                            : {
+        '{{componentId}}-{{sectionId}}-schedule'                            : {
             afterInit : function() {
-                $('#{{componentId}}-{{sectionId}}-sip-schedule').click(function() {
+                $('#{{componentId}}-{{sectionId}}-schedule').click(function() {
                     processSchedules();
                 });
 
                 function processSchedules() {
-                    dataCollectionSectionForm['vars']['schedule'] = $('#{{componentId}}-{{sectionId}}-sip-schedule').find('input[type=radio]:checked').data('value');
+                    dataCollectionSectionForm['vars']['schedule'] = $('#{{componentId}}-{{sectionId}}-schedule').find('input[type=radio]:checked').data('value');
 
-                    if ($('#{{componentId}}-{{sectionId}}-sip-schedule').find('input[type=radio]:checked').data('value') == 'daily') {
+                    if ($('#{{componentId}}-{{sectionId}}-schedule').find('input[type=radio]:checked').data('value') == 'daily') {
                         $('.schedules').attr('hidden', true);
                         $('#{{componentId}}-{{sectionId}}-daily').attr('hidden', false);
-                    } else if ($('#{{componentId}}-{{sectionId}}-sip-schedule').find('input[type=radio]:checked').data('value') == 'weekly') {
+                    } else if ($('#{{componentId}}-{{sectionId}}-schedule').find('input[type=radio]:checked').data('value') == 'weekly') {
                         $('.schedules').attr('hidden', true);
                         $('#{{componentId}}-{{sectionId}}-weekly').attr('hidden', false);
 
@@ -796,7 +684,7 @@ dataCollectionSection =
 
                             $('#{{componentId}}-{{sectionId}}-weekly-days-span').html(days.join(', '));
                         });
-                    } else if ($('#{{componentId}}-{{sectionId}}-sip-schedule').find('input[type=radio]:checked').data('value') == 'monthly') {
+                    } else if ($('#{{componentId}}-{{sectionId}}-schedule').find('input[type=radio]:checked').data('value') == 'monthly') {
                         $('.schedules').attr('hidden', true);
                         $('#{{componentId}}-{{sectionId}}-monthly').attr('hidden', false);
 

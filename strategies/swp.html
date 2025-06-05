@@ -1,1 +1,1050 @@
-SWP
+{% set currentHidden = 'hidden' %}
+{% set newHidden = 'hidden' %}
+{% set selectionHidden = 'hidden' %}
+<div class="row vdivide">
+    {% set investments = [] %}
+    {% if portfolio['investments']|length > 0 %}
+        {% for amfi_code, investment in portfolio['investments'] %}
+            {% if investment['status'] == 'close' %}
+                {% continue %}
+            {% endif %}
+            {% set investments[amfi_code] = investment %}
+        {% endfor %}
+    {% endif %}
+    {% if investments|length > 0 %}
+        {% set selection = 'current' %}
+        {% set selectionHidden = '' %}
+    {% else %}
+        {% set selection = 'new' %}
+        {% set newHidden = '' %}
+    {% endif %}
+    <div class="col-md-3" {{selectionHidden}}>
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'swp-source',
+                'fieldLabel'                     : 'SWP source',
+                'fieldType'                      : 'radio',
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'Select SWP source.',
+                'fieldRequired'                  : true,
+                'fieldBazPostOnCreate'           : true,
+                'fieldBazPostOnUpdate'           : true,
+                'fieldBazScan'                   : true,
+                'fieldRadioButtons'              :
+                    [
+                        'current' :
+                            [
+                                'title'          : 'CURRENT INVESTMENTS',
+                                'type'           : 'info',
+                                'dataValue'      : 'current'
+                            ],
+                        'new' :
+                            [
+                                'title'          : 'NEW INVESTMENT',
+                                'type'           : 'info',
+                                'dataValue'      : 'new'
+                            ]
+                    ],
+                'fieldRadioChecked'              : selection
+            ]
+        )}}
+    </div>
+    <div class="col sources" id="{{componentId}}-{{sectionId}}-current" {{currentHidden}}>
+        <div class="row">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'sell_transaction_id',
+                        'fieldLabel'                     : 'Select Investment to withdraw from',
+                        'fieldType'                      : 'select2',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'Select a transaction to sell',
+                        'fieldRequired'                  : true,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnCreate'           : false,
+                        'fieldBazPostOnUpdate'           : false,
+                        'fieldDataSelect2Options'        : investments,
+                        'fieldDataSelect2OptionsKey'     : 'amfi_code',
+                        'fieldDataSelect2OptionsValue'   : 'scheme/name',
+                        'fieldDataSelect2OptionsArray'   : true,
+                        'fieldDataSelect2OptionsSelected': ''
+                    ]
+                )}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'sell-amfi_code',
+                        'fieldLabel'                     : 'AMFI Code',
+                        'fieldType'                      : 'input',
+                        'fieldHelp'                      : true,
+                        'fieldDisabled'                  : true,
+                        'fieldHidden'                    : true,
+                        'fieldHelpTooltipContent'        : 'AMFI Code for the scheme',
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnCreate'           : false,
+                        'fieldBazPostOnUpdate'           : false,
+                        'fieldValue'                     : ''
+                    ]
+                )}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'sell-isin',
+                        'fieldLabel'                     : 'ISIN',
+                        'fieldType'                      : 'html',
+                        'fieldAdditionalClass'           : 'mb-0',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'ISIN for the scheme',
+                        'fieldRequired'                  : false,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnUpdate'           : true,
+                        'fieldHtmlContent'               : '-'
+                    ]
+                )}}
+            </div>
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'sell-available_amount',
+                        'fieldLabel'                     : 'Available Amount',
+                        'fieldType'                      : 'html',
+                        'fieldAdditionalClass'           : 'mb-0',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'Available Amount',
+                        'fieldRequired'                  : false,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnUpdate'           : true,
+                        'fieldHtmlContent'               : '-'
+                    ]
+                )}}
+            </div>
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'sell-available_units',
+                        'fieldLabel'                     : 'Available Units',
+                        'fieldType'                      : 'html',
+                        'fieldAdditionalClass'           : 'mb-0',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'Available units',
+                        'fieldRequired'                  : false,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnUpdate'           : true,
+                        'fieldHtmlContent'               : '-'
+                    ]
+                )}}
+            </div>
+        </div>
+    </div>
+    <div class="col sources" id="{{componentId}}-{{sectionId}}-new" {{newHidden}}>
+        <div class="row">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'amc_id',
+                        'fieldLabel'                     : 'AMC',
+                        'fieldType'                      : 'select2',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'Select AMC to search scheme',
+                        'fieldRequired'                  : true,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnCreate'           : false,
+                        'fieldBazPostOnUpdate'           : false,
+                        'fieldDataSelect2Options'        : amcs,
+                        'fieldDataSelect2OptionsKey'     : 'id',
+                        'fieldDataSelect2OptionsValue'   : 'name',
+                        'fieldDataSelect2OptionsArray'   : true,
+                        'fieldDataSelect2OptionsSelected': ''
+                    ]
+                )}}
+            </div>
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'scheme_id',
+                        'fieldLabel'                     : 'Scheme',
+                        'fieldType'                      : 'select2',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'Select Scheme',
+                        'fieldRequired'                  : true,
+                        'fieldDisabled'                  : true,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnCreate'           : false,
+                        'fieldBazPostOnUpdate'           : false,
+                        'fieldDataSelect2Options'        : [],
+                        'fieldDataSelect2OptionsKey'     : 'id',
+                        'fieldDataSelect2OptionsValue'   : 'name',
+                        'fieldDataSelect2OptionsArray'   : true,
+                        'fieldDataSelect2OptionsSelected': ''
+                    ]
+                )}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'investment_amount',
+                        'fieldLabel'                     : 'Investment Amount',
+                        'fieldType'                      : 'input',
+                        'fieldGroupPreAddonText'         : currencySymbol,
+                        'fieldInputTypeTextFilter'       : 'positiveCurrency',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'Investment Transaction Amount',
+                        'fieldRequired'                  : true,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnCreate'           : false,
+                        'fieldBazPostOnUpdate'           : false,
+                        'fieldValue'                     : ''
+                    ]
+                )}}
+            </div>
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'investment_date',
+                        'fieldLabel'                     : 'Investment Date',
+                        'fieldType'                      : 'flatpickr',
+                        'fieldFlatpickrClearButton'      : true,
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'Investment Date',
+                        'fieldRequired'                  : true,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnCreate'           : false,
+                        'fieldBazPostOnUpdate'           : true,
+                        'fieldValue'                     : ''
+                    ]
+                )}}
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col">
+                {{adminltetags.useTag('buttons',
+                    [
+                        'componentId'           : componentId,
+                        'sectionId'             : sectionId,
+                        'buttonType'            : 'button',
+                        'buttons'               :
+                            [
+                                'buy-import' : [
+                                    'title'                   : 'Import Navs',
+                                    'position'                : 'right',
+                                    'size'                    : 'sm',
+                                    'disabled'                : true,
+                                    'icon'                    : 'cog fa-spin',
+                                    'iconHidden'              : true
+                                ]
+                            ]
+                    ]
+                )}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'buy-amfi_code',
+                        'fieldLabel'                     : 'AMFI Code',
+                        'fieldType'                      : 'input',
+                        'fieldHelp'                      : true,
+                        'fieldDisabled'                  : true,
+                        'fieldHidden'                    : true,
+                        'fieldHelpTooltipContent'        : 'AMFI Code for the scheme',
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnCreate'           : false,
+                        'fieldBazPostOnUpdate'           : false,
+                        'fieldValue'                     : ''
+                    ]
+                )}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'buy-isin',
+                        'fieldLabel'                     : 'ISIN',
+                        'fieldType'                      : 'html',
+                        'fieldAdditionalClass'           : 'mb-0',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'ISIN for the scheme',
+                        'fieldRequired'                  : false,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnUpdate'           : true,
+                        'fieldHtmlContent'               : '-'
+                    ]
+                )}}
+            </div>
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'buy-first_nav_date',
+                        'fieldLabel'                     : 'First NAV date',
+                        'fieldType'                      : 'html',
+                        'fieldAdditionalClass'           : 'mb-0',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'First NAV date for the scheme',
+                        'fieldRequired'                  : false,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnUpdate'           : true,
+                        'fieldHtmlContent'               : '-'
+                    ]
+                )}}
+            </div>
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'buy-latest_nav_date',
+                        'fieldLabel'                     : 'Latest NAV date',
+                        'fieldType'                      : 'html',
+                        'fieldAdditionalClass'           : 'mb-0',
+                        'fieldHelp'                      : true,
+                        'fieldHelpTooltipContent'        : 'Latest NAV date for the scheme',
+                        'fieldRequired'                  : false,
+                        'fieldBazScan'                   : true,
+                        'fieldBazPostOnUpdate'           : true,
+                        'fieldHtmlContent'               : '-'
+                    ]
+                )}}
+            </div>
+        </div>
+    </div>
+</div>
+<hr>
+<div class="row">
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'start-date',
+                'fieldLabel'                     : 'Start Date',
+                'fieldType'                      : 'flatpickr',
+                'fieldFlatpickrClearButton'      : true,
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'Start Date',
+                'fieldRequired'                  : true,
+                'fieldBazScan'                   : true,
+                'fieldBazPostOnCreate'           : false,
+                'fieldBazPostOnUpdate'           : true,
+                'fieldValue'                     : ''
+            ]
+        )}}
+    </div>
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'end-date',
+                'fieldLabel'                     : 'End Date',
+                'fieldType'                      : 'flatpickr',
+                'fieldFlatpickrClearButton'      : true,
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'End Date',
+                'fieldRequired'                  : true,
+                'fieldBazScan'                   : true,
+                'fieldBazPostOnCreate'           : false,
+                'fieldBazPostOnUpdate'           : true,
+                'fieldValue'                     : ''
+            ]
+        )}}
+    </div>
+</div>
+<hr>
+<div class="row">
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'amount',
+                'fieldLabel'                     : 'Withdraw Amount',
+                'fieldType'                      : 'input',
+                'fieldGroupPreAddonText'         : currencySymbol,
+                'fieldInputTypeTextFilter'       : 'positiveCurrency',
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'Transaction Amount',
+                'fieldRequired'                  : true,
+                'fieldBazScan'                   : true,
+                'fieldBazPostOnCreate'           : false,
+                'fieldBazPostOnUpdate'           : false,
+                'fieldValue'                     : ''
+            ]
+        )}}
+    </div>
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'swp-increment-schedule',
+                'fieldLabel'                     : 'Increment schedule',
+                'fieldType'                      : 'radio',
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'Select schedule for increment.',
+                'fieldBazPostOnCreate'           : true,
+                'fieldBazPostOnUpdate'           : true,
+                'fieldBazScan'                   : true,
+                'fieldRadioButtons'              :
+                    [
+                        'increment-none' :
+                            [
+                                'title'          : 'None',
+                                'type'           : 'info',
+                                'dataValue'      : 'increment-none'
+                            ],
+                        'increment-next' :
+                            [
+                                'title'          : 'Next Transaction',
+                                'type'           : 'info',
+                                'dataValue'      : 'increment-next'
+                            ],
+                        'increment-weekly' :
+                            [
+                                'title'          : 'Weekly',
+                                'type'           : 'info',
+                                'dataValue'      : 'increment-weekly'
+                            ],
+                        'increment-monthly' :
+                            [
+                                'title'          : 'Monthly',
+                                'type'           : 'info',
+                                'dataValue'      : 'increment-monthly'
+                            ],
+                        'increment-yearly' :
+                            [
+                                'title'          : 'Yearly',
+                                'type'           : 'info',
+                                'dataValue'      : 'increment-yearly'
+                            ]
+                    ],
+                'fieldRadioChecked'              : 'increment-none'
+            ]
+        )}}
+    </div>
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'swp-increment-amount',
+                'fieldLabel'                     : 'Increment Amount',
+                'fieldType'                      : 'input',
+                'fieldGroupPreAddonText'         : currencySymbol,
+                'fieldInputTypeTextFilter'       : 'positiveCurrency',
+                'fieldHelp'                      : true,
+                'fieldDisabled'                  : true,
+                'fieldHelpTooltipContent'        : 'Depending on increment type, the amount will be in amount or percent.',
+                'fieldBazScan'                   : true,
+                'fieldBazPostOnCreate'           : false,
+                'fieldBazPostOnUpdate'           : false,
+                'fieldValue'                     : ''
+            ]
+        )}}
+    </div>
+</div>
+<hr>
+{% include 'portfolios/strategies/common/schedule.html' %}
+<hr>
+<script>
+/* globals paginatedPNotify Swal */
+var dataCollectionComponent, dataCollectionSection, dataCollectionSectionForm;
+
+if (!window['dataCollection']['{{componentId}}']) {
+    dataCollectionComponent =
+        window['dataCollection']['{{componentId}}'] = { };
+} else {
+    dataCollectionComponent =
+        window['dataCollection']['{{componentId}}'];
+}
+if (!dataCollectionComponent['{{componentId}}-{{sectionId}}']) {
+    dataCollectionSection =
+        dataCollectionComponent['{{componentId}}-{{sectionId}}'] = { };
+} else {
+    dataCollectionSection =
+        dataCollectionComponent['{{componentId}}-{{sectionId}}'];
+}
+if (!dataCollectionSection['{{componentId}}-{{sectionId}}-form']) {
+    dataCollectionSectionForm =
+        dataCollectionSection['{{componentId}}-{{sectionId}}-form'] = { };
+} else {
+    dataCollectionSectionForm =
+        dataCollectionSection['{{componentId}}-{{sectionId}}-form'];
+}
+
+dataCollectionSection =
+    $.extend(dataCollectionSection, {
+        '{{componentId}}-{{sectionId}}-amount'                                  : {
+            afterInit: function() {
+                dataCollectionSectionForm['vars']['startDate'] = null;
+                dataCollectionSectionForm['vars']['endDate'] = null;
+                dataCollectionSectionForm['vars']['schedule'] = null;
+
+                dataCollectionSectionForm['funcs']['applyStrategy'] = function() {
+                    var postData = dataCollectionSectionForm['vars']['strategyPostData']();
+
+                    if (!postData) {
+                        return false;
+                    }
+
+                    if ($('#{{componentId}}-{{sectionId}}-clone_portfolio')[0].checked) {
+                        postData['clone_portfolio'] = true;
+                        postData['clone_portfolio_name'] = $('#{{componentId}}-{{sectionId}}-clone_portfolio_name').val();
+                    }
+
+                    // var swalSound = window['dataCollection'].env.sounds.swalSound;
+
+                    // Swal.fire({
+                    //     html                        : '<span class="text-warning">It is recommended to clone portfolio and apply the strategy to the clone portfolio.<span>',
+                    //     icon                        : 'warning',
+                    //     background                  : 'rgba(0,0,0,.8)',
+                    //     backdrop                    : 'rgba(0,0,0,.6)',
+                    //     buttonsStyling              : false,
+                    //     confirmButtonText           : 'Clone & apply strategy',
+                    //     denyButtonText              : 'Apply strategy',
+                    //     customClass                 : {
+                    //         'confirmButton'             : 'btn btn-success text-uppercase',
+                    //         'denyButton'                : 'ml-2 btn btn-warning text-uppercase',
+                    //         'cancelButton'              : 'ml-2 btn btn-secondary text-uppercase',
+                    //     },
+                    //     showDenyButton              : true,
+                    //     showCancelButton            : true,
+                    //     keydownListenerCapture      : true,
+                    //     allowOutsideClick           : true,
+                    //     allowEscapeKey              : true,
+                    //     didOpen                     : function() {
+                    //         swalSound.play();
+                    //     }
+                    // }).then((result) => {
+                    //     if (result.value === true) {
+                    //         postData['clone_portfolio'] = true;
+                    //     } else if (result.value === false) {
+                    //         postData['clone_portfolio'] = false;
+                    //     } else if (!result.value) {
+                    //         return;
+                    //     }
+
+                        // if (postData) {
+                            $.post('{{links.url("mf/portfolios/applyStrategy")}}', postData, function(response) {
+                                if (response.tokenKey && response.token) {
+                                    $("#security-token").attr("name", response.tokenKey);
+                                    $("#security-token").val(response.token);
+                                }
+
+                                if (response.responseCode === 0) {
+                                    $('#strategies-progress').attr('hidden', true);
+                                    $('#strategies-buttons').attr('hidden', true);
+                                    $('#portfolio-access-buttons').attr('hidden', false);
+                                    $('#{{componentId}}-{{sectionId}}-transact-mode, #{{componentId}}-{{sectionId}}-timeline-mode').off();
+                                    $('#{{componentId}}-{{sectionId}}-transact-mode, #{{componentId}}-{{sectionId}}-timeline-mode').click(function() {
+                                        if ($(this)[0].id === '{{componentId}}-{{sectionId}}-transact-mode') {
+                                            $('#{{componentId}}-{{sectionId}}-portfolios-link')
+                                                .attr(
+                                                    'href',
+                                                    window['dataCollection'].env.httpScheme + '://' + window['dataCollection'].env.httpHost + '/' + window['dataCollection'].env.appRoute + '/' +
+                                                    'mf/portfolios/q/id/' + response.responseData['portfolio_id'] + '/mode/transact'
+                                                );
+                                        } else if ($(this)[0].id === '{{componentId}}-{{sectionId}}-timeline-mode') {
+                                            $('#{{componentId}}-{{sectionId}}-portfolios-link')
+                                                .attr(
+                                                    'href',
+                                                    window['dataCollection'].env.httpScheme + '://' + window['dataCollection'].env.httpHost + '/' + window['dataCollection'].env.appRoute + '/' +
+                                                    'mf/portfolios/q/id/' + response.responseData['portfolio_id'] + '/mode/timeline'
+                                                );
+                                        }
+
+                                        dataCollectionSectionForm['funcs']['browse']();
+                                    });
+                                } else {
+                                    paginatedPNotify('error', {
+                                        text : response.responseMessage
+                                    });
+                                }
+                            }, 'json');
+                    //     }
+                    // });
+                }
+
+                $('#{{componentId}}-{{sectionId}}-view-strategy-transactions').click(function() {
+                    dataCollectionSectionForm['funcs']['getStrategiesTransactions']();
+                });
+
+                dataCollectionSectionForm['vars']['strategyPostData'] = function() {
+                    if (dataCollectionSectionForm['vars']['source'] === 'current') {
+                        if ($('#{{componentId}}-{{sectionId}}-sell_transaction_id').val() === '') {
+                            paginatedPNotify('error', {
+                                text : 'Please select investment to withdraw from'
+                            });
+
+                            return false;
+                        }
+                    } else {
+                        if ($('#{{componentId}}-{{sectionId}}-scheme_id').val() === '') {
+                            paginatedPNotify('error', {
+                                text : 'Please select scheme'
+                            });
+
+                            return false;
+                        }
+
+                        if ($('#{{componentId}}-{{sectionId}}-investment_amount').val() === '') {
+                            paginatedPNotify('error', {
+                                text : 'Please enter investment amount'
+                            });
+
+                            return false;
+                        }
+
+                        if ($('#{{componentId}}-{{sectionId}}-investment_date').val() === '') {
+                            paginatedPNotify('error', {
+                                text : 'Please select investment date'
+                            });
+
+                            return false;
+                        }
+                    }
+
+                    if (!dataCollectionSectionForm['vars']['startDate'] || !dataCollectionSectionForm['vars']['endDate']) {
+                        paginatedPNotify('error', {
+                            text : 'Please select start and end date'
+                        });
+
+                        return false;
+                    }
+
+                    if ($('#{{componentId}}-{{sectionId}}-amount').val() === '') {
+                        paginatedPNotify('error', {
+                            text : 'Please enter amount'
+                        });
+
+                        return false;
+                    }
+
+                    if (!dataCollectionSectionForm['vars']['schedule']) {
+                        paginatedPNotify('error', {
+                            text : 'Please select schedule'
+                        });
+
+                        return false;
+                    }
+
+                    if (dataCollectionSectionForm['vars']['schedule'] === 'weekly') {
+                        if ($('#{{componentId}}-{{sectionId}}-weekly_days').val().length === 0) {
+                            paginatedPNotify('error', {
+                                text : 'Please select weekly schedule days'
+                            });
+
+                            return false;
+                        }
+                    }
+
+                    if (dataCollectionSectionForm['vars']['schedule'] === 'monthly') {
+                        if ($('#{{componentId}}-{{sectionId}}-monthly_months').val().length === 0) {
+                            paginatedPNotify('error', {
+                                text : 'Please select monthly schedule months'
+                            });
+
+                            return false;
+                        }
+                        if ($('#{{componentId}}-{{sectionId}}-monthly_day').val() === '') {
+                            paginatedPNotify('error', {
+                                text : 'Please enter monthly schedule day'
+                            });
+
+                            return false;
+                        }
+                    }
+
+                    var postData = { };
+                    postData[$('#security-token').attr('name')] = $('#security-token').val();
+                    postData['portfolio_id'] = $('#{{componentId}}-{{sectionId}}-id').val();
+                    postData['strategy_id'] = $('#{{componentId}}-{{sectionId}}-strategies').val();
+                    postData['amc_id'] = $('#{{componentId}}-{{sectionId}}-amc_id').val();
+                    if (dataCollectionSectionForm['vars']['source'] === 'current') {
+                        postData['amfi_code'] = $('#{{componentId}}-{{sectionId}}-sell_transaction_id').val();
+                    } else {
+                        postData['scheme_id'] = $('#{{componentId}}-{{sectionId}}-scheme_id').val();
+                        postData['investmentAmount'] = $('#{{componentId}}-{{sectionId}}-investment_amount').val();
+                        postData['investmentDate'] = $('#{{componentId}}-{{sectionId}}-investment_date').val();
+                    }
+
+                    postData['amount'] = $('#{{componentId}}-{{sectionId}}-amount').val();
+                    postData['startDate'] = dataCollectionSectionForm['vars']['startDate'];
+                    postData['endDate'] = dataCollectionSectionForm['vars']['endDate'];
+                    postData['schedule'] = dataCollectionSectionForm['vars']['schedule'];
+                    if (dataCollectionSectionForm['vars']['schedule'] === 'weekly') {
+                        postData['weekly_days'] = $('#{{componentId}}-{{sectionId}}-weekly_days').val();
+                    } else if (dataCollectionSectionForm['vars']['schedule'] === 'monthly') {
+                        postData['monthly_months'] = $('#{{componentId}}-{{sectionId}}-monthly_months').val();
+                        postData['monthly_day'] = $('#{{componentId}}-{{sectionId}}-monthly_day').val();
+                    }
+                    if (dataCollectionSectionForm['vars']['swp-increment-schedule'] &&
+                        dataCollectionSectionForm['vars']['swp-increment-schedule'] !== 'increment-none'
+                    ) {
+                        postData['increment_schedule'] = dataCollectionSectionForm['vars']['swp-increment-schedule'];
+
+                        if ($('#{{componentId}}-{{sectionId}}-swp-increment-amount').val() === '') {
+                            paginatedPNotify('error', {
+                                text : 'Please provide increment value'
+                            });
+
+                            return false;
+                        }
+
+                        postData['increment_amount'] = $('#{{componentId}}-{{sectionId}}-swp-increment-amount').val();
+                    }
+
+                    return postData;
+                };
+
+                dataCollectionSectionForm['funcs']['getStrategiesTransactions'] = function() {
+                    var postData = dataCollectionSectionForm['vars']['strategyPostData']();
+
+                    if (!postData) {
+                        return false;
+                    }
+
+                    $.post('{{links.url("mf/portfolios/getStrategiesTransactions")}}', postData, function(response) {
+                        if (response.tokenKey && response.token) {
+                            $("#security-token").attr("name", response.tokenKey);
+                            $("#security-token").val(response.token);
+                        }
+
+                        if (response.responseCode === 0) {
+                            if (response.responseData) {
+                                $('#{{componentId}}-{{sectionId}}-strategies_total_buy_transactions').empty().html('0');
+                                $('#{{componentId}}-{{sectionId}}-strategies_total_sell_transactions').empty().html('0');
+                                $('#{{componentId}}-{{sectionId}}-strategies_first_transaction_date').empty().html('-');
+                                $('#{{componentId}}-{{sectionId}}-strategies_last_transaction_date').empty().html('-');
+
+                                if (response.responseData.total_transactions_count.buy) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies_total_buy_transactions').empty().html(response.responseData.total_transactions_count.buy);
+                                }
+                                if (response.responseData.total_transactions_count.sell) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies_total_sell_transactions').empty().html(response.responseData.total_transactions_count.sell);
+                                }
+                                if (response.responseData.total_transactions_amount) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies_total_transactions_amount').empty().html(dataCollectionSectionForm['vars']['currencySymbol'] + response.responseData.total_transactions_amount);
+                                }
+                                if (response.responseData.first_date) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies_first_transaction_date').empty().html(response.responseData.first_date);
+                                }
+                                if (response.responseData.last_date) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies_last_transaction_date').empty().html(response.responseData.last_date);
+                                }
+                                if (response.responseData.transactions) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies-transactions-table tbody').empty();
+                                    // var tbody = '';
+                                    var transactions = [];
+                                    var scheme = $('#{{componentId}}-{{sectionId}}-scheme_id').select2('data')[0].text;
+                                    for (var transaction in response.responseData.transactions) {
+                                        var newTransaction = [];
+                                        newTransaction.push(response.responseData.transactions[transaction]['type'].toUpperCase());
+                                        newTransaction.push(response.responseData.transactions[transaction]['date']);
+                                        newTransaction.push(scheme);
+                                        newTransaction.push(response.responseData.transactions[transaction]['amount']);
+                                        transactions.push(newTransaction);
+                                        // tbody += '<tr>';
+                                        // tbody += '   <td>';
+                                        // tbody += '      <span>' + response.responseData.transactions[transaction]['type'].toUpperCase() + '</span>';
+                                        // tbody += '   </td>';
+                                        // tbody += '   <td>';
+                                        // tbody += '      <span>' + response.responseData.transactions[transaction]['date'] + '</span>';
+                                        // tbody += '   </td>';
+                                        // tbody += '   <td>';
+                                        // tbody += '      <span>' + $('#{{componentId}}-{{sectionId}}-scheme_id').select2('data')[0].text + '</span>';
+                                        // tbody += '   </td>';
+                                        // tbody += '   <td>';
+                                        // tbody += '      <span>' + response.responseData.transactions[transaction]['amount'] + '</span>';
+                                        // tbody += '   </td>';
+                                        // tbody += '</tr>';
+                                    }
+
+                                    // $('#{{componentId}}-{{sectionId}}-strategies-transactions-table tbody').html(tbody);
+                                    //eslint-disable-next-line
+                                    // console.log(dataCollectionSectionForm['vars']['strategiesTransactionsTable'].rows());
+                                    dataCollectionSectionForm['vars']['strategiesTransactionsTable'].rows().clear().draw();
+                                    dataCollectionSectionForm['vars']['strategiesTransactionsTable'].rows.add(transactions).draw();
+                                    //eslint-disable-next-line
+                                    // console.log(transactions);
+                                    //eslint-disable-next-line
+                                    // console.log(dataCollectionSectionForm['vars']['strategiesTransactionsTable'].rows());
+                                    $('#{{componentId}}-{{sectionId}}-strategies-transactions-modal').modal('show');
+                                    $('#{{componentId}}-{{sectionId}}-strategies-transactions-modal').on('hide.bs.modal', function (e) {
+                                        $('#{{componentId}}-{{sectionId}}-strategies-transactions-table tbody').empty();
+                                    });
+                                }
+                            }
+                        } else {
+                            paginatedPNotify('error', {
+                                text : response.responseMessage
+                            });
+                        }
+                    }, 'json');
+                }
+            }
+        },
+        '{{componentId}}-{{sectionId}}-start-date'                              : {
+            dateFormat          : "Y-m-d",
+            altFormat           : "Y-m-d",
+            static              : true,
+            minDate             : "2000-01-01",
+            maxDate             : "today",
+            onChange: function(selectedDates, dateStr, instance) {
+                if (dateStr !== '') {
+                    dataCollectionSectionForm['vars']['startDate'] = dateStr;
+                } else {
+                    dataCollectionSectionForm['vars']['startDate'] = null;
+                }
+            },
+            disable: [
+                function(date) {
+                    // return true to disable
+                    return (date.getDay() === 0);
+                }
+            ],
+            locale: {
+                "firstDayOfWeek": 1 // start week on Monday
+            }
+        },
+        '{{componentId}}-{{sectionId}}-end-date'                                : {
+            dateFormat          : "Y-m-d",
+            altFormat           : "Y-m-d",
+            static              : true,
+            minDate             : "2000-01-01",
+            maxDate             : "today",
+            onChange: function(selectedDates, dateStr, instance) {
+                if (dateStr !== '') {
+                    dataCollectionSectionForm['vars']['endDate'] = dateStr;
+                } else {
+                    dataCollectionSectionForm['vars']['endDate'] = null;
+                }
+            },
+            disable: [
+                function(date) {
+                    // return true to disable
+                    return (date.getDay() === 0);
+                }
+            ],
+            locale: {
+                "firstDayOfWeek": 1 // start week on Monday
+            }
+        },
+        '{{componentId}}-{{sectionId}}-weekly_days'                             : {
+            placeholder: 'SELECT DAYS'
+        },
+        '{{componentId}}-{{sectionId}}-monthly_months'                          : {
+            placeholder: 'SELECT MONTHS'
+        },
+        '{{componentId}}-{{sectionId}}-monthly_day'                             : { },
+        '{{componentId}}-{{sectionId}}-swp-source'                              : {
+            afterInit : function() {
+                $('#{{componentId}}-{{sectionId}}-swp-source').click(function() {
+                    processSchedules();
+                });
+
+                function processSchedules() {
+                    dataCollectionSectionForm['vars']['source'] = $('#{{componentId}}-{{sectionId}}-swp-source').find('input[type=radio]:checked').data('value');
+
+                    if ($('#{{componentId}}-{{sectionId}}-swp-source').find('input[type=radio]:checked').data('value') == 'current') {
+                        $('.sources').attr('hidden', true);
+                        $('#{{componentId}}-{{sectionId}}-current').attr('hidden', false);
+                    } else if ($('#{{componentId}}-{{sectionId}}-swp-source').find('input[type=radio]:checked').data('value') == 'new') {
+                        $('.sources').attr('hidden', true);
+                        $('#{{componentId}}-{{sectionId}}-new').attr('hidden', false);
+                    }
+                }
+
+                processSchedules();
+            }
+        },
+        '{{componentId}}-{{sectionId}}-investment_amount'                       : { },
+        '{{componentId}}-{{sectionId}}-investment_date'                         : {
+            dateFormat          : "Y-m-d",
+            altFormat           : "Y-m-d",
+            static              : true,
+            minDate             : "2000-01-01",
+            maxDate             : "today",
+            onChange: function(selectedDates, dateStr, instance) {
+                if (dateStr !== '') {
+                    dataCollectionSectionForm['vars']['investmentDate'] = dateStr;
+                } else {
+                    dataCollectionSectionForm['vars']['investmentDate'] = null;
+                }
+            },
+            disable: [
+                function(date) {
+                    // return true to disable
+                    return (date.getDay() === 0);
+                }
+            ],
+            locale: {
+                "firstDayOfWeek": 1 // start week on Monday
+            }
+        },
+        '{{componentId}}-{{sectionId}}-schedule'                            : {
+            afterInit : function() {
+                $('#{{componentId}}-{{sectionId}}-schedule').click(function() {
+                    processSchedules();
+                });
+
+                function processSchedules() {
+                    dataCollectionSectionForm['vars']['schedule'] = $('#{{componentId}}-{{sectionId}}-schedule').find('input[type=radio]:checked').data('value');
+
+                    if ($('#{{componentId}}-{{sectionId}}-schedule').find('input[type=radio]:checked').data('value') == 'daily') {
+                        $('.schedules').attr('hidden', true);
+                        $('#{{componentId}}-{{sectionId}}-daily').attr('hidden', false);
+                    } else if ($('#{{componentId}}-{{sectionId}}-schedule').find('input[type=radio]:checked').data('value') == 'weekly') {
+                        $('.schedules').attr('hidden', true);
+                        $('#{{componentId}}-{{sectionId}}-weekly').attr('hidden', false);
+
+                        $('#{{componentId}}-{{sectionId}}-weekly_days').change('select2:change', function(e) {
+                            var selectedDays = $('#{{componentId}}-{{sectionId}}-weekly_days').val();
+                            var days = [];
+
+                            $('#{{componentId}}-{{sectionId}}-weekly_days').children('option').each(function(index, day) {
+                                if (selectedDays.includes($(day).val())) {
+                                    days.push($(day).text());
+                                }
+                            });
+
+                            $('#{{componentId}}-{{sectionId}}-weekly-days-span').html(days.join(', '));
+                        });
+                    } else if ($('#{{componentId}}-{{sectionId}}-schedule').find('input[type=radio]:checked').data('value') == 'monthly') {
+                        $('.schedules').attr('hidden', true);
+                        $('#{{componentId}}-{{sectionId}}-monthly').attr('hidden', false);
+
+                        $('#{{componentId}}-{{sectionId}}-monthly_months').change('select2:change', function(e) {
+                            var selectedMonths = $('#{{componentId}}-{{sectionId}}-monthly_months').val();
+                            var months = [];
+
+                            $('#{{componentId}}-{{sectionId}}-monthly_months').children('option').each(function(index, month) {
+                                if (selectedMonths.includes($(month).val())) {
+                                    months.push($(month).text());
+                                }
+                            });
+                            $('#{{componentId}}-{{sectionId}}-monthly-months-span').html(months.join(', '));
+                        });
+
+                        $('#{{componentId}}-{{sectionId}}-monthly_day').on('input propertychange', function() {
+                            if ($('#{{componentId}}-{{sectionId}}-monthly_day').val().length === 0) {
+                                $('#{{componentId}}-{{sectionId}}-monthly-day-span').html('X');
+                            } else {
+                                if ($('#{{componentId}}-{{sectionId}}-monthly_day').val() == 0) {
+                                    $('#{{componentId}}-{{sectionId}}-monthly-day-span').html('X');
+                                } else {
+                                    $('#{{componentId}}-{{sectionId}}-monthly-day-span').html($('#{{componentId}}-{{sectionId}}-monthly_day').val());
+                                }
+                            }
+                        });
+                    }
+                }
+
+                processSchedules();
+            }
+        },
+        '{{componentId}}-{{sectionId}}-swp-increment-schedule'                  : {
+            afterInit: function() {
+                dataCollectionSectionForm['vars']['swp-increment-schedule'] = $('#{{componentId}}-{{sectionId}}-swp-increment-schedule').find('input[type=radio]:checked').data('value');
+
+                $('#{{componentId}}-{{sectionId}}-swp-increment-schedule').click(function() {
+                    dataCollectionSectionForm['vars']['swp-increment-schedule'] = $(this).find('input[type=radio]:checked').data('value');
+
+                    if ($(this).find('input[type=radio]:checked').data('value') == 'increment-none') {
+                        $('#{{componentId}}-{{sectionId}}-swp-increment-amount').attr('disabled', true);
+                        $('#{{componentId}}-{{sectionId}}-swp-increment-amount').val('');
+                    } else {
+                        $('#{{componentId}}-{{sectionId}}-swp-increment-amount').attr('disabled', false);
+                    }
+                });
+            }
+        },
+        '{{componentId}}-{{sectionId}}-swp-increment-amount'                    : { },
+        '{{componentId}}-{{sectionId}}-form'                                    : {
+            ignore      : ':submit, :reset, :image, :hidden, .ignore, .cr-slider',
+            rules: {
+                '{{componentId}}-{{sectionId}}-weekly_days'                     : 'required',
+                '{{componentId}}-{{sectionId}}-monthly_months'                  : 'required',
+                '{{componentId}}-{{sectionId}}-monthly_day'                     : 'required'
+            },
+            messages: {
+                '{{componentId}}-{{sectionId}}-weekly_days'                     : 'Please select days',
+                '{{componentId}}-{{sectionId}}-monthly_months'                  : 'Please select months',
+                '{{componentId}}-{{sectionId}}-monthly_day'                     : 'Please enter day'
+            }
+        }
+    });
+</script>
