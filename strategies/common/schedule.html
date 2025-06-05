@@ -1,0 +1,207 @@
+{% set weeklyHidden = 'hidden' %}
+{% set weeklyDays = ['1'] %}
+{% set monthlyHidden = 'hidden' %}
+{% set monthlyMonths = ['1'] %}
+{% set monthlyDay = '1' %}
+<div class="row vdivide mt-3">
+    <div class="col-md-3">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'schedule',
+                'fieldLabel'                     : 'Schedule',
+                'fieldType'                      : 'radio',
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'Select Schedule.',
+                'fieldRequired'                  : true,
+                'fieldBazPostOnCreate'           : true,
+                'fieldBazPostOnUpdate'           : true,
+                'fieldBazScan'                   : true,
+                'fieldRadioButtons'              :
+                    [
+                        'weekly' :
+                            [
+                                'title'          : 'Weekly',
+                                'type'           : 'info',
+                                'dataValue'      : 'weekly'
+                            ],
+                        'monthly' :
+                            [
+                                'title'          : 'Monthly',
+                                'type'           : 'info',
+                                'dataValue'      : 'monthly'
+                            ]
+                    ],
+                'fieldRadioChecked'              : 'monthly'
+            ]
+        )}}
+    </div>
+    <div class="col schedules" id="{{componentId}}-{{sectionId}}-weekly" {{weeklyHidden}}>
+        <div class="row mb-2">
+            <div class="col">
+                {{adminltetags.useTag('buttons',
+                    [
+                        'componentId'           : componentId,
+                        'sectionId'             : sectionId,
+                        'buttonType'            : 'button',
+                        'buttons'               :
+                            [
+                                'select_all_days' : [
+                                    'title'                   : 'Select All',
+                                    'position'                : 'right',
+                                    'size'                    : 'sm'
+                                ]
+                            ]
+                    ]
+                )}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                             : component,
+                        'componentName'                         : componentName,
+                        'componentId'                           : componentId,
+                        'sectionId'                             : sectionId,
+                        'fieldId'                               : 'weekly_days',
+                        'fieldLabel'                            : 'Days',
+                        'fieldType'                             : 'select2',
+                        'fieldHelp'                             : true,
+                        'fieldHelpTooltipContent'               : 'Days of the week.',
+                        'fieldRequired'                         : true,
+                        'fieldBazScan'                          : true,
+                        'fieldBazPostOnCreate'                  : true,
+                        'fieldBazPostOnUpdate'                  : true,
+                        'fieldDataSelect2Multiple'              : true,
+                        'fieldDataSelect2Options'               : weekdays,
+                        'fieldDataSelect2OptionsKey'            : 'id',
+                        'fieldDataSelect2OptionsValue'          : 'name',
+                        'fieldDataSelect2OptionsArray'          : true,
+                        'fieldDataSelect2OptionsSelected'       : weeklyDays
+                    ]
+                )}}
+            </div>
+        </div>
+        <div class="callout callout-info">
+            <h5>Weekly</h5>
+            <p>Transaction will be created on <span class="text-info" id="{{componentId}}-{{sectionId}}-weekly-days-span">Monday</span>.</p>
+        </div>
+    </div>
+    <div class="col schedules" id="{{componentId}}-{{sectionId}}-monthly" {{monthlyHidden}}>
+        <div class="row mb-2">
+            <div class="col">
+                {{adminltetags.useTag('buttons',
+                    [
+                        'componentId'           : componentId,
+                        'sectionId'             : sectionId,
+                        'buttonType'            : 'button',
+                        'buttons'               :
+                            [
+                                'select_all_months' : [
+                                    'title'                   : 'Select All',
+                                    'position'                : 'right',
+                                    'size'                    : 'sm'
+                                ]
+                            ]
+                    ]
+                )}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                             : component,
+                        'componentName'                         : componentName,
+                        'componentId'                           : componentId,
+                        'sectionId'                             : sectionId,
+                        'fieldId'                               : 'monthly_months',
+                        'fieldLabel'                            : 'Months',
+                        'fieldType'                             : 'select2',
+                        'fieldHelp'                             : true,
+                        'fieldHelpTooltipContent'               : 'Months of the year.',
+                        'fieldRequired'                         : true,
+                        'fieldBazScan'                          : true,
+                        'fieldBazPostOnCreate'                  : true,
+                        'fieldBazPostOnUpdate'                  : true,
+                        'fieldDataSelect2Multiple'              : true,
+                        'fieldDataSelect2Options'               : months,
+                        'fieldDataSelect2OptionsKey'            : 'id',
+                        'fieldDataSelect2OptionsValue'          : 'name',
+                        'fieldDataSelect2OptionsArray'          : true,
+                        'fieldDataSelect2OptionsSelected'       : monthlyMonths
+                    ]
+                )}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                             : component,
+                        'componentName'                         : componentName,
+                        'componentId'                           : componentId,
+                        'sectionId'                             : sectionId,
+                        'fieldId'                               : 'monthly_day',
+                        'fieldLabel'                            : 'Day',
+                        'fieldType'                             : 'input',
+                        'fieldInputTypeTextFilter'              : 'positiveInt',
+                        'fieldHelp'                             : true,
+                        'fieldHelpTooltipContent'               : 'Day between 1 and 31',
+                        'fieldRequired'                         : true,
+                        'fieldBazScan'                          : true,
+                        'fieldBazPostOnCreate'                  : true,
+                        'fieldBazPostOnUpdate'                  : true,
+                        'fieldBazJstreeSearch'                  : true,
+                        'fieldDataInputMinNumber'               : 1,
+                        'fieldDataInputMaxNumber'               : 31,
+                        'fieldValue'                            : monthlyDay
+                    ]
+                )}}
+            </div>
+        </div>
+        <div class="callout callout-info">
+            <h5>Monthly</h5>
+            <p>Transaction will be created in <span class="text-info" id="{{componentId}}-{{sectionId}}-monthly-months-span">January</span> on day <span class="text-info" id="{{componentId}}-{{sectionId}}-monthly-day-span"> 1 </span> of the month.</p>
+        </div>
+    </div>
+</div>
+<script>
+var selectAllMonths = false;
+var selectAllDays = false;
+
+$('#{{componentId}}-{{sectionId}}-select_all_months, #{{componentId}}-{{sectionId}}-select_all_days').off();
+$('#{{componentId}}-{{sectionId}}-select_all_months, #{{componentId}}-{{sectionId}}-select_all_days').click(function(e) {
+    e.preventDefault();
+
+    if ($(this)[0].id === '{{componentId}}-{{sectionId}}-select_all_months') {
+        if (selectAllMonths === true) {
+            $('#{{componentId}}-{{sectionId}}-monthly_months').val(null).trigger('change');
+            $('#{{componentId}}-{{sectionId}}-select_all_months').html('SELECT ALL');
+            $('#{{componentId}}-{{sectionId}}-monthly-months-span').html('X');
+            selectAllMonths = false;
+        } else {
+            $('#{{componentId}}-{{sectionId}}-monthly_months').val(['1','2','3','4','5','6','7','8','9','10','11','12']).trigger('change');
+            $('#{{componentId}}-{{sectionId}}-select_all_months').html('SELECT NONE');
+
+            selectAllMonths = true;
+        }
+    } else if ($(this)[0].id === '{{componentId}}-{{sectionId}}-select_all_days') {
+        if (selectAllDays === true) {
+            $('#{{componentId}}-{{sectionId}}-weekly_days').val(null).trigger('change');
+            $('#{{componentId}}-{{sectionId}}-select_all_days').html('SELECT ALL');
+            $('#{{componentId}}-{{sectionId}}-weekly-days-span').html('X');
+            selectAllDays = false;
+        } else {
+            $('#{{componentId}}-{{sectionId}}-weekly_days').val(['0','1','2','3','4','5','6']).trigger('change');
+            $('#{{componentId}}-{{sectionId}}-select_all_days').html('SELECT NONE');
+
+            selectAllDays = true;
+        }
+    }
+});
+</script>
