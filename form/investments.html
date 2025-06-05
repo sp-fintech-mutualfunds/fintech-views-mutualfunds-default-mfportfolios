@@ -37,6 +37,7 @@
         '           <td>' ~ strtoupper(investment['status']) ~ '</td>' ~
         '           <td>' ~ investment['scheme']['name'] ~ '</td>' ~
         '           <td>' ~ investment['units'] ~ '</td>' ~
+        '           <td>' ~ investment['latest_nav'] ~ '</td>' ~
         '           <td>' ~ investment['amount'] ~ '</td>' ~
         '           <td>' ~ investment['sold_amount'] ~ '</td>' ~
         '           <td>' ~ investment['latest_value_date'] ~ '</td>' ~
@@ -68,7 +69,8 @@
                     <th class="text-uppercase">Status</th>
                     <th class="text-uppercase">SCHEME</th>
                     <th class="text-uppercase">UNITS</th>
-                    <th class="text-uppercase">{{ currencySymbol }} AMOUNT</th>
+                    <th class="text-uppercase">{{ currencySymbol }} Latest Nav</th>
+                    <th class="text-uppercase">{{ currencySymbol }} Invested AMOUNT</th>
                     <th class="text-uppercase">{{ currencySymbol }} Sold AMOUNT</th>
                     <th class="text-uppercase">Latest Value Date</th>
                     <th class="text-uppercase">{{ currencySymbol }} Latest Value (Diff/Xirr)</th>

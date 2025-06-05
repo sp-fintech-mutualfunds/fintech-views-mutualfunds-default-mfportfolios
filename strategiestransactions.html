@@ -1,0 +1,137 @@
+<div class="row">
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'strategies_total_buy_transactions',
+                'fieldLabel'                     : 'Total Buy Transactions',
+                'fieldType'                      : 'html',
+                'fieldHelp'                      : false,
+                'fieldHelpTooltipContent'        : 'Total Buy Transactions',
+                'fieldRequired'                  : false,
+                'fieldBazScan'                   : false,
+                'fieldBazPostOnUpdate'           : true,
+                'fieldHtmlContent'               : '0'
+            ]
+        )}}
+    </div>
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'strategies_total_sell_transactions',
+                'fieldLabel'                     : 'Total Sell Transactions',
+                'fieldType'                      : 'html',
+                'fieldHelp'                      : false,
+                'fieldHelpTooltipContent'        : 'Total Sell Transactions',
+                'fieldRequired'                  : false,
+                'fieldBazScan'                   : false,
+                'fieldBazPostOnUpdate'           : true,
+                'fieldHtmlContent'               : '0'
+            ]
+        )}}
+    </div>
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'strategies_total_transactions_amount',
+                'fieldLabel'                     : 'Total Transactions Amount',
+                'fieldType'                      : 'html',
+                'fieldHelp'                      : false,
+                'fieldHelpTooltipContent'        : 'Total Transactions Amount',
+                'fieldRequired'                  : false,
+                'fieldBazScan'                   : false,
+                'fieldBazPostOnUpdate'           : true,
+                'fieldHtmlContent'               : '0'
+            ]
+        )}}
+    </div>
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'strategies_first_transaction_date',
+                'fieldLabel'                     : 'First date of Transaction',
+                'fieldType'                      : 'html',
+                'fieldHelp'                      : false,
+                'fieldHelpTooltipContent'        : 'First date of Transaction',
+                'fieldRequired'                  : false,
+                'fieldBazScan'                   : false,
+                'fieldBazPostOnUpdate'           : true,
+                'fieldHtmlContent'               : '-'
+            ]
+        )}}
+    </div>
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'strategies_last_transaction_date',
+                'fieldLabel'                     : 'Last date of transaction',
+                'fieldType'                      : 'html',
+                'fieldHelp'                      : false,
+                'fieldHelpTooltipContent'        : 'First Transaction Date',
+                'fieldRequired'                  : false,
+                'fieldBazScan'                   : false,
+                'fieldBazPostOnUpdate'           : true,
+                'fieldHtmlContent'               : '-'
+            ]
+        )}}
+    </div>
+</div>
+{% set strategiesTransactionHtml =
+    '<div class="row">' ~
+    '    <div class="col">' ~
+    '        <table id="' ~ componentId ~ '-' ~ sectionId ~ '-strategies-transactions-table" class="table table-sm table-hover responsive nowrap mb-0" width="100%" cellspacing="0">' ~
+    '            <thead>' ~
+    '                <tr>' ~
+    '                    <th class="text-uppercase">Type</th>' ~
+    '                    <th class="text-uppercase">Date</th>' ~
+    '                    <th class="text-uppercase">Scheme</th>' ~
+    '                    <th class="text-uppercase">Amount</th>' ~
+    '                </tr>' ~
+    '            </thead>' ~
+    '            <tbody>' ~
+    '            </tbody>' ~
+    '        </table>' ~
+    '    </div>' ~
+    '</div>'
+%}
+<div class="row" id="strategies-transactions-div">
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'transactions',
+                'fieldLabel'                     : 'Transactions',
+                'fieldType'                      : 'html',
+                'fieldAdditionalClass'           : 'mb-0 strategiesTransactions',
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'Corresponding transactions for the transaction',
+                'fieldRequired'                  : false,
+                'fieldBazScan'                   : true,
+                'fieldBazPostOnUpdate'           : true,
+                'fieldHtmlContent'               : strategiesTransactionHtml
+            ]
+        )}}
+    </div>
+</div>

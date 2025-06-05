@@ -18,13 +18,17 @@
             'closeActionUrl'                : 'mf/portfolios'
         ]
     %}
-{% elseif mode == 'transact' or mode == 'timeline' %}
+{% elseif mode == 'transact' or mode == 'timeline' or mode == 'strategies' %}
     {% if mode == 'transact' %}
         {% set title = title ~ ' - Transact mode' %}
     {% endif %}
     {% if mode == 'timeline' %}
         {% set title = title ~ ' - Timeline mode' %}
         {% set cardType = 'info' %}
+    {% endif %}
+    {% if mode == 'strategies' %}
+        {% set title = title ~ ' - Strategy mode' %}
+        {% set cardType = 'cyan' %}
     {% endif %}
     {% set formButtons =
         [

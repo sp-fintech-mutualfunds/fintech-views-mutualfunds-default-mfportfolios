@@ -1,0 +1,466 @@
+{% set weeklyHidden = 'hidden' %}
+{% set weeklyDays = ['2'] %}
+{% set monthlyHidden = 'hidden' %}
+{% set monthlyMonths = ['1','2','3','4','5','6','7','8','9','10','11','12'] %}
+{% set monthlyDay = '1' %}
+<form data-validateon="section" id="{{componentId}}-{{sectionId}}-form">
+    <fieldset id="{{componentId}}-{{sectionId}}-fieldset">
+        {% set generateHidden = false %}
+        {% if timeline['recalculate'] is not defined or timeline['recalculate'] == false %}
+            <div class="row vdivide mt-3">
+                <div class="col-md-3">
+                    {{adminltetags.useTag('fields',
+                        [
+                            'component'                      : component,
+                            'componentName'                  : componentName,
+                            'componentId'                    : componentId,
+                            'sectionId'                      : sectionId,
+                            'fieldId'                        : 'mode',
+                            'fieldLabel'                     : 'Timeline mode',
+                            'fieldType'                      : 'radio',
+                            'fieldHelp'                      : true,
+                            'fieldHelpTooltipContent'        : 'Select timeline mode.',
+                            'fieldRequired'                  : true,
+                            'fieldBazPostOnCreate'           : true,
+                            'fieldBazPostOnUpdate'           : true,
+                            'fieldBazScan'                   : true,
+                            'fieldRadioButtons'              :
+                                [
+                                    'weekly' :
+                                        [
+                                            'title'          : 'Weekly',
+                                            'type'           : 'danger',
+                                            'dataValue'      : 'weekly'
+                                        ],
+                                    'monthly' :
+                                        [
+                                            'title'          : 'Monthly',
+                                            'type'           : 'warning',
+                                            'dataValue'      : 'monthly'
+                                        ],
+                                    'transactions' :
+                                        [
+                                            'title'          : 'Transactions',
+                                            'type'           : 'success',
+                                            'dataValue'      : 'transactions'
+                                        ]
+                                ],
+                            'fieldRadioChecked'              : 'transactions'
+                        ]
+                    )}}
+                </div>
+                <div class="col schedules" id="{{componentId}}-{{sectionId}}-weekly" {{weeklyHidden}}>
+                    <div class="row">
+                        <div class="col">
+                            {{adminltetags.useTag('fields',
+                                [
+                                    'component'                             : component,
+                                    'componentName'                         : componentName,
+                                    'componentId'                           : componentId,
+                                    'sectionId'                             : sectionId,
+                                    'fieldId'                               : 'weekly_days',
+                                    'fieldLabel'                            : 'Days',
+                                    'fieldType'                             : 'select2',
+                                    'fieldHelp'                             : true,
+                                    'fieldHelpTooltipContent'               : 'Days of the week.',
+                                    'fieldRequired'                         : true,
+                                    'fieldBazScan'                          : true,
+                                    'fieldBazPostOnCreate'                  : true,
+                                    'fieldBazPostOnUpdate'                  : true,
+                                    'fieldDataSelect2Multiple'              : true,
+                                    'fieldDataSelect2Options'               : weekdays,
+                                    'fieldDataSelect2OptionsKey'            : 'id',
+                                    'fieldDataSelect2OptionsValue'          : 'name',
+                                    'fieldDataSelect2OptionsArray'          : true,
+                                    'fieldDataSelect2OptionsSelected'       : weeklyDays
+                                ]
+                            )}}
+                        </div>
+                    </div>
+                    <div class="callout callout-info">
+                        <h5>Weekly</h5>
+                        <p>Timeline will be created for the day(s) of <span class="text-info" id="{{componentId}}-{{sectionId}}-weekly-days-span">Monday</span>.</p>
+                    </div>
+                </div>
+                <div class="col schedules" id="{{componentId}}-{{sectionId}}-monthly" {{monthlyHidden}}>
+                    <div class="row">
+                        <div class="col">
+                            {{adminltetags.useTag('fields',
+                                [
+                                    'component'                             : component,
+                                    'componentName'                         : componentName,
+                                    'componentId'                           : componentId,
+                                    'sectionId'                             : sectionId,
+                                    'fieldId'                               : 'monthly_months',
+                                    'fieldLabel'                            : 'Months',
+                                    'fieldType'                             : 'select2',
+                                    'fieldHelp'                             : true,
+                                    'fieldHelpTooltipContent'               : 'Months of the year.',
+                                    'fieldRequired'                         : true,
+                                    'fieldBazScan'                          : true,
+                                    'fieldBazPostOnCreate'                  : true,
+                                    'fieldBazPostOnUpdate'                  : true,
+                                    'fieldDataSelect2Multiple'              : true,
+                                    'fieldDataSelect2Options'               : months,
+                                    'fieldDataSelect2OptionsKey'            : 'id',
+                                    'fieldDataSelect2OptionsValue'          : 'name',
+                                    'fieldDataSelect2OptionsArray'          : true,
+                                    'fieldDataSelect2OptionsSelected'       : monthlyMonths
+                                ]
+                            )}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            {{adminltetags.useTag('fields',
+                                [
+                                    'component'                             : component,
+                                    'componentName'                         : componentName,
+                                    'componentId'                           : componentId,
+                                    'sectionId'                             : sectionId,
+                                    'fieldId'                               : 'monthly_day',
+                                    'fieldLabel'                            : 'Day',
+                                    'fieldType'                             : 'input',
+                                    'fieldInputTypeTextFilter'              : 'positiveInt',
+                                    'fieldHelp'                             : true,
+                                    'fieldHelpTooltipContent'               : 'Enter day number. If the month has lesser days, example: 28 days (feb), choosing 29,30,31 will result in generating timeline for 28th. ',
+                                    'fieldRequired'                         : true,
+                                    'fieldBazScan'                          : true,
+                                    'fieldBazPostOnCreate'                  : true,
+                                    'fieldBazPostOnUpdate'                  : true,
+                                    'fieldBazJstreeSearch'                  : true,
+                                    'fieldDataInputMinNumber'               : 1,
+                                    'fieldDataInputMaxNumber'               : 31,
+                                    'fieldValue'                            : monthlyDay
+                                ]
+                            )}}
+                        </div>
+                    </div>
+                    <div class="callout callout-info">
+                        <h5>Monthly</h5>
+                        <p>Timeline will be created for the month(s) of <span class="text-info" id="{{componentId}}-{{sectionId}}-monthly-months-span">January</span> on day <span class="text-info" id="{{componentId}}-{{sectionId}}-monthly-day-span"> 1 </span> of the month.</p>
+                    </div>
+                </div>
+                <div class="col schedules" id="{{componentId}}-{{sectionId}}-transactions">
+                    <div class="callout callout-info">
+                        <h5>Transactions</h5>
+                        <p>Timeline will be created for the days of transactions.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <small class="text-info">Note: Timeline is also generated for first date of transactions and latest NAV available date.</small>
+                </div>
+            </div>
+        {% else %}
+            {% set generateHidden = true %}
+        {% endif %}
+        <div class="row mt-3">
+            <div class="col">
+                {{adminltetags.useTag('fields',
+                    [
+                        'component'                      : component,
+                        'componentName'                  : componentName,
+                        'componentId'                    : componentId,
+                        'sectionId'                      : sectionId,
+                        'fieldId'                        : 'timeline_progress',
+                        'fieldLabel'                     : false,
+                        'fieldType'                      : 'html',
+                        'fieldHelp'                      : false,
+                        'fieldHelpTooltipContent'        : 'Timeline Progress',
+                        'fieldRequired'                  : false,
+                        'fieldBazScan'                   : false,
+                        'fieldBazPostOnUpdate'           : true,
+                        'fieldHtmlContent'               : '<div id="timeline-progress" class="mb-3" hidden></div>'
+                    ]
+                )}}
+            </div>
+        </div>
+        <div class="row text-center">
+            <div class="col">
+                {% set url = links.url('mf/portfolios/q/mode/timeline/id/' ~ portfolio['id']) %}
+                {{adminltetags.useTag('buttons',
+                    [
+                        'component'                     : component,
+                        'componentName'                 : componentName,
+                        'componentId'                   : componentId,
+                        'sectionId'                     : sectionId,
+                        'buttonType'                    : 'button',
+                        'buttons'                       :
+                            [
+                                'generate-timeline'       : [
+                                    'title'     : 'Generate Timeline',
+                                    'hidden'    : generateHidden
+                                ],
+                                'access-timeline'       : [
+                                    'title'     : 'Access Timeline',
+                                    'type'      : 'success',
+                                    'hidden'    : true,
+                                    'url'       : url
+                                ]
+                            ]
+                    ]
+                )}}
+            </div>
+        </div>
+    </fieldset>
+</form>
+{% set portfolio = escaper.js(json_encode(portfolio, 16)) %}
+{% set timeline = escaper.js(json_encode(timeline, 16)) %}
+<script>
+/*global paginatedPNotify BazProgress BazContentFields BazHelpers BazContentLoader BazCore Pace Swal */
+var dataCollectionComponent, dataCollectionSection, dataCollectionSectionForm;
+if (!window['dataCollection']) {
+    window['dataCollection'] = { };
+}
+if (!window['dataCollection']['{{componentId}}']) {
+    dataCollectionComponent =
+        window['dataCollection']['{{componentId}}'] = { };
+} else {
+    dataCollectionComponent =
+        window['dataCollection']['{{componentId}}'];
+}
+if (!dataCollectionComponent['{{componentId}}-{{sectionId}}']) {
+    dataCollectionSection =
+        dataCollectionComponent['{{componentId}}-{{sectionId}}'] = { };
+} else {
+    dataCollectionSection =
+        dataCollectionComponent['{{componentId}}-{{sectionId}}'];
+}
+if (!dataCollectionSection['{{componentId}}-{{sectionId}}-form']) {
+    dataCollectionSectionForm =
+        dataCollectionSection['{{componentId}}-{{sectionId}}-form'] = { };
+} else {
+    dataCollectionSectionForm =
+        dataCollectionSection['{{componentId}}-{{sectionId}}-form'];
+}
+
+dataCollectionSectionForm['vars'] = { };
+dataCollectionSectionForm['vars']['portfolio'] = JSON.parse('{{portfolio}}');
+dataCollectionSectionForm['vars']['timeline'] = JSON.parse('{{timeline}}');
+dataCollectionSectionForm['funcs'] = { };
+if (dataCollectionSectionForm['vars']['timeline']['recalculate'] == true) {
+    dataCollectionSection =
+        $.extend(dataCollectionSection, {
+            '{{componentId}}-{{sectionId}}-timeline_progress'               : {
+                afterInit: function() {
+                    BazProgress.buildProgressBar($('#timeline-progress'), false, true, true, true);
+                    dataCollectionSectionForm['funcs']['processTimeline']();
+                }
+            },
+            '{{componentId}}-{{sectionId}}-form'                            : {
+                rules: {
+                },
+                messages: {
+                }
+            }
+        });
+
+} else {
+    dataCollectionSection =
+        $.extend(dataCollectionSection, {
+            '{{componentId}}-{{sectionId}}-mode'               : {
+                afterInit: function() {
+                    $('#{{componentId}}-{{sectionId}}-mode').click(function() {
+                        processSchedules();
+                    });
+
+                    function processSchedules() {
+                        dataCollectionSectionForm['vars']['mode'] = $('#{{componentId}}-{{sectionId}}-mode').find('input[type=radio]:checked').data('value');
+
+                        if ($('#{{componentId}}-{{sectionId}}-mode').find('input[type=radio]:checked').data('value') == 'weekly') {
+                            $('.schedules').attr('hidden', true);
+                            $('#{{componentId}}-{{sectionId}}-weekly').attr('hidden', false);
+
+                            $('#{{componentId}}-{{sectionId}}-weekly_days').change('select2:change', function(e) {
+                                var selectedDays = $('#{{componentId}}-{{sectionId}}-weekly_days').val();
+                                var days = [];
+
+                                $('#{{componentId}}-{{sectionId}}-weekly_days').children('option').each(function(index, day) {
+                                    if (selectedDays.includes($(day).val())) {
+                                        days.push($(day).text());
+                                    }
+                                });
+
+                                $('#{{componentId}}-{{sectionId}}-weekly-days-span').html(days.join(', '));
+                            });
+                        } else if ($('#{{componentId}}-{{sectionId}}-mode').find('input[type=radio]:checked').data('value') == 'monthly') {
+                            $('.schedules').attr('hidden', true);
+                            $('#{{componentId}}-{{sectionId}}-monthly').attr('hidden', false);
+
+                            $('#{{componentId}}-{{sectionId}}-monthly_months').change('select2:change', function(e) {
+                                var selectedMonths = $('#{{componentId}}-{{sectionId}}-monthly_months').val();
+                                var months = [];
+
+                                $('#{{componentId}}-{{sectionId}}-monthly_months').children('option').each(function(index, month) {
+                                    if (selectedMonths.includes($(month).val())) {
+                                        months.push($(month).text());
+                                    }
+                                });
+                                $('#{{componentId}}-{{sectionId}}-monthly-months-span').html(months.join(', '));
+                            });
+
+                            $('#{{componentId}}-{{sectionId}}-monthly_day').on('input propertychange', function() {
+                                if ($('#{{componentId}}-{{sectionId}}-monthly_day').val().length === 0) {
+                                    $('#{{componentId}}-{{sectionId}}-monthly-day-span').html('X');
+                                } else {
+                                    if ($('#{{componentId}}-{{sectionId}}-monthly_day').val() == 0) {
+                                        $('#{{componentId}}-{{sectionId}}-monthly-day-span').html('X');
+                                    } else {
+                                        $('#{{componentId}}-{{sectionId}}-monthly-day-span').html($('#{{componentId}}-{{sectionId}}-monthly_day').val());
+                                    }
+                                }
+                            });
+                        } else if ($('#{{componentId}}-{{sectionId}}-mode').find('input[type=radio]:checked').data('value') == 'transactions') {
+                            $('.schedules').attr('hidden', true);
+                            $('#{{componentId}}-{{sectionId}}-transactions').attr('hidden', false);
+                        }
+                    }
+
+                    processSchedules();
+
+                    BazProgress.buildProgressBar($('#timeline-progress'), false, true, true, true);
+
+                    $('#{{componentId}}-{{sectionId}}-generate-timeline').click(function() {
+                        dataCollectionSectionForm['funcs']['processTimeline']();
+                    });
+                }
+            },
+            '{{componentId}}-{{sectionId}}-weekly_days'                     : { },
+            '{{componentId}}-{{sectionId}}-monthly_months'                  : { },
+            '{{componentId}}-{{sectionId}}-monthly_day'                     : { },
+            '{{componentId}}-{{sectionId}}-form'                            : {
+                rules: {
+                },
+                messages: {
+                }
+            }
+        });
+}
+// dataCollectionSectionForm['funcs']['init'] = function() {
+    //Auto timeline calculation from the recalculate date.
+    // var swalSound = window['dataCollection'].env.sounds.swalSound;
+
+    // Swal.fire({
+    //     html                        : '<span class="text-white">Portfolio timeline needs to be regenerated!</span>',
+    //     icon                        : 'info',
+    //     background                  : 'rgba(0,0,0,.8)',
+    //     backdrop                    : 'rgba(0,0,0,.6)',
+    //     buttonsStyling              : false,
+    //     confirmButtonText           : 'Proceed',
+    //     customClass                 : {
+    //         'confirmButton'             : 'btn btn-info text-uppercase',
+    //         'cancelButton'              : 'ml-2 btn btn-secondary text-uppercase',
+    //     },
+    //     showCancelButton            : true,
+    //     keydownListenerCapture      : true,
+    //     allowOutsideClick           : true,
+    //     allowEscapeKey              : true,
+    //     didOpen                     : function() {
+    //         swalSound.play();
+    //     }
+    // }).then((result) => {
+    //     if (result.value) {
+    //         dataCollectionSectionForm['funcs']['processTimeline']();
+    //     } else {
+    //         $('#{{componentId}}-{{sectionId}}-access-timeline').attr('href',
+    //             window['dataCollection'].env.httpScheme + '://' + window['dataCollection'].env.httpHost + '/' + window['dataCollection'].env.appRoute + '/' +
+    //             'mf/portfolios'
+    //         );
+
+    //         dataCollectionSectionForm['funcs']['browse']();
+    //     }
+    // });
+// }
+
+dataCollectionSectionForm['funcs']['processTimeline'] = function() {
+    BazProgress.switchProgressBarColor();
+
+    $('#timeline-progress').attr('hidden', false);
+
+    if (dataCollectionSectionForm['vars']['schedule']) {
+        if (dataCollectionSectionForm['vars']['schedule'] === 'weekly') {
+            if ($('#{{componentId}}-{{sectionId}}-weekly_days').val().length === 0) {
+                paginatedPNotify('error', {
+                    text : 'Please select weekly timeline days'
+                });
+
+                return;
+            }
+        }
+
+        if (dataCollectionSectionForm['vars']['schedule'] === 'monthly') {
+            if ($('#{{componentId}}-{{sectionId}}-monthly_months').val().length === 0) {
+                paginatedPNotify('error', {
+                    text : 'Please select monthly timeline months'
+                });
+
+                return;
+            }
+            if ($('#{{componentId}}-{{sectionId}}-monthly_day').val() === '') {
+                paginatedPNotify('error', {
+                    text : 'Please enter monthly timeline day'
+                });
+
+                return;
+            }
+        }
+    }
+
+    var postData = { };
+    postData[$('#security-token').attr('name')] = $('#security-token').val();
+    postData['portfolio_id'] = dataCollectionSectionForm['vars']['portfolio']['id'];
+
+    if (dataCollectionSectionForm['vars']['mode']) {
+        postData['mode'] = dataCollectionSectionForm['vars']['mode'];
+        if (dataCollectionSectionForm['vars']['mode'] === 'weekly') {
+            postData['weekly_days'] = $('#{{componentId}}-{{sectionId}}-weekly_days').val();
+        } else if (dataCollectionSectionForm['vars']['mode'] === 'monthly') {
+            postData['monthly_months'] = $('#{{componentId}}-{{sectionId}}-monthly_months').val();
+            postData['monthly_day'] = $('#{{componentId}}-{{sectionId}}-monthly_day').val();
+        }
+    }
+
+    $.post('{{links.url("mf/portfolios/procsessTimelineNeedsGeneration")}}', postData, function(response) {
+        if (response.tokenKey && response.token) {
+            $('#security-token').attr('name', response.tokenKey);
+            $('#security-token').val(response.token);
+        }
+
+        if (response.responseCode == 0) {
+            $('#{{componentId}}-{{sectionId}}-access-timeline').attr('hidden', false);
+            $('#{{componentId}}-{{sectionId}}-access-timeline').off();
+            $('#{{componentId}}-{{sectionId}}-access-timeline').click(function(e) {
+                e.preventDefault();
+
+                dataCollectionSectionForm['funcs']['browse']();
+            });
+        }
+    }, 'json');
+}
+
+dataCollectionSectionForm['funcs']['browse'] = function() {
+    BazContentLoader.loadAjax($('#{{componentId}}-{{sectionId}}-access-timeline'), {
+        ajaxBefore                      : function () {
+                                            Pace.restart();
+                                            $("#baz-content").empty();
+                                            $("#loader").attr('hidden', false);
+                                        },
+        ajaxFinished                    : function () {
+                                            BazCore.updateBreadcrumb();
+                                            $("#loader").attr('hidden', true);
+                                        },
+        ajaxError                       : function () {
+                                            $("#loader").attr('hidden', true);
+                                            BazCore.updateBreadcrumb();
+                                        }
+    });
+}
+
+// $(document).ready(function() {
+//     dataCollectionSectionForm['funcs']['init']();
+// });
+
+
+</script>
