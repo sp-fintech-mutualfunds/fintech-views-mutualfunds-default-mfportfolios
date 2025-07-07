@@ -44,8 +44,81 @@
         'dtStateSave'           : false,
         'dtBordered'            : false,
         'dtHideIdColumn'        : true,
-        'dtNoOfColumnsToShow'   : 6,
+        'dtNoOfColumnsToShow'   : 7,
         'dtTableCompact'        : true,
         'dtZeroRecords'         : 'No portfolios data available. Add portfolio by clicking the Add new portfolio button.'
     ]
 )}}
+{{adminltetags.useTag('buttons',
+    [
+        'component'                      : component,
+        'componentName'                  : componentName,
+        'componentId'                    : componentId,
+        'sectionId'                      : 'listing',
+        'buttonType'                    : 'button',
+        'buttons'                       :
+            [
+                'portfolios-link'    : [
+                    'title'                   : 'link',
+                    'size'                    : 'xs',
+                    'disabled'                : true,
+                    'hidden'                  : true,
+                    'url'                     : ''
+                ]
+            ]
+    ]
+)}}
+<script>
+/*global paginatedPNotify BazProgress BazContentFields BazHelpers BazContentLoader Pace BazCore Swal Chart */
+$('body').on('sectionWithListingLoaded', function() {
+    $('body').off('sectionWithListingLoaded');
+    $(document).ready(function() {
+        function reload() {
+            BazContentLoader.loadAjax($('#{{componentId}}-listing-portfolios-link'), {
+                ajaxBefore                      : function () {
+                                                    Pace.restart();
+                                                    $("#baz-content").empty();
+                                                    $("#loader").attr('hidden', false);
+                                                },
+                ajaxFinished                    : function () {
+                                                    BazCore.updateBreadcrumb();
+                                                    $("#loader").attr('hidden', true);
+                                                },
+                ajaxError                       : function () {
+                                                    $("#loader").attr('hidden', true);
+                                                    BazCore.updateBreadcrumb();
+                                                }
+            });
+        }
+
+        $('.clone').each(function() {
+            var id = $(this).parents('tr')[0].id;
+            var url = $(this).attr('href').split('/q/')[0];
+
+            $(this).click(function() {
+                paginatedPNotify('info', {text : 'Cloning, please wait...'});
+                var postData = { };
+                postData[$('#security-token').attr('name')] = $('#security-token').val();
+                postData['id'] = id;
+
+                $.post(url, postData, function(response) {
+                    if (response.tokenKey && response.token) {
+                        $('#security-token').attr('name', response.tokenKey);
+                        $('#security-token').val(response.token);
+                    }
+
+                    if (response.responseCode == 0) {
+                        paginatedPNotify('success', {text : response.responseMessage});
+                        url = url.split('clone');
+                        $('#{{componentId}}-listing-portfolios-link').attr('href', url[0]);
+
+                        reload();
+                    } else {
+                        paginatedPNotify('error', {text : response.responseMessage});
+                    }
+                }, 'json');
+            });
+        });
+    });
+});
+</script>
