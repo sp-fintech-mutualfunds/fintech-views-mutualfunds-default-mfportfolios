@@ -4,17 +4,33 @@
 {% else %}
     {% if mode == 'edit' %}
         {% set disableUser = false %}
+        {% set disableInvestmentSource = false %}
+        {% set accountingDivHidden = 'hidden' %}
+        {% set userBooksArr = [] %}
+        {% set bookAccountsArr = [] %}
         {% if portfolio['id'] is defined %}
             {% set portfolioId = portfolio['id'] %}
             {% set portfolioName = portfolio['name'] %}
             {% set portfolioUser = portfolio['user_id'] %}
+            {% set portfolioInvestmentSource = portfolio['investment_source'] %}
+            {% if portfolioInvestmentSource == 'accounting' %}
+                {% set accountingDivHidden = '' %}
+                {% set userBooksArr = userBooks %}
+                {% set bookAccountsArr = userBooks[portfolio['book_id']]['accounts'] %}
+            {% endif %}
+            {% set portfolioBookId = portfolio['book_id'] %}
+            {% set portfolioAccountIds = portfolio['account_ids']['data'] %}
             {% set portfolioDescription = portfolio['description'] %}
             {% set disableUser = true %}
+            {% set disableInvestmentSource = true %}
         {% else %}
             {% set portfolio = [] %}
             {% set portfolioId = '' %}
             {% set portfolioName = '' %}
             {% set portfolioUser = '' %}
+            {% set portfolioInvestmentSource = '' %}
+            {% set portfolioBookId = '' %}
+            {% set portfolioAccountIds = '' %}
             {% set portfolioDescription = '' %}
         {% endif %}
         {% include 'portfolios/edit.html' %}

@@ -75,6 +75,98 @@
                             ]
                         )}}
                     </div>
+                    <div class="col">
+                        {{adminltetags.useTag('fields',
+                            [
+                                'component'                      : component,
+                                'componentName'                  : componentName,
+                                'componentId'                    : componentId,
+                                'sectionId'                      : sectionId,
+                                'fieldId'                        : 'investment_source',
+                                'fieldLabel'                     : 'Investment Source',
+                                'fieldType'                      : 'select2',
+                                'fieldHelp'                      : true,
+                                'fieldHelpTooltipContent'        : 'Investment Source',
+                                'fieldRequired'                  : true,
+                                'fieldDisabled'                  : disableInvestmentSource,
+                                'fieldBazScan'                   : true,
+                                'fieldBazPostOnCreate'           : true,
+                                'fieldBazPostOnUpdate'           : false,
+                                'fieldDataSelect2Options'        :
+                                    [
+                                        'virtual' : [
+                                            'id' : 'virtual',
+                                            'name' : 'VIRTUAL'
+                                        ],
+                                        'balances' : [
+                                            'id' : 'balances',
+                                            'name' : 'USER BALANCES'
+                                        ],
+                                        'accounting' : [
+                                            'id' : 'accounting',
+                                            'name' : 'ACCOUNTING BOOK'
+                                        ]
+                                    ],
+                                'fieldDataSelect2OptionsKey'     : 'id',
+                                'fieldDataSelect2OptionsValue'   : 'name',
+                                'fieldDataSelect2OptionsArray'   : true,
+                                'fieldDataSelect2OptionsSelected': portfolioInvestmentSource
+                            ]
+                        )}}
+                    </div>
+                </div>
+                <div class="row" id="accounting-div" {{accountingDivHidden}}>
+                    <div class="col">
+                        {{adminltetags.useTag('fields',
+                            [
+                                'component'                      : component,
+                                'componentName'                  : componentName,
+                                'componentId'                    : componentId,
+                                'sectionId'                      : sectionId,
+                                'fieldId'                        : 'book_id',
+                                'fieldLabel'                     : 'User Accounting Book',
+                                'fieldType'                      : 'select2',
+                                'fieldHelp'                      : true,
+                                'fieldHelpTooltipContent'        : 'User Accounting Book',
+                                'fieldRequired'                  : true,
+                                'fieldDisabled'                  : disableInvestmentSource,
+                                'fieldBazScan'                   : true,
+                                'fieldBazPostOnCreate'           : true,
+                                'fieldBazPostOnUpdate'           : false,
+                                'fieldDataSelect2Options'        : userBooksArr,
+                                'fieldDataSelect2OptionsKey'     : 'id',
+                                'fieldDataSelect2OptionsValue'   : 'name',
+                                'fieldDataSelect2OptionsArray'   : true,
+                                'fieldDataSelect2OptionsSelected': portfolioBookId
+                            ]
+                        )}}
+                    </div>
+                    <div class="col">
+                        {{adminltetags.useTag('fields',
+                            [
+                                'component'                      : component,
+                                'componentName'                  : componentName,
+                                'componentId'                    : componentId,
+                                'sectionId'                      : sectionId,
+                                'fieldId'                        : 'account_ids',
+                                'fieldLabel'                     : 'Accounts',
+                                'fieldType'                      : 'select2',
+                                'fieldHelp'                      : true,
+                                'fieldHelpTooltipContent'        : 'Accounts',
+                                'fieldRequired'                  : true,
+                                'fieldDisabled'                  : disableInvestmentSource,
+                                'fieldBazScan'                   : true,
+                                'fieldBazPostOnCreate'           : true,
+                                'fieldBazPostOnUpdate'           : false,
+                                'fieldDataSelect2Options'        : bookAccountsArr,
+                                'fieldDataSelect2Multiple'       : true,
+                                'fieldDataSelect2OptionsKey'     : 'id',
+                                'fieldDataSelect2OptionsValue'   : 'name',
+                                'fieldDataSelect2OptionsArray'   : true,
+                                'fieldDataSelect2OptionsSelected': portfolioAccountIds
+                            ]
+                        )}}
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col">
@@ -106,6 +198,7 @@
         </div>
     </fieldset>
 </form>
+{% set userBooks = escaper.js(json_encode(userBooks, 16)) %}
 <script>
 /*global paginatedPNotify BazProgress BazContentFields BazHelpers BazContentLoader Pace BazCore dataCollection Swal */
 var dataCollectionComponent, dataCollectionSection, dataCollectionSectionForm;
@@ -132,22 +225,95 @@ if (!dataCollectionSection['{{componentId}}-{{sectionId}}-form']) {
         dataCollectionSection['{{componentId}}-{{sectionId}}-form'];
 }
 
+if (!dataCollectionSectionForm['vars']) {
+    dataCollectionSectionForm['vars'] = { };
+}
+if (!dataCollectionSectionForm['funcs']) {
+    dataCollectionSectionForm['funcs'] = { };
+}
+dataCollectionSectionForm['vars']['userBooks'] = JSON.parse('{{userBooks}}');
+
 dataCollectionSection =
     $.extend(dataCollectionSection, {
         '{{componentId}}-{{sectionId}}-id'                          : { },
         '{{componentId}}-{{sectionId}}-name'                        : { },
         '{{componentId}}-{{sectionId}}-user_id'                     : {
-            placeholder: "SELECT USER"
+            placeholder: "SELECT USER",
+            afterInit: function() {
+                $('#{{componentId}}-{{sectionId}}-user_id').on('select2:select', function(e) {
+                    if (Object.keys(dataCollectionSectionForm['vars']['userBooks']).length > 0) {
+                        $('#{{componentId}}-{{sectionId}}-book_id').empty().trigger('change');
+                        $('#{{componentId}}-{{sectionId}}-account_ids').empty().trigger('change');
+
+                        for (var book in dataCollectionSectionForm['vars']['userBooks']) {
+                            if (dataCollectionSectionForm['vars']['userBooks'][book]['user_id'] == e.params.data.id) {
+                                var newOption = new Option(
+                                    dataCollectionSectionForm['vars']['userBooks'][book]['name'],
+                                    dataCollectionSectionForm['vars']['userBooks'][book]['id'],
+                                    false,
+                                    false
+                                );
+                                $('#{{componentId}}-{{sectionId}}-book_id').append(newOption);
+                            }
+                        }
+
+                        $('#{{componentId}}-{{sectionId}}-book_id').trigger('change');
+                    }
+                });
+            }
+        },
+        '{{componentId}}-{{sectionId}}-investment_source'           : {
+            placeholder: "SELECT INVESTMENT SOURCE",
+            afterInit: function() {
+                $('#{{componentId}}-{{sectionId}}-investment_source').on('select2:select', function(e) {
+                    if (e.params.data.id === 'accounting') {
+                        $('#accounting-div').attr('hidden', false);
+                    } else {
+                        $('#accounting-div').attr('hidden', true);
+                    }
+                });
+            }
+        },
+        '{{componentId}}-{{sectionId}}-book_id'                     : {
+            placeholder: "SELECT ACCOUNTING BOOK",
+            afterInit: function() {
+                $('#{{componentId}}-{{sectionId}}-book_id').on('change.select2', function(e) {
+                    if ($('#{{componentId}}-{{sectionId}}-book_id').select2('data').length > 0 &&
+                        Object.keys(dataCollectionSectionForm['vars']['userBooks']).length > 0
+                    ) {
+                        $('#{{componentId}}-{{sectionId}}-account_ids').empty().trigger('change');
+
+                        if (Object.keys(dataCollectionSectionForm['vars']['userBooks'][$('#{{componentId}}-{{sectionId}}-book_id').select2('data')[0].id]['accounts']).length > 0) {
+                            for (var account in dataCollectionSectionForm['vars']['userBooks'][$('#{{componentId}}-{{sectionId}}-book_id').select2('data')[0].id]['accounts']) {
+                                var newOption = new Option(
+                                    dataCollectionSectionForm['vars']['userBooks'][$('#{{componentId}}-{{sectionId}}-book_id').select2('data')[0].id]['accounts'][account]['name'],
+                                    dataCollectionSectionForm['vars']['userBooks'][$('#{{componentId}}-{{sectionId}}-book_id').select2('data')[0].id]['accounts'][account]['id'],
+                                    false,
+                                    false
+                                );
+                                $('#{{componentId}}-{{sectionId}}-account_ids').append(newOption);
+                            }
+                        }
+
+                        $('#{{componentId}}-{{sectionId}}-account_ids').trigger('change');
+                    }
+                });
+            }
+        },
+        '{{componentId}}-{{sectionId}}-account_ids'                 : {
+            placeholder: "SELECT EQUITY ACCOUNT(S)",
         },
         '{{componentId}}-{{sectionId}}-description'                 : { },
         '{{componentId}}-{{sectionId}}-form' : {
             rules: {
-                '{{componentId}}-{{sectionId}}-name'            : 'required',
-                '{{componentId}}-{{sectionId}}-user_id'         : 'required',
+                '{{componentId}}-{{sectionId}}-name'                : 'required',
+                '{{componentId}}-{{sectionId}}-user_id'             : 'required',
+                '{{componentId}}-{{sectionId}}-investment_source'   : 'required',
             },
             messages: {
-                '{{componentId}}-{{sectionId}}-name'            : 'Please enter name',
-                '{{componentId}}-{{sectionId}}-user_id'         : 'Please select user',
+                '{{componentId}}-{{sectionId}}-name'                : 'Please enter name',
+                '{{componentId}}-{{sectionId}}-user_id'             : 'Please select user',
+                '{{componentId}}-{{sectionId}}-investment_source'   : 'Please investment source',
             }
         }
     });
