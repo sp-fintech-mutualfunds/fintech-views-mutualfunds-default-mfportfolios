@@ -148,22 +148,46 @@
                                 'componentName'                  : componentName,
                                 'componentId'                    : componentId,
                                 'sectionId'                      : sectionId,
-                                'fieldId'                        : 'account_ids',
-                                'fieldLabel'                     : 'Accounts',
+                                'fieldId'                        : 'withdraw_bankaccount_id',
+                                'fieldLabel'                     : 'Withdraw Bank Account',
                                 'fieldType'                      : 'select2',
                                 'fieldHelp'                      : true,
-                                'fieldHelpTooltipContent'        : 'Accounts',
+                                'fieldHelpTooltipContent'        : 'Select bank account to withdraw investment from',
                                 'fieldRequired'                  : true,
                                 'fieldDisabled'                  : disableInvestmentSource,
                                 'fieldBazScan'                   : true,
                                 'fieldBazPostOnCreate'           : true,
                                 'fieldBazPostOnUpdate'           : false,
                                 'fieldDataSelect2Options'        : bookAccountsArr,
-                                'fieldDataSelect2Multiple'       : true,
                                 'fieldDataSelect2OptionsKey'     : 'id',
                                 'fieldDataSelect2OptionsValue'   : 'name',
                                 'fieldDataSelect2OptionsArray'   : true,
-                                'fieldDataSelect2OptionsSelected': portfolioAccountIds
+                                'fieldDataSelect2OptionsSelected': portfolioWithdrawAccountId
+                            ]
+                        )}}
+                    </div>
+                    <div class="col">
+                        {{adminltetags.useTag('fields',
+                            [
+                                'component'                      : component,
+                                'componentName'                  : componentName,
+                                'componentId'                    : componentId,
+                                'sectionId'                      : sectionId,
+                                'fieldId'                        : 'deposit_bankaccount_id',
+                                'fieldLabel'                     : 'Deposit Bank Account',
+                                'fieldType'                      : 'select2',
+                                'fieldHelp'                      : true,
+                                'fieldHelpTooltipContent'        : 'Select bank account to deposit earnings to',
+                                'fieldRequired'                  : true,
+                                'fieldDisabled'                  : disableInvestmentSource,
+                                'fieldBazScan'                   : true,
+                                'fieldBazPostOnCreate'           : true,
+                                'fieldBazPostOnUpdate'           : false,
+                                'fieldDataSelect2Options'        : bookAccountsArr,
+                                'fieldDataSelect2OptionsKey'     : 'id',
+                                'fieldDataSelect2OptionsValue'   : 'name',
+                                'fieldDataSelect2OptionsArray'   : true,
+                                'fieldDataSelect2OptionsSelected': portfolioDepositAccountId
                             ]
                         )}}
                     </div>
@@ -243,7 +267,8 @@ dataCollectionSection =
                 $('#{{componentId}}-{{sectionId}}-user_id').on('select2:select', function(e) {
                     if (Object.keys(dataCollectionSectionForm['vars']['userBooks']).length > 0) {
                         $('#{{componentId}}-{{sectionId}}-book_id').empty().trigger('change');
-                        $('#{{componentId}}-{{sectionId}}-account_ids').empty().trigger('change');
+                        $('#{{componentId}}-{{sectionId}}-withdraw_bankaccount_id').empty().trigger('change');
+                        $('#{{componentId}}-{{sectionId}}-deposit_bankaccount_id').empty().trigger('change');
 
                         for (var book in dataCollectionSectionForm['vars']['userBooks']) {
                             if (dataCollectionSectionForm['vars']['userBooks'][book]['user_id'] == e.params.data.id) {
@@ -281,29 +306,47 @@ dataCollectionSection =
                     if ($('#{{componentId}}-{{sectionId}}-book_id').select2('data').length > 0 &&
                         Object.keys(dataCollectionSectionForm['vars']['userBooks']).length > 0
                     ) {
-                        $('#{{componentId}}-{{sectionId}}-account_ids').empty().trigger('change');
+                        $('#{{componentId}}-{{sectionId}}-withdraw_bankaccount_id').empty().trigger('change');
+                        $('#{{componentId}}-{{sectionId}}-deposit_bankaccount_id').empty().trigger('change');
 
                         if (Object.keys(dataCollectionSectionForm['vars']['userBooks'][$('#{{componentId}}-{{sectionId}}-book_id').select2('data')[0].id]['accounts']).length > 0) {
-                            for (var account in dataCollectionSectionForm['vars']['userBooks'][$('#{{componentId}}-{{sectionId}}-book_id').select2('data')[0].id]['accounts']) {
-                                var newOption = new Option(
-                                    dataCollectionSectionForm['vars']['userBooks'][$('#{{componentId}}-{{sectionId}}-book_id').select2('data')[0].id]['accounts'][account]['name'],
-                                    dataCollectionSectionForm['vars']['userBooks'][$('#{{componentId}}-{{sectionId}}-book_id').select2('data')[0].id]['accounts'][account]['id'],
+                            for (var withdrawAccount in dataCollectionSectionForm['vars']['userBooks'][$('#{{componentId}}-{{sectionId}}-book_id').select2('data')[0].id]['accounts']) {
+                                var newWithdrawOption = new Option(
+                                    dataCollectionSectionForm['vars']['userBooks'][$('#{{componentId}}-{{sectionId}}-book_id').select2('data')[0].id]['accounts'][withdrawAccount]['name'],
+                                    dataCollectionSectionForm['vars']['userBooks'][$('#{{componentId}}-{{sectionId}}-book_id').select2('data')[0].id]['accounts'][withdrawAccount]['id'],
                                     false,
                                     false
                                 );
-                                $('#{{componentId}}-{{sectionId}}-account_ids').append(newOption);
+                                $('#{{componentId}}-{{sectionId}}-withdraw_bankaccount_id').append(newWithdrawOption);
                             }
                         }
 
-                        $('#{{componentId}}-{{sectionId}}-account_ids').trigger('change');
+                        $('#{{componentId}}-{{sectionId}}-withdraw_bankaccount_id').trigger('change');
+
+                        if (Object.keys(dataCollectionSectionForm['vars']['userBooks'][$('#{{componentId}}-{{sectionId}}-book_id').select2('data')[0].id]['accounts']).length > 0) {
+                            for (var depositAccount in dataCollectionSectionForm['vars']['userBooks'][$('#{{componentId}}-{{sectionId}}-book_id').select2('data')[0].id]['accounts']) {
+                                var newDepositOption = new Option(
+                                    dataCollectionSectionForm['vars']['userBooks'][$('#{{componentId}}-{{sectionId}}-book_id').select2('data')[0].id]['accounts'][depositAccount]['name'],
+                                    dataCollectionSectionForm['vars']['userBooks'][$('#{{componentId}}-{{sectionId}}-book_id').select2('data')[0].id]['accounts'][depositAccount]['id'],
+                                    false,
+                                    false
+                                );
+                                $('#{{componentId}}-{{sectionId}}-deposit_bankaccount_id').append(newDepositOption);
+                            }
+                        }
+
+                        $('#{{componentId}}-{{sectionId}}-deposit_bankaccount_id').trigger('change');
                     }
                 });
             }
         },
-        '{{componentId}}-{{sectionId}}-account_ids'                 : {
-            placeholder: "SELECT EQUITY ACCOUNT(S)",
+        '{{componentId}}-{{sectionId}}-withdraw_bankaccount_id'             : {
+            placeholder: "SELECT WITHDRAW BANK ACCOUNT",
         },
-        '{{componentId}}-{{sectionId}}-description'                 : { },
+        '{{componentId}}-{{sectionId}}-deposit_bankaccount_id'              : {
+            placeholder: "SELECT DEPOSIT BANK ACCOUNT",
+        },
+        '{{componentId}}-{{sectionId}}-description'                         : { },
         '{{componentId}}-{{sectionId}}-form' : {
             rules: {
                 '{{componentId}}-{{sectionId}}-name'                : 'required',

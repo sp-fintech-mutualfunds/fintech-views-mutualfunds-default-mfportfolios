@@ -19,7 +19,8 @@
                 {% set bookAccountsArr = userBooks[portfolio['book_id']]['accounts'] %}
             {% endif %}
             {% set portfolioBookId = portfolio['book_id'] %}
-            {% set portfolioAccountIds = portfolio['account_ids']['data'] %}
+            {% set portfolioWithdrawAccountId = portfolio['withdraw_bankaccount_id'] %}
+            {% set portfolioDepositAccountId = portfolio['deposit_bankaccount_id'] %}
             {% set portfolioDescription = portfolio['description'] %}
             {% set disableUser = true %}
             {% set disableInvestmentSource = true %}
@@ -30,7 +31,8 @@
             {% set portfolioUser = '' %}
             {% set portfolioInvestmentSource = '' %}
             {% set portfolioBookId = '' %}
-            {% set portfolioAccountIds = '' %}
+            {% set portfolioWithdrawAccountId = '' %}
+            {% set portfolioDepositAccountId = '' %}
             {% set portfolioDescription = '' %}
         {% endif %}
         {% include 'portfolios/edit.html' %}
