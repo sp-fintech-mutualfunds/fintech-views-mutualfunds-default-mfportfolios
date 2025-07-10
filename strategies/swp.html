@@ -809,12 +809,12 @@ dataCollectionSection =
                                     $('#{{componentId}}-{{sectionId}}-strategies-transactions-table tbody').empty();
                                     // var tbody = '';
                                     var transactions = [];
-                                    var scheme = $('#{{componentId}}-{{sectionId}}-scheme_id').select2('data')[0].text;
+
                                     for (var transaction in response.responseData.transactions) {
                                         var newTransaction = [];
                                         newTransaction.push(response.responseData.transactions[transaction]['type'].toUpperCase());
                                         newTransaction.push(response.responseData.transactions[transaction]['date']);
-                                        newTransaction.push(scheme);
+                                        newTransaction.push(response.responseData.transactions[transaction]['scheme']);
                                         newTransaction.push(response.responseData.transactions[transaction]['amount']);
                                         transactions.push(newTransaction);
                                         // tbody += '<tr>';
@@ -955,7 +955,7 @@ dataCollectionSection =
                 "firstDayOfWeek": 1 // start week on Monday
             }
         },
-        '{{componentId}}-{{sectionId}}-schedule'                            : {
+        '{{componentId}}-{{sectionId}}-schedule'                                : {
             afterInit : function() {
                 $('#{{componentId}}-{{sectionId}}-schedule').click(function() {
                     processSchedules();

@@ -3,12 +3,16 @@
     {% for amfi_code, investment in portfolio['investments'] %}
         {% set textColor = 'success' %}
         {% if investment['latest_value'] != 0 %}
-            {% set latestValue = '<span class="text-' ~textColor ~ '">' ~ investment['latest_value'] ~ '</span>' %}
+            {% set latestValue = '<span class="text-' ~ textColor ~ '">' ~ investment['latest_value'] ~ '</span>' %}
+            {% set diff = '<span class="text-primary">' ~ investment['diff'] ~ '</span>' %}
+            {% set xirr = '<span class="text-primary">' ~ investment['xirr'] ~ '</span>' %}
             {% if investment['xirr'] is defined %}
                 {% if str_contains(investment['xirr'], '-') or str_contains(investment['diff'], '-') %}
                     {% set textColor = 'danger' %}
                 {% endif %}
-                {% set latestValue = '<span class="text-' ~textColor ~ '">' ~ investment['latest_value'] ~ ' (' ~ investment['diff'] ~ '/' ~ investment['xirr'] ~ '%)</span>' %}
+                {% set latestValue = '<span class="text-' ~ textColor ~ '">' ~ investment['latest_value'] ~ ' (' ~ investment['diff'] ~ '/' ~ investment['xirr'] ~ '%)</span>' %}
+                {% set diff = '<span class="text-' ~ textColor ~ '">' ~ investment['diff'] ~ '</span>' %}
+                {% set xirr = '<span class="text-' ~ textColor ~ '">' ~ investment['xirr'] ~ '</span>' %}
             {% endif %}
         {% else %}
             {% set latestValue = '-' %}
@@ -41,7 +45,9 @@
         '           <td>' ~ investment['amount'] ~ '</td>' ~
         '           <td>' ~ investment['sold_amount'] ~ '</td>' ~
         '           <td>' ~ investment['latest_value_date'] ~ '</td>' ~
-        '           <td>' ~ latestValue ~ '</td>'
+        '           <td>' ~ latestValue ~ '</td>' ~
+        '           <td>' ~ diff ~ '</td>' ~
+        '           <td>' ~ xirr ~ '</td>'
         %}
         {% if mode == 'transact' %}
             {% set investmentsHtml = investmentsHtml ~
@@ -73,7 +79,9 @@
                     <th class="text-uppercase">{{ currencySymbol }} Invested AMOUNT</th>
                     <th class="text-uppercase">{{ currencySymbol }} Sold AMOUNT</th>
                     <th class="text-uppercase">Latest Value Date</th>
-                    <th class="text-uppercase">{{ currencySymbol }} Latest Value (Diff/Xirr)</th>
+                    <th class="text-uppercase">{{ currencySymbol }} Latest Value</th>
+                    <th class="text-uppercase">Diff</th>
+                    <th class="text-uppercase">XIRR</th>
                     {% if mode == 'transact' %}
                         <th class="text-uppercase">ACTIONS</th>
                     {% endif %}

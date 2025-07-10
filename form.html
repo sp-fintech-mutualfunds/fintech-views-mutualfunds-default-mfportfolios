@@ -1766,34 +1766,37 @@ dataCollectionSectionForm['funcs']['init'] = function() {
         if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#{{componentId}}-{{sectionId}}-investments-table')) {
             var investmentColumns =
                 [
-                    {orderable: false},
-                    {orderable: false},
-                    {orderable: false},
-                    {orderable: false},
-                    {orderable: false},
-                    {orderable: false},
-                    {orderable: false},
-                    {orderable: false},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
                     {orderable: false}
                 ];
 
             if (dataCollectionSectionForm['vars']['mode'] === 'timeline') {
                 investmentColumns =
                     [
-                        {orderable: false},
-                        {orderable: false},
-                        {orderable: false},
-                        {orderable: false},
-                        {orderable: false},
-                        {orderable: false},
-                        {orderable: false},
+                        {orderable: true},
+                        {orderable: true},
+                        {orderable: true},
+                        {orderable: true},
+                        {orderable: true},
+                        {orderable: true},
+                        {orderable: true},
+                        {orderable: true},
+                        {orderable: true},
                         {orderable: false}
                     ];
             }
 
             $('#{{componentId}}-{{sectionId}}-investments-table').DataTable({
                 columns: investmentColumns,
-                order: false,
                 lengthMenu: [
                     [20, 50, 100, -1],
                     [20, 50, 100, 'All']
