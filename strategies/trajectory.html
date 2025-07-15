@@ -1,1 +1,423 @@
-Trajectory
+{% include 'portfolios/strategies/common/investmentsource' with ['initialInvestment' : false] %}
+<hr>
+<div class="row">
+    {% include 'portfolios/strategies/common/startenddates.html' %}
+</div>
+<hr>
+<div class="row">
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'trajectory',
+                'fieldLabel'                     : 'Trajectory',
+                'fieldType'                      : 'radio',
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'Select Trajectory.',
+                'fieldRequired'                  : true,
+                'fieldBazPostOnCreate'           : true,
+                'fieldBazPostOnUpdate'           : true,
+                'fieldBazScan'                   : true,
+                'fieldRadioButtons'              :
+                    [
+                        'up' :
+                            [
+                                'title'          : 'Up',
+                                'type'           : 'info',
+                                'dataValue'      : 'up'
+                            ],
+                        'down' :
+                            [
+                                'title'          : 'Down',
+                                'type'           : 'info',
+                                'dataValue'      : 'down'
+                            ]
+                    ],
+                'fieldRadioChecked'              : 'down'
+            ]
+        )}}
+    </div>
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'transaction_type',
+                'fieldLabel'                     : 'Transaction Type',
+                'fieldType'                      : 'radio',
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'Select transaction Type.',
+                'fieldRequired'                  : true,
+                'fieldBazPostOnCreate'           : true,
+                'fieldBazPostOnUpdate'           : true,
+                'fieldBazScan'                   : true,
+                'fieldRadioButtons'              :
+                    [
+                        'sell' :
+                            [
+                                'title'          : 'Sell',
+                                'type'           : 'info',
+                                'dataValue'      : 'sell'
+                            ],
+                        'buy' :
+                            [
+                                'title'          : 'Buy',
+                                'type'           : 'info',
+                                'dataValue'      : 'buy'
+                            ]
+                    ],
+                'fieldRadioChecked'              : 'buy'
+            ]
+        )}}
+    </div>
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'days',
+                'fieldLabel'                     : 'Consecutive days to monitor',
+                'fieldType'                      : 'input',
+                'fieldInputTypeTextFilter'       : 'positiveIntMax',
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'Consecutive days to monitor before creating transaction. 0 will buy/sell the same day.',
+                'fieldRequired'                  : true,
+                'fieldBazScan'                   : true,
+                'fieldBazPostOnCreate'           : false,
+                'fieldBazPostOnUpdate'           : false,
+                'fieldDataInputMaxNumber'        : 4,
+                'fieldValue'                     : '0'
+            ]
+        )}}
+    </div>
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'percent',
+                'fieldLabel'                     : 'Percentage',
+                'fieldType'                      : 'input',
+                'fieldGroupPreAddonText'         : '%',
+                'fieldInputTypeTextFilter'       : 'positiveFloat',
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'Percentage to reach from first day of monitoring. Example: if you set it to 1% and tell the system to monitor for x days, the system will wait for the difference to reach the requested percent.',
+                'fieldRequired'                  : true,
+                'fieldBazScan'                   : true,
+                'fieldBazPostOnCreate'           : false,
+                'fieldBazPostOnUpdate'           : false,
+                'fieldValue'                     : '0'
+            ]
+        )}}
+    </div>
+</div>
+<hr>
+<div class="row">
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'amount',
+                'fieldLabel'                     : 'Investment Amount',
+                'fieldType'                      : 'input',
+                'fieldGroupPreAddonText'         : currencySymbol,
+                'fieldInputTypeTextFilter'       : 'positiveCurrency',
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'Investment Amount.',
+                'fieldRequired'                  : true,
+                'fieldBazScan'                   : true,
+                'fieldBazPostOnCreate'           : false,
+                'fieldBazPostOnUpdate'           : false,
+                'fieldValue'                     : ''
+            ]
+        )}}
+    </div>
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'carry_forward_to_next_week',
+                'fieldLabel'                     : 'Carry forward to next week',
+                'fieldType'                      : 'radio',
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'In case there are no transactions in the week, should the amount be carry forwarded to next week?',
+                'fieldRequired'                  : false,
+                'fieldBazPostOnCreate'           : true,
+                'fieldBazPostOnUpdate'           : true,
+                'fieldBazScan'                   : true,
+                'fieldRadioButtons'              :
+                    [
+                        'carry_forward_to_next_week_yes' :
+                            [
+                                'title'          : 'Yes',
+                                'type'           : 'info',
+                                'dataValue'      : 'carry_forward_to_next_week_yes'
+                            ],
+                        'carry_forward_to_next_week_no' :
+                            [
+                                'title'          : 'No',
+                                'type'           : 'info',
+                                'dataValue'      : 'carry_forward_to_next_week_no'
+                            ]
+                    ],
+                'fieldRadioChecked'              : 'carry_forward_to_next_week_yes'
+            ]
+        )}}
+    </div>
+</div>
+<hr>
+<script>
+/* globals paginatedPNotify Swal */
+var dataCollectionComponent, dataCollectionSection, dataCollectionSectionForm;
+
+if (!window['dataCollection']['{{componentId}}']) {
+    dataCollectionComponent =
+        window['dataCollection']['{{componentId}}'] = { };
+} else {
+    dataCollectionComponent =
+        window['dataCollection']['{{componentId}}'];
+}
+if (!dataCollectionComponent['{{componentId}}-{{sectionId}}']) {
+    dataCollectionSection =
+        dataCollectionComponent['{{componentId}}-{{sectionId}}'] = { };
+} else {
+    dataCollectionSection =
+        dataCollectionComponent['{{componentId}}-{{sectionId}}'];
+}
+if (!dataCollectionSection['{{componentId}}-{{sectionId}}-form']) {
+    dataCollectionSectionForm =
+        dataCollectionSection['{{componentId}}-{{sectionId}}-form'] = { };
+} else {
+    dataCollectionSectionForm =
+        dataCollectionSection['{{componentId}}-{{sectionId}}-form'];
+}
+
+dataCollectionSection =
+    $.extend(dataCollectionSection, {
+        '{{componentId}}-{{sectionId}}-amount'                                  : {
+            afterInit: function() {
+                dataCollectionSectionForm['vars']['startDate'] = null;
+                dataCollectionSectionForm['vars']['endDate'] = null;
+
+                dataCollectionSectionForm['funcs']['applyStrategy'] = function() {
+                    var postData = dataCollectionSectionForm['vars']['strategyPostData']();
+
+                    if (!postData) {
+                        return false;
+                    }
+
+                    if ($('#{{componentId}}-{{sectionId}}-clone_portfolio')[0].checked) {
+                        postData['clone_portfolio'] = true;
+                        postData['clone_portfolio_name'] = $('#{{componentId}}-{{sectionId}}-clone_portfolio_name').val();
+                    }
+
+
+                    $.post('{{links.url("mf/portfolios/applyStrategy")}}', postData, function(response) {
+                        if (response.tokenKey && response.token) {
+                            $("#security-token").attr("name", response.tokenKey);
+                            $("#security-token").val(response.token);
+                        }
+
+                        if (response.responseCode === 0) {
+                            $('#strategies-progress').attr('hidden', true);
+                            $('#strategies-buttons').attr('hidden', true);
+                            $('#portfolio-access-buttons').attr('hidden', false);
+                            $('#{{componentId}}-{{sectionId}}-transact-mode, #{{componentId}}-{{sectionId}}-timeline-mode').off();
+                            $('#{{componentId}}-{{sectionId}}-transact-mode, #{{componentId}}-{{sectionId}}-timeline-mode').click(function() {
+                                if ($(this)[0].id === '{{componentId}}-{{sectionId}}-transact-mode') {
+                                    $('#{{componentId}}-{{sectionId}}-portfolios-link')
+                                        .attr(
+                                            'href',
+                                            window['dataCollection'].env.httpScheme + '://' + window['dataCollection'].env.httpHost + '/' + window['dataCollection'].env.appRoute + '/' +
+                                            'mf/portfolios/q/id/' + response.responseData['portfolio_id'] + '/mode/transact'
+                                        );
+                                } else if ($(this)[0].id === '{{componentId}}-{{sectionId}}-timeline-mode') {
+                                    $('#{{componentId}}-{{sectionId}}-portfolios-link')
+                                        .attr(
+                                            'href',
+                                            window['dataCollection'].env.httpScheme + '://' + window['dataCollection'].env.httpHost + '/' + window['dataCollection'].env.appRoute + '/' +
+                                            'mf/portfolios/q/id/' + response.responseData['portfolio_id'] + '/mode/timeline'
+                                        );
+                                }
+
+                                dataCollectionSectionForm['funcs']['browse']();
+                            });
+                        } else {
+                            paginatedPNotify('error', {
+                                text : response.responseMessage
+                            });
+                        }
+                    }, 'json');
+                }
+
+                $('#{{componentId}}-{{sectionId}}-view-strategy-transactions').click(function() {
+                    dataCollectionSectionForm['funcs']['getStrategiesTransactions']();
+                });
+
+                dataCollectionSectionForm['vars']['strategyPostData'] = function() {
+                    if (dataCollectionSectionForm['vars']['source'] === 'current') {
+                        if ($('#{{componentId}}-{{sectionId}}-sell_transaction_id').val() === '') {
+                            paginatedPNotify('error', {
+                                text : 'Please select investment to withdraw from'
+                            });
+
+                            return false;
+                        }
+                    } else {
+                        if ($('#{{componentId}}-{{sectionId}}-scheme_id').val() === '') {
+                            paginatedPNotify('error', {
+                                text : 'Please select scheme'
+                            });
+
+                            return false;
+                        }
+                    }
+
+                    if (!dataCollectionSectionForm['vars']['startDate'] || !dataCollectionSectionForm['vars']['endDate']) {
+                        paginatedPNotify('error', {
+                            text : 'Please select start and end date'
+                        });
+
+                        return false;
+                    }
+
+                    if ($('#{{componentId}}-{{sectionId}}-amount').val() === '') {
+                        paginatedPNotify('error', {
+                            text : 'Please enter total monthly investment'
+                        });
+
+                        return false;
+                    }
+
+                    var postData = { };
+                    postData[$('#security-token').attr('name')] = $('#security-token').val();
+                    postData['portfolio_id'] = $('#{{componentId}}-{{sectionId}}-id').val();
+                    postData['strategy_id'] = $('#{{componentId}}-{{sectionId}}-strategies').val();
+                    postData['amc_id'] = $('#{{componentId}}-{{sectionId}}-amc_id').val();
+                    if (dataCollectionSectionForm['vars']['source'] === 'current') {
+                        postData['amfi_code'] = $('#{{componentId}}-{{sectionId}}-sell_transaction_id').val();
+                    } else {
+                        postData['scheme_id'] = $('#{{componentId}}-{{sectionId}}-scheme_id').val();
+                    }
+
+                    postData['trajectory'] = $('#{{componentId}}-{{sectionId}}-trajectory').find('input[type=radio]:checked').data('value');
+                    postData['transaction_type'] = $('#{{componentId}}-{{sectionId}}-transaction_type').find('input[type=radio]:checked').data('value');
+                    postData['days'] = $('#{{componentId}}-{{sectionId}}-days').val();
+                    postData['percent'] = $('#{{componentId}}-{{sectionId}}-percent').val();
+
+                    postData['startDate'] = dataCollectionSectionForm['vars']['startDate'];
+                    postData['endDate'] = dataCollectionSectionForm['vars']['endDate'];
+                    postData['amount'] = $('#{{componentId}}-{{sectionId}}-amount').val();
+
+                    // postData['interval_first'] = $('#{{componentId}}-{{sectionId}}-interval_first').val();
+                    // postData['interval_second'] = $('#{{componentId}}-{{sectionId}}-interval_second').val();
+                    // postData['interval_third'] = $('#{{componentId}}-{{sectionId}}-interval_third').val();
+
+                    // postData['borrow_from_next_month'] = false;
+                    // if ($('#{{componentId}}-{{sectionId}}-borrow_from_next_month').find('input[type=radio]:checked').data('value') === 'borrow_from_next_month_yes') {
+                    //     postData['borrow_from_next_month'] = true;
+                    // }
+                    postData['carry_forward_to_next_week'] = false;
+                    if ($('#{{componentId}}-{{sectionId}}-carry_forward_to_next_week').find('input[type=radio]:checked').data('value') === 'carry_forward_to_next_week_yes') {
+                        postData['carry_forward_to_next_week'] = true;
+                    }
+
+                    // postData['borrow_from_next_interval'] = false;
+                    // if ($('#{{componentId}}-{{sectionId}}-borrow_from_next_interval').find('input[type=radio]:checked').data('value') === 'borrow_from_next_interval_yes') {
+                    //     postData['borrow_from_next_interval'] = true;
+                    // }
+                    // postData['carry_forward_to_next_interval'] = false;
+                    // if ($('#{{componentId}}-{{sectionId}}-carry_forward_to_next_interval').find('input[type=radio]:checked').data('value') === 'carry_forward_to_next_interval_yes') {
+                    //     postData['carry_forward_to_next_interval'] = true;
+                    // }
+
+                    return postData;
+                };
+
+                dataCollectionSectionForm['funcs']['getStrategiesTransactions'] = function() {
+                    var postData = dataCollectionSectionForm['vars']['strategyPostData']();
+
+                    if (!postData) {
+                        return false;
+                    }
+
+                    $.post('{{links.url("mf/portfolios/getStrategiesTransactions")}}', postData, function(response) {
+                        if (response.tokenKey && response.token) {
+                            $("#security-token").attr("name", response.tokenKey);
+                            $("#security-token").val(response.token);
+                        }
+
+                        if (response.responseCode === 0) {
+                            if (response.responseData) {
+                                $('#{{componentId}}-{{sectionId}}-strategies_total_buy_transactions').empty().html('0');
+                                $('#{{componentId}}-{{sectionId}}-strategies_total_sell_transactions').empty().html('0');
+                                $('#{{componentId}}-{{sectionId}}-strategies_first_transaction_date').empty().html('-');
+                                $('#{{componentId}}-{{sectionId}}-strategies_last_transaction_date').empty().html('-');
+
+                                if (response.responseData.total_transactions_count.buy) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies_total_buy_transactions').empty().html(response.responseData.total_transactions_count.buy);
+                                }
+                                if (response.responseData.total_transactions_count.sell) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies_total_sell_transactions').empty().html(response.responseData.total_transactions_count.sell);
+                                }
+                                if (response.responseData.total_transactions_amount) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies_total_transactions_amount').empty().html(dataCollectionSectionForm['vars']['currencySymbol'] + response.responseData.total_transactions_amount);
+                                }
+                                if (response.responseData.first_date) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies_first_transaction_date').empty().html(response.responseData.first_date);
+                                }
+                                if (response.responseData.last_date) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies_last_transaction_date').empty().html(response.responseData.last_date);
+                                }
+                                if (response.responseData.transactions) {
+                                    $('#{{componentId}}-{{sectionId}}-strategies-transactions-modal').modal('show');
+                                    $('#{{componentId}}-{{sectionId}}-transactions').empty().html(
+                                        'Transactions in this strategy are created after analysing trajectory on particular date(s).' +
+                                        ' If the thresholds provided are met, a new buy transaction is created.'
+                                    );
+                                }
+                            }
+                        } else {
+                            paginatedPNotify('error', {
+                                text : response.responseMessage
+                            });
+                        }
+                    }, 'json');
+                }
+            }
+        },
+        '{{componentId}}-{{sectionId}}-trajectory'                              : { },
+        '{{componentId}}-{{sectionId}}-transaction_type'                        : { },
+        '{{componentId}}-{{sectionId}}-days'                                    : { },
+        '{{componentId}}-{{sectionId}}-percent'                                 : { },
+        // '{{componentId}}-{{sectionId}}-borrow_from_next_month'                  : { },
+        '{{componentId}}-{{sectionId}}-carry_forward_to_next_week'              : { },
+        // '{{componentId}}-{{sectionId}}-interval_first'                          : { },
+        // '{{componentId}}-{{sectionId}}-interval_second'                         : { },
+        // '{{componentId}}-{{sectionId}}-interval_third'                          : { },
+        // '{{componentId}}-{{sectionId}}-borrow_from_next_interval'               : { },
+        // '{{componentId}}-{{sectionId}}-carry_forward_to_next_interval'          : { },
+        '{{componentId}}-{{sectionId}}-form'                                    : {
+            ignore      : ':submit, :reset, :image, :hidden, .ignore, .cr-slider',
+            rules: {
+            },
+            messages: {
+            }
+        }
+    });
+</script>

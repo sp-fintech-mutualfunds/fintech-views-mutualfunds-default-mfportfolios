@@ -3,6 +3,10 @@
 {% set monthlyHidden = 'hidden' %}
 {% set monthlyMonths = ['1'] %}
 {% set monthlyDay = '1' %}
+{% set performText = 'Transaction will be created' %}
+{% if type is defined and type == 'check' %}
+    {% set performText = 'Data will be checked' %}
+{% endif %}
 <div class="row vdivide mt-3">
     <div class="col-md-3">
         {{adminltetags.useTag('fields',
@@ -88,7 +92,7 @@
         </div>
         <div class="callout callout-info">
             <h5>Weekly</h5>
-            <p>Transaction will be created on <span class="text-info" id="{{componentId}}-{{sectionId}}-weekly-days-span">Monday</span>.</p>
+            <p>{{performText}} on <span class="text-info" id="{{componentId}}-{{sectionId}}-weekly-days-span">Monday</span>.</p>
         </div>
     </div>
     <div class="col schedules" id="{{componentId}}-{{sectionId}}-monthly" {{monthlyHidden}}>
@@ -166,42 +170,152 @@
         </div>
         <div class="callout callout-info">
             <h5>Monthly</h5>
-            <p>Transaction will be created in <span class="text-info" id="{{componentId}}-{{sectionId}}-monthly-months-span">January</span> on day <span class="text-info" id="{{componentId}}-{{sectionId}}-monthly-day-span"> 1 </span> of the month.</p>
+            <p>{{performText}} in <span class="text-info" id="{{componentId}}-{{sectionId}}-monthly-months-span">January</span> on day <span class="text-info" id="{{componentId}}-{{sectionId}}-monthly-day-span"> 1 </span> of the month.</p>
         </div>
     </div>
 </div>
 <script>
-var selectAllMonths = false;
-var selectAllDays = false;
+/* globals paginatedPNotify Swal */
+var dataCollectionComponent, dataCollectionSection, dataCollectionSectionForm;
 
-$('#{{componentId}}-{{sectionId}}-select_all_months, #{{componentId}}-{{sectionId}}-select_all_days').off();
-$('#{{componentId}}-{{sectionId}}-select_all_months, #{{componentId}}-{{sectionId}}-select_all_days').click(function(e) {
-    e.preventDefault();
+if (!window['dataCollection']['{{componentId}}']) {
+    dataCollectionComponent =
+        window['dataCollection']['{{componentId}}'] = { };
+} else {
+    dataCollectionComponent =
+        window['dataCollection']['{{componentId}}'];
+}
+if (!dataCollectionComponent['{{componentId}}-{{sectionId}}']) {
+    dataCollectionSection =
+        dataCollectionComponent['{{componentId}}-{{sectionId}}'] = { };
+} else {
+    dataCollectionSection =
+        dataCollectionComponent['{{componentId}}-{{sectionId}}'];
+}
+if (!dataCollectionSection['{{componentId}}-{{sectionId}}-form']) {
+    dataCollectionSectionForm =
+        dataCollectionSection['{{componentId}}-{{sectionId}}-form'] = { };
+} else {
+    dataCollectionSectionForm =
+        dataCollectionSection['{{componentId}}-{{sectionId}}-form'];
+}
 
-    if ($(this)[0].id === '{{componentId}}-{{sectionId}}-select_all_months') {
-        if (selectAllMonths === true) {
-            $('#{{componentId}}-{{sectionId}}-monthly_months').val(null).trigger('change');
-            $('#{{componentId}}-{{sectionId}}-select_all_months').html('SELECT ALL');
-            $('#{{componentId}}-{{sectionId}}-monthly-months-span').html('X');
-            selectAllMonths = false;
-        } else {
-            $('#{{componentId}}-{{sectionId}}-monthly_months').val(['1','2','3','4','5','6','7','8','9','10','11','12']).trigger('change');
-            $('#{{componentId}}-{{sectionId}}-select_all_months').html('SELECT NONE');
+dataCollectionSection =
+    $.extend(dataCollectionSection, {
+        '{{componentId}}-{{sectionId}}-schedule'                                : {
+            afterInit : function() {
+                $('#{{componentId}}-{{sectionId}}-schedule').click(function() {
+                    processSchedules();
+                });
 
-            selectAllMonths = true;
+                function processSchedules() {
+                    dataCollectionSectionForm['vars']['schedule'] = $('#{{componentId}}-{{sectionId}}-schedule').find('input[type=radio]:checked').data('value');
+
+                    if ($('#{{componentId}}-{{sectionId}}-schedule').find('input[type=radio]:checked').data('value') == 'daily') {
+                        $('.schedules').attr('hidden', true);
+                        $('#{{componentId}}-{{sectionId}}-daily').attr('hidden', false);
+                    } else if ($('#{{componentId}}-{{sectionId}}-schedule').find('input[type=radio]:checked').data('value') == 'weekly') {
+                        $('.schedules').attr('hidden', true);
+                        $('#{{componentId}}-{{sectionId}}-weekly').attr('hidden', false);
+
+                        $('#{{componentId}}-{{sectionId}}-weekly_days').change('select2:change', function(e) {
+                            var selectedDays = $('#{{componentId}}-{{sectionId}}-weekly_days').val();
+                            var days = [];
+
+                            $('#{{componentId}}-{{sectionId}}-weekly_days').children('option').each(function(index, day) {
+                                if (selectedDays.includes($(day).val())) {
+                                    days.push($(day).text());
+                                }
+                            });
+
+                            $('#{{componentId}}-{{sectionId}}-weekly-days-span').html(days.join(', '));
+                        });
+                    } else if ($('#{{componentId}}-{{sectionId}}-schedule').find('input[type=radio]:checked').data('value') == 'monthly') {
+                        $('.schedules').attr('hidden', true);
+                        $('#{{componentId}}-{{sectionId}}-monthly').attr('hidden', false);
+
+                        $('#{{componentId}}-{{sectionId}}-monthly_months').change('select2:change', function(e) {
+                            var selectedMonths = $('#{{componentId}}-{{sectionId}}-monthly_months').val();
+                            var months = [];
+
+                            $('#{{componentId}}-{{sectionId}}-monthly_months').children('option').each(function(index, month) {
+                                if (selectedMonths.includes($(month).val())) {
+                                    months.push($(month).text());
+                                }
+                            });
+                            $('#{{componentId}}-{{sectionId}}-monthly-months-span').html(months.join(', '));
+                        });
+
+                        $('#{{componentId}}-{{sectionId}}-monthly_day').on('input propertychange', function() {
+                            if ($('#{{componentId}}-{{sectionId}}-monthly_day').val().length === 0) {
+                                $('#{{componentId}}-{{sectionId}}-monthly-day-span').html('X');
+                            } else {
+                                if ($('#{{componentId}}-{{sectionId}}-monthly_day').val() == 0) {
+                                    $('#{{componentId}}-{{sectionId}}-monthly-day-span').html('X');
+                                } else {
+                                    $('#{{componentId}}-{{sectionId}}-monthly-day-span').html($('#{{componentId}}-{{sectionId}}-monthly_day').val());
+                                }
+                            }
+                        });
+                    }
+                }
+
+                processSchedules();
+
+                var selectAllMonths = false;
+                var selectAllDays = false;
+
+                $('#{{componentId}}-{{sectionId}}-select_all_months, #{{componentId}}-{{sectionId}}-select_all_days').off();
+                $('#{{componentId}}-{{sectionId}}-select_all_months, #{{componentId}}-{{sectionId}}-select_all_days').click(function(e) {
+                    e.preventDefault();
+
+                    if ($(this)[0].id === '{{componentId}}-{{sectionId}}-select_all_months') {
+                        if (selectAllMonths === true) {
+                            $('#{{componentId}}-{{sectionId}}-monthly_months').val(null).trigger('change');
+                            $('#{{componentId}}-{{sectionId}}-select_all_months').html('SELECT ALL');
+                            $('#{{componentId}}-{{sectionId}}-monthly-months-span').html('X');
+                            selectAllMonths = false;
+                        } else {
+                            $('#{{componentId}}-{{sectionId}}-monthly_months').val(['1','2','3','4','5','6','7','8','9','10','11','12']).trigger('change');
+                            $('#{{componentId}}-{{sectionId}}-select_all_months').html('SELECT NONE');
+
+                            selectAllMonths = true;
+                        }
+                    } else if ($(this)[0].id === '{{componentId}}-{{sectionId}}-select_all_days') {
+                        if (selectAllDays === true) {
+                            $('#{{componentId}}-{{sectionId}}-weekly_days').val(null).trigger('change');
+                            $('#{{componentId}}-{{sectionId}}-select_all_days').html('SELECT ALL');
+                            $('#{{componentId}}-{{sectionId}}-weekly-days-span').html('X');
+                            selectAllDays = false;
+                        } else {
+                            $('#{{componentId}}-{{sectionId}}-weekly_days').val(['0','1','2','3','4','5','6']).trigger('change');
+                            $('#{{componentId}}-{{sectionId}}-select_all_days').html('SELECT NONE');
+
+                            selectAllDays = true;
+                        }
+                    }
+                });
+            }
+        },
+        '{{componentId}}-{{sectionId}}-weekly_days'                             : {
+            placeholder: 'SELECT DAYS'
+        },
+        '{{componentId}}-{{sectionId}}-monthly_months'                          : {
+            placeholder: 'SELECT MONTHS'
+        },
+        '{{componentId}}-{{sectionId}}-monthly_day'                             : { },
+        '{{componentId}}-{{sectionId}}-form'                                    : {
+            ignore      : ':submit, :reset, :image, :hidden, .ignore, .cr-slider',
+            rules: {
+                '{{componentId}}-{{sectionId}}-weekly_days'                     : 'required',
+                '{{componentId}}-{{sectionId}}-monthly_months'                  : 'required',
+                '{{componentId}}-{{sectionId}}-monthly_day'                     : 'required'
+            },
+            messages: {
+                '{{componentId}}-{{sectionId}}-weekly_days'                     : 'Please select days',
+                '{{componentId}}-{{sectionId}}-monthly_months'                  : 'Please select months',
+                '{{componentId}}-{{sectionId}}-monthly_day'                     : 'Please enter day'
+            }
         }
-    } else if ($(this)[0].id === '{{componentId}}-{{sectionId}}-select_all_days') {
-        if (selectAllDays === true) {
-            $('#{{componentId}}-{{sectionId}}-weekly_days').val(null).trigger('change');
-            $('#{{componentId}}-{{sectionId}}-select_all_days').html('SELECT ALL');
-            $('#{{componentId}}-{{sectionId}}-weekly-days-span').html('X');
-            selectAllDays = false;
-        } else {
-            $('#{{componentId}}-{{sectionId}}-weekly_days').val(['0','1','2','3','4','5','6']).trigger('change');
-            $('#{{componentId}}-{{sectionId}}-select_all_days').html('SELECT NONE');
-
-            selectAllDays = true;
-        }
-    }
-});
+    })
 </script>

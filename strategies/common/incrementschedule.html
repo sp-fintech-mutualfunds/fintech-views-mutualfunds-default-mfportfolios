@@ -1,0 +1,184 @@
+<div class="row">
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'increment-schedule',
+                'fieldLabel'                     : 'Increment schedule',
+                'fieldType'                      : 'radio',
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'Select schedule for increment.',
+                'fieldBazPostOnCreate'           : true,
+                'fieldBazPostOnUpdate'           : true,
+                'fieldBazScan'                   : true,
+                'fieldRadioButtons'              :
+                    [
+                        'increment-none' :
+                            [
+                                'title'          : 'None',
+                                'type'           : 'secondary',
+                                'dataValue'      : 'increment-none'
+                            ],
+                        'increment-next' :
+                            [
+                                'title'          : 'Next Transaction',
+                                'type'           : 'info',
+                                'dataValue'      : 'increment-next'
+                            ],
+                        'increment-weekly' :
+                            [
+                                'title'          : 'Weekly',
+                                'type'           : 'info',
+                                'dataValue'      : 'increment-weekly'
+                            ],
+                        'increment-monthly' :
+                            [
+                                'title'          : 'Monthly',
+                                'type'           : 'info',
+                                'dataValue'      : 'increment-monthly'
+                            ],
+                        'increment-yearly' :
+                            [
+                                'title'          : 'Yearly',
+                                'type'           : 'info',
+                                'dataValue'      : 'increment-yearly'
+                            ]
+                    ],
+                'fieldRadioChecked'              : 'increment-none'
+            ]
+        )}}
+    </div>
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'increment-type',
+                'fieldLabel'                     : 'Increment type',
+                'fieldType'                      : 'radio',
+                'fieldHelp'                      : true,
+                'fieldHelpTooltipContent'        : 'Select type for increment. Amount is default if not set.',
+                'fieldBazPostOnCreate'           : true,
+                'fieldBazPostOnUpdate'           : true,
+                'fieldBazScan'                   : true,
+                'fieldDisabled'                  : true,
+                'fieldRadioButtons'              :
+                    [
+                        'percent' :
+                            [
+                                'title'          : 'Percent',
+                                'type'           : 'info',
+                                'dataValue'      : 'percent'
+                            ],
+                        'amount' :
+                            [
+                                'title'          : 'Amount',
+                                'type'           : 'info',
+                                'dataValue'      : 'amount'
+                            ]
+                    ],
+                'fieldRadioChecked'              : 'amount'
+            ]
+        )}}
+    </div>
+    <div class="col">
+        {{adminltetags.useTag('fields',
+            [
+                'component'                      : component,
+                'componentName'                  : componentName,
+                'componentId'                    : componentId,
+                'sectionId'                      : sectionId,
+                'fieldId'                        : 'increment-value',
+                'fieldLabel'                     : 'Increment Value',
+                'fieldType'                      : 'input',
+                'fieldGroupPreAddonText'         : currencySymbol,
+                'fieldInputTypeTextFilter'       : 'positiveFloat',
+                'fieldHelp'                      : true,
+                'fieldDisabled'                  : true,
+                'fieldHelpTooltipContent'        : 'Depending on increment type, the value will be in amount or percent. Max percent value 1000',
+                'fieldBazScan'                   : true,
+                'fieldBazPostOnCreate'           : false,
+                'fieldBazPostOnUpdate'           : false,
+                'fieldValue'                     : ''
+            ]
+        )}}
+    </div>
+</div>
+<script>
+/* globals paginatedPNotify Swal */
+var dataCollectionComponent, dataCollectionSection, dataCollectionSectionForm;
+
+if (!window['dataCollection']['{{componentId}}']) {
+    dataCollectionComponent =
+        window['dataCollection']['{{componentId}}'] = { };
+} else {
+    dataCollectionComponent =
+        window['dataCollection']['{{componentId}}'];
+}
+if (!dataCollectionComponent['{{componentId}}-{{sectionId}}']) {
+    dataCollectionSection =
+        dataCollectionComponent['{{componentId}}-{{sectionId}}'] = { };
+} else {
+    dataCollectionSection =
+        dataCollectionComponent['{{componentId}}-{{sectionId}}'];
+}
+if (!dataCollectionSection['{{componentId}}-{{sectionId}}-form']) {
+    dataCollectionSectionForm =
+        dataCollectionSection['{{componentId}}-{{sectionId}}-form'] = { };
+} else {
+    dataCollectionSectionForm =
+        dataCollectionSection['{{componentId}}-{{sectionId}}-form'];
+}
+
+dataCollectionSection =
+    $.extend(dataCollectionSection, {
+        '{{componentId}}-{{sectionId}}-increment-schedule'                     : {
+            afterInit: function() {
+                dataCollectionSectionForm['vars']['increment-schedule'] = $('#{{componentId}}-{{sectionId}}-increment-schedule').find('input[type=radio]:checked').data('value');
+
+                $('#{{componentId}}-{{sectionId}}-increment-schedule').click(function() {
+                    dataCollectionSectionForm['vars']['increment-schedule'] = $(this).find('input[type=radio]:checked').data('value');
+
+                    if ($(this).find('input[type=radio]:checked').data('value') == 'increment-none') {
+                        $('#{{componentId}}-{{sectionId}}-increment-value').attr('disabled', true);
+                        $('#{{componentId}}-{{sectionId}}-increment-type input').attr('disabled', true);
+                        $('#{{componentId}}-{{sectionId}}-increment-value').val('');
+                    } else {
+                        $('#{{componentId}}-{{sectionId}}-increment-value').attr('disabled', false);
+                        $('#{{componentId}}-{{sectionId}}-increment-type input').attr('disabled', false);
+                    }
+                });
+            }
+        },
+        '{{componentId}}-{{sectionId}}-increment-type'                          : {
+            afterInit: function() {
+                dataCollectionSectionForm['vars']['increment-type'] = $('#{{componentId}}-{{sectionId}}-increment-type').find('input[type=radio]:checked').data('value');
+
+                $('#{{componentId}}-{{sectionId}}-increment-type').click(function() {
+                    dataCollectionSectionForm['vars']['increment-type'] = $(this).find('input[type=radio]:checked').data('value');
+
+                    if ($(this).find('input[type=radio]:checked').data('value') == 'percent') {
+                        $('#{{componentId}}-{{sectionId}}-increment-value').siblings('.input-group-prepend').children('span').html('%');
+                    } else if ($(this).find('input[type=radio]:checked').data('value') == 'amount') {
+                        $('#{{componentId}}-{{sectionId}}-increment-value').siblings('.input-group-prepend').children('span').html('{{currencySymbol}}');
+                    }
+
+                    $('#{{componentId}}-{{sectionId}}-increment-value').val('');
+                });
+            }
+        },
+        '{{componentId}}-{{sectionId}}-increment-value'                         : { },
+        '{{componentId}}-{{sectionId}}-form'                                    : {
+            ignore      : ':submit, :reset, :image, :hidden, .ignore, .cr-slider',
+            rules: {
+            },
+            messages: {
+            }
+        }
+    })
+</script>

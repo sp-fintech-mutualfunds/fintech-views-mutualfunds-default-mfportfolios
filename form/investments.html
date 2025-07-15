@@ -2,6 +2,8 @@
 {% if portfolio['investments'] is defined and portfolio['investments']|length > 0 %}
     {% for amfi_code, investment in portfolio['investments'] %}
         {% set textColor = 'success' %}
+        {% set diff = '-' %}
+        {% set xirr = '-' %}
         {% if investment['latest_value'] != 0 %}
             {% set latestValue = '<span class="text-' ~ textColor ~ '">' ~ investment['latest_value'] ~ '</span>' %}
             {% set diff = '<span class="text-primary">' ~ investment['diff'] ~ '</span>' %}

@@ -305,6 +305,7 @@
     </div>
 </div>
 <hr>
+{% include 'portfolios/strategies/common/schedule' with ['type' : 'check'] %}
 {% set categories = escaper.js(json_encode(categories, 16)) %}
 <script>
 /* globals paginatedPNotify Swal dayjs */
@@ -452,6 +453,41 @@ dataCollectionSection =
                         return false;
                     }
 
+                    if (!dataCollectionSectionForm['vars']['schedule']) {
+                        paginatedPNotify('error', {
+                            text : 'Please select schedule'
+                        });
+
+                        return false;
+                    }
+
+                    if (dataCollectionSectionForm['vars']['schedule'] === 'weekly') {
+                        if ($('#{{componentId}}-{{sectionId}}-weekly_days').val().length === 0) {
+                            paginatedPNotify('error', {
+                                text : 'Please select weekly schedule days'
+                            });
+
+                            return false;
+                        }
+                    }
+
+                    if (dataCollectionSectionForm['vars']['schedule'] === 'monthly') {
+                        if ($('#{{componentId}}-{{sectionId}}-monthly_months').val().length === 0) {
+                            paginatedPNotify('error', {
+                                text : 'Please select monthly schedule months'
+                            });
+
+                            return false;
+                        }
+                        if ($('#{{componentId}}-{{sectionId}}-monthly_day').val() === '') {
+                            paginatedPNotify('error', {
+                                text : 'Please enter monthly schedule day'
+                            });
+
+                            return false;
+                        }
+                    }
+
                     var postData = { };
                     postData[$('#security-token').attr('name')] = $('#security-token').val();
                     postData['portfolio_id'] = $('#{{componentId}}-{{sectionId}}-id').val();
@@ -461,6 +497,13 @@ dataCollectionSection =
                     postData['start_date'] = $('#{{componentId}}-{{sectionId}}-start-date').val();
                     postData['end_date'] = $('#{{componentId}}-{{sectionId}}-end-date').val()
                     postData['threshold_percent'] = $('#{{componentId}}-{{sectionId}}-threshold-percent').val();
+                    postData['schedule'] = dataCollectionSectionForm['vars']['schedule'];
+                    if (dataCollectionSectionForm['vars']['schedule'] === 'weekly') {
+                        postData['weekly_days'] = $('#{{componentId}}-{{sectionId}}-weekly_days').val();
+                    } else if (dataCollectionSectionForm['vars']['schedule'] === 'monthly') {
+                        postData['monthly_months'] = $('#{{componentId}}-{{sectionId}}-monthly_months').val();
+                        postData['monthly_day'] = $('#{{componentId}}-{{sectionId}}-monthly_day').val();
+                    }
 
                     return postData;
                 };
