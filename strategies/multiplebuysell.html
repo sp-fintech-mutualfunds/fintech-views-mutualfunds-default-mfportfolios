@@ -4,11 +4,11 @@
 <div class="row vdivide">
     {% set investments = [] %}
     {% if portfolio['investments']|length > 0 %}
-        {% for amfi_code, investment in portfolio['investments'] %}
+        {% for schemeId, investment in portfolio['investments'] %}
             {% if investment['status'] == 'close' %}
                 {% continue %}
             {% endif %}
-            {% set investments[amfi_code] = investment %}
+            {% set investments[schemeId] = investment %}
         {% endfor %}
     {% endif %}
     {% if investments|length > 0 %}
@@ -183,13 +183,13 @@
                         'componentName'                  : componentName,
                         'componentId'                    : componentId,
                         'sectionId'                      : sectionId,
-                        'fieldId'                        : 'buy-amfi_code',
-                        'fieldLabel'                     : 'AMFI Code',
+                        'fieldId'                        : 'buy-scheme_id',
+                        'fieldLabel'                     : 'Scheme Id',
                         'fieldType'                      : 'input',
                         'fieldHelp'                      : true,
                         'fieldDisabled'                  : true,
                         'fieldHidden'                    : true,
-                        'fieldHelpTooltipContent'        : 'AMFI Code for the scheme',
+                        'fieldHelpTooltipContent'        : 'Scheme Id for the scheme',
                         'fieldBazScan'                   : true,
                         'fieldBazPostOnCreate'           : false,
                         'fieldBazPostOnUpdate'           : false,
@@ -280,7 +280,7 @@
                         'fieldBazPostOnCreate'           : false,
                         'fieldBazPostOnUpdate'           : false,
                         'fieldDataSelect2Options'        : investments,
-                        'fieldDataSelect2OptionsKey'     : 'amfi_code',
+                        'fieldDataSelect2OptionsKey'     : 'scheme_id',
                         'fieldDataSelect2OptionsValue'   : 'scheme/name',
                         'fieldDataSelect2OptionsArray'   : true,
                         'fieldDataSelect2OptionsSelected': ''
@@ -360,13 +360,13 @@
                         'componentName'                  : componentName,
                         'componentId'                    : componentId,
                         'sectionId'                      : sectionId,
-                        'fieldId'                        : 'sell-amfi_code',
-                        'fieldLabel'                     : 'AMFI Code',
+                        'fieldId'                        : 'sell-scheme_id',
+                        'fieldLabel'                     : 'Scheme Id',
                         'fieldType'                      : 'input',
                         'fieldHelp'                      : true,
                         'fieldDisabled'                  : true,
                         'fieldHidden'                    : true,
-                        'fieldHelpTooltipContent'        : 'AMFI Code for the scheme',
+                        'fieldHelpTooltipContent'        : 'Scheme Id for the scheme',
                         'fieldBazScan'                   : true,
                         'fieldBazPostOnCreate'           : false,
                         'fieldBazPostOnUpdate'           : false,
@@ -466,7 +466,7 @@
         <table id="{{componentId}}-{{sectionId}}-multiplebuysell-transactions-table" class="table table-sm table-hover responsive nowrap mb-0" width="100%" cellspacing="0">
             <thead>
                 <tr>
-                    <th class="text-uppercase">amfi code</th>
+                    <th class="text-uppercase">Scheme Id</th>
                     <th class="text-uppercase">DATE</th>
                     <th class="text-uppercase">TYPE</th>
                     <th class="text-uppercase">SCHEME</th>
@@ -511,7 +511,8 @@ dataCollectionSection =
         '{{componentId}}-{{sectionId}}-buy_dates'                        : {
             mode                : "multiple",
             dateFormat          : "Y-m-d",
-            altFormat           : "Y-m-d",
+            altFormat           : "d-m-Y",
+            allowInput          : true,
             static              : true,
             minDate             : "2000-01-01",
             maxDate             : "today",
@@ -536,7 +537,8 @@ dataCollectionSection =
         '{{componentId}}-{{sectionId}}-sell_dates'                          : {
             mode                : "multiple",
             dateFormat          : "Y-m-d",
-            altFormat           : "Y-m-d",
+            altFormat           : "d-m-Y",
+            allowInput          : true,
             static              : true,
             minDate             : "2000-01-01",
             maxDate             : "today",
@@ -723,7 +725,7 @@ dataCollectionSection =
                     dataCollectionSectionForm['vars']['multiplebuysellTransactionsTable'] = $('#{{componentId}}-{{sectionId}}-multiplebuysell-transactions-table').DataTable({
                         columns:
                             [
-                                {data: 'amfi_code', orderable: false, visible: false},
+                                {data: 'id', orderable: false, visible: false},
                                 {data: 'date', orderable: false},
                                 {data: 'type', orderable: false},
                                 {data: 'scheme', orderable: false},
@@ -787,7 +789,7 @@ dataCollectionSection =
                     // }
 
                     if ($(this)[0].id === '{{componentId}}-{{sectionId}}-buy-multiple') {
-                        schemeId = dataCollectionSectionForm['vars']['scheme']['amfi_code'];
+                        schemeId = dataCollectionSectionForm['vars']['scheme']['id'];
                         buyDates = $('#{{componentId}}-{{sectionId}}-buy_dates').val();
                         buyAmounts = $('#{{componentId}}-{{sectionId}}-buy_amounts').val();
 
@@ -842,7 +844,7 @@ dataCollectionSection =
                         $(buyDatesArr).each(function(index, date) {
                             buyObj = { };
                             // buyObj['id'] = rowsId;
-                            buyObj['amfi_code'] = schemeId;
+                            buyObj['scheme_id'] = schemeId;
                             buyObj['date'] = date;
                             buyObj['type'] = 'BUY';
                             buyObj['scheme'] = dataCollectionSectionForm['vars']['scheme']['name'];
@@ -913,7 +915,7 @@ dataCollectionSection =
                         $(sellDatesArr).each(function(index, date) {
                             sellObj = { };
                             // sellObj['id'] = rowsId;
-                            sellObj['amfi_code'] = schemeId;
+                            sellObj['scheme_id'] = schemeId;
                             sellObj['date'] = date;
                             sellObj['type'] = 'SELL';
                             sellObj['scheme'] = $('#{{componentId}}-{{sectionId}}-sell_transaction_id').text().trim();

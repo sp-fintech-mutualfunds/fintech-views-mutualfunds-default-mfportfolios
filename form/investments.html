@@ -1,6 +1,6 @@
 {% set investmentsHtml = '' %}
 {% if portfolio['investments'] is defined and portfolio['investments']|length > 0 %}
-    {% for amfi_code, investment in portfolio['investments'] %}
+    {% for schemeId, investment in portfolio['investments'] %}
         {% set textColor = 'success' %}
         {% set diff = '-' %}
         {% set xirr = '-' %}
@@ -22,7 +22,7 @@
         {% endif %}
         {% if mode == 'transact' %}
             {% set investmentButtons = [] %}
-            {% set investmentButtons['buy-' ~ amfi_code] = [
+            {% set investmentButtons['buy-' ~ schemeId] = [
                     'title'                   : 'Buy',
                     'size'                    : 'xs',
                     'buttonAdditionalClass'   : 'buyInvestment',
@@ -30,7 +30,7 @@
                 ]
             %}
             {% if investment['status'] == 'open' %}
-                {% set investmentButtons['sell-' ~ amfi_code] = [
+                {% set investmentButtons['sell-' ~ schemeId] = [
                         'title'                   : 'Sell',
                         'size'                    : 'xs',
                         'buttonAdditionalClass'   : 'sellInvestment',

@@ -70,7 +70,8 @@ dataCollectionSection =
     $.extend(dataCollectionSection, {
         '{{componentId}}-{{sectionId}}-start-date'                              : {
             dateFormat          : "Y-m-d",
-            altFormat           : "Y-m-d",
+            altFormat           : "d-m-Y",
+            allowInput          : true,
             static              : true,
             minDate             : "2000-01-01",
             maxDate             : "today",
@@ -93,7 +94,8 @@ dataCollectionSection =
         },
         '{{componentId}}-{{sectionId}}-end-date'                                : {
             dateFormat          : "Y-m-d",
-            altFormat           : "Y-m-d",
+            altFormat           : "d-m-Y",
+            allowInput          : true,
             static              : true,
             minDate             : "2000-01-01",
             maxDate             : "today",

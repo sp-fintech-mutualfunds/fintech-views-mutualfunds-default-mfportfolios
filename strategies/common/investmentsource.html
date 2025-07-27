@@ -8,11 +8,11 @@
 <div class="row vdivide">
     {% set investments = [] %}
     {% if portfolio['investments']|length > 0 %}
-        {% for amfi_code, investment in portfolio['investments'] %}
+        {% for schemeId, investment in portfolio['investments'] %}
             {% if investment['status'] == 'close' %}
                 {% continue %}
             {% endif %}
-            {% set investments[amfi_code] = investment %}
+            {% set investments[schemeId] = investment %}
         {% endfor %}
     {% endif %}
     {% if investments|length > 0 %}
@@ -76,7 +76,7 @@
                         'fieldBazPostOnCreate'           : false,
                         'fieldBazPostOnUpdate'           : false,
                         'fieldDataSelect2Options'        : investments,
-                        'fieldDataSelect2OptionsKey'     : 'amfi_code',
+                        'fieldDataSelect2OptionsKey'     : 'scheme_id',
                         'fieldDataSelect2OptionsValue'   : 'scheme/name',
                         'fieldDataSelect2OptionsArray'   : true,
                         'fieldDataSelect2OptionsSelected': ''
@@ -92,13 +92,13 @@
                         'componentName'                  : componentName,
                         'componentId'                    : componentId,
                         'sectionId'                      : sectionId,
-                        'fieldId'                        : 'sell-amfi_code',
-                        'fieldLabel'                     : 'AMFI Code',
+                        'fieldId'                        : 'sell-scheme_id',
+                        'fieldLabel'                     : 'Scheme Id',
                         'fieldType'                      : 'input',
                         'fieldHelp'                      : true,
                         'fieldDisabled'                  : true,
                         'fieldHidden'                    : true,
-                        'fieldHelpTooltipContent'        : 'AMFI Code for the scheme',
+                        'fieldHelpTooltipContent'        : 'Scheme Id for the scheme',
                         'fieldBazScan'                   : true,
                         'fieldBazPostOnCreate'           : false,
                         'fieldBazPostOnUpdate'           : false,
@@ -299,13 +299,13 @@
                         'componentName'                  : componentName,
                         'componentId'                    : componentId,
                         'sectionId'                      : sectionId,
-                        'fieldId'                        : 'buy-amfi_code',
-                        'fieldLabel'                     : 'AMFI Code',
+                        'fieldId'                        : 'buy-scheme_id',
+                        'fieldLabel'                     : 'Scheme Id',
                         'fieldType'                      : 'input',
                         'fieldHelp'                      : true,
                         'fieldDisabled'                  : true,
                         'fieldHidden'                    : true,
-                        'fieldHelpTooltipContent'        : 'AMFI Code for the scheme',
+                        'fieldHelpTooltipContent'        : 'Scheme Id for the scheme',
                         'fieldBazScan'                   : true,
                         'fieldBazPostOnCreate'           : false,
                         'fieldBazPostOnUpdate'           : false,
@@ -430,7 +430,8 @@ dataCollectionSection =
         '{{componentId}}-{{sectionId}}-investment_amount'                       : { },
         '{{componentId}}-{{sectionId}}-investment_date'                         : {
             dateFormat          : "Y-m-d",
-            altFormat           : "Y-m-d",
+            altFormat           : "d-m-Y",
+            allowInput          : true,
             static              : true,
             minDate             : "2000-01-01",
             maxDate             : "today",

@@ -99,11 +99,11 @@
 {% elseif transactionMode == 'sell' %}
     {% set investments = [] %}
     {% if portfolio['investments']|length > 0 %}
-        {% for amfi_code, investment in portfolio['investments'] %}
+        {% for schemeId, investment in portfolio['investments'] %}
             {% if investment['status'] == 'close' %}
                 {% continue %}
             {% endif %}
-            {% set investments[amfi_code] = investment %}
+            {% set investments[schemeId] = investment %}
         {% endfor %}
     {% endif %}
     <div class="row">
@@ -163,13 +163,13 @@
                     'componentName'                  : componentName,
                     'componentId'                    : componentId,
                     'sectionId'                      : sectionId,
-                    'fieldId'                        : transactionMode ~ '-amfi_code',
-                    'fieldLabel'                     : 'AMFI Code',
+                    'fieldId'                        : transactionMode ~ '-scheme_id',
+                    'fieldLabel'                     : 'Scheme Id',
                     'fieldType'                      : 'input',
                     'fieldHelp'                      : true,
                     'fieldDisabled'                  : true,
                     'fieldHidden'                    : true,
-                    'fieldHelpTooltipContent'        : 'AMFI Code for the scheme',
+                    'fieldHelpTooltipContent'        : 'Scheme Id for the scheme',
                     'fieldBazScan'                   : true,
                     'fieldBazPostOnCreate'           : false,
                     'fieldBazPostOnUpdate'           : false,

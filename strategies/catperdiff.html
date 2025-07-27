@@ -1,10 +1,10 @@
 {% set investments = [] %}
 {% if portfolio['investments']|length > 0 %}
-    {% for amfi_code, investment in portfolio['investments'] %}
+    {% for schemeId, investment in portfolio['investments'] %}
         {% if investment['status'] == 'close' %}
             {% continue %}
         {% endif %}
-        {% set investments[amfi_code] = investment %}
+        {% set investments[schemeId] = investment %}
     {% endfor %}
 {% endif %}
 <div class="row vdivide">
@@ -27,7 +27,7 @@
                         'fieldBazPostOnCreate'           : false,
                         'fieldBazPostOnUpdate'           : false,
                         'fieldDataSelect2Options'        : investments,
-                        'fieldDataSelect2OptionsKey'     : 'amfi_code',
+                        'fieldDataSelect2OptionsKey'     : 'scheme_id',
                         'fieldDataSelect2OptionsValue'   : 'scheme/name',
                         'fieldDataSelect2OptionsArray'   : true,
                         'fieldDataSelect2OptionsSelected': ''
@@ -44,13 +44,13 @@
                         'componentName'                  : componentName,
                         'componentId'                    : componentId,
                         'sectionId'                      : sectionId,
-                        'fieldId'                        : 'first-amfi_code',
-                        'fieldLabel'                     : 'AMFI Code',
+                        'fieldId'                        : 'first-scheme_id',
+                        'fieldLabel'                     : 'Scheme Id',
                         'fieldType'                      : 'input',
                         'fieldHelp'                      : true,
                         'fieldDisabled'                  : true,
                         'fieldHidden'                    : true,
-                        'fieldHelpTooltipContent'        : 'AMFI Code for the scheme',
+                        'fieldHelpTooltipContent'        : 'Scheme Id for the scheme',
                         'fieldBazScan'                   : true,
                         'fieldBazPostOnCreate'           : false,
                         'fieldBazPostOnUpdate'           : false,
@@ -141,7 +141,7 @@
                         'fieldBazPostOnCreate'           : false,
                         'fieldBazPostOnUpdate'           : false,
                         'fieldDataSelect2Options'        : investments,
-                        'fieldDataSelect2OptionsKey'     : 'amfi_code',
+                        'fieldDataSelect2OptionsKey'     : 'scheme_id',
                         'fieldDataSelect2OptionsValue'   : 'scheme/name',
                         'fieldDataSelect2OptionsArray'   : true,
                         'fieldDataSelect2OptionsSelected': ''
@@ -158,13 +158,13 @@
                         'componentName'                  : componentName,
                         'componentId'                    : componentId,
                         'sectionId'                      : sectionId,
-                        'fieldId'                        : 'second-amfi_code',
-                        'fieldLabel'                     : 'AMFI Code',
+                        'fieldId'                        : 'second-scheme_id',
+                        'fieldLabel'                     : 'Scheme Id',
                         'fieldType'                      : 'input',
                         'fieldHelp'                      : true,
                         'fieldDisabled'                  : true,
                         'fieldHidden'                    : true,
-                        'fieldHelpTooltipContent'        : 'AMFI Code for the scheme',
+                        'fieldHelpTooltipContent'        : 'Scheme Id for the scheme',
                         'fieldBazScan'                   : true,
                         'fieldBazPostOnCreate'           : false,
                         'fieldBazPostOnUpdate'           : false,
@@ -339,21 +339,21 @@ dataCollectionSection =
             placeholder: "SELECT FIRST INVESTMENT",
             afterInit : function() {
                 $('#{{componentId}}-{{sectionId}}-first_transaction_id').on('select2:select', function(e) {
-                    var amfiCode = $(e.params.data.element).data()['value'];
+                    var schemeId = $(e.params.data.element).data()['value'];
                     var category, parentCateogry;
-                    var investment = dataCollectionSectionForm['vars']['investments'][amfiCode];
+                    var investment = dataCollectionSectionForm['vars']['investments'][schemeId];
 
                     if (investment) {
                         $('#{{componentId}}-{{sectionId}}-first-available_amount').html(investment['latest_value']);
                         $('#{{componentId}}-{{sectionId}}-first-available_units').html(investment['units']);
 
-                        category = dataCollectionSectionForm['vars']['categories'][dataCollectionSectionForm['vars']['investments'][amfiCode]['scheme']['category_id']];
+                        category = dataCollectionSectionForm['vars']['categories'][dataCollectionSectionForm['vars']['investments'][schemeId]['scheme']['category_id']];
 
                         if (category) {
                             $('#{{componentId}}-{{sectionId}}-first-category').html(category['name']);
                         }
                     }
-                    dataCollectionSectionForm['funcs']['checkStartEndDates'](amfiCode);
+                    dataCollectionSectionForm['funcs']['checkStartEndDates'](schemeId);
                 });
 
                 dataCollectionSectionForm['funcs']['applyStrategy'] = function() {
@@ -559,9 +559,9 @@ dataCollectionSection =
                     }, 'json');
                 }
 
-                dataCollectionSectionForm['funcs']['checkStartEndDates'] = function(amfiCode) {
-                    var startDate = dataCollectionSectionForm['vars']['investments'][amfiCode]['start_date'];
-                    var endDate = dataCollectionSectionForm['vars']['investments'][amfiCode]['latest_value_date'];
+                dataCollectionSectionForm['funcs']['checkStartEndDates'] = function(schemeId) {
+                    var startDate = dataCollectionSectionForm['vars']['investments'][schemeId]['start_date'];
+                    var endDate = dataCollectionSectionForm['vars']['investments'][schemeId]['latest_value_date'];
 
                     var startDateObj =  dayjs(dataCollectionSection['{{componentId}}-{{sectionId}}-start-date']['flatpickr']['config']['minDate']);
                     var endDateObj =  dayjs(dataCollectionSection['{{componentId}}-{{sectionId}}-end-date']['flatpickr']['config']['maxDate']);
@@ -575,7 +575,7 @@ dataCollectionSection =
                 }
             }
         },
-        '{{componentId}}-{{sectionId}}-first-amfi_code'                         : { },
+        '{{componentId}}-{{sectionId}}-first-scheme_id'                         : { },
         '{{componentId}}-{{sectionId}}-first-category'                          : { },
         '{{componentId}}-{{sectionId}}-first-available_amount'                  : { },
         '{{componentId}}-{{sectionId}}-first-available_units'                   : { },
@@ -583,31 +583,32 @@ dataCollectionSection =
             placeholder: "SELECT SECOND INVESTMENT",
             afterInit : function() {
                 $('#{{componentId}}-{{sectionId}}-second_transaction_id').on('select2:select', function(e) {
-                    var amfiCode = $(e.params.data.element).data()['value'];
+                    var schemeId = $(e.params.data.element).data()['value'];
                     var category, parentCateogry;
-                    var investment = dataCollectionSectionForm['vars']['investments'][amfiCode];
+                    var investment = dataCollectionSectionForm['vars']['investments'][schemeId];
 
                     if (investment) {
                         $('#{{componentId}}-{{sectionId}}-second-available_amount').html(investment['latest_value']);
                         $('#{{componentId}}-{{sectionId}}-second-available_units').html(investment['units']);
 
-                        category = dataCollectionSectionForm['vars']['categories'][dataCollectionSectionForm['vars']['investments'][amfiCode]['scheme']['category_id']];
+                        category = dataCollectionSectionForm['vars']['categories'][dataCollectionSectionForm['vars']['investments'][schemeId]['scheme']['category_id']];
 
                         if (category) {
                             $('#{{componentId}}-{{sectionId}}-second-category').html(category['name']);
                         }
                     }
-                    dataCollectionSectionForm['funcs']['checkStartEndDates'](amfiCode);
+                    dataCollectionSectionForm['funcs']['checkStartEndDates'](schemeId);
                 });
             }
         },
-        '{{componentId}}-{{sectionId}}-second-amfi_code'                        : { },
+        '{{componentId}}-{{sectionId}}-second-scheme_id'                        : { },
         '{{componentId}}-{{sectionId}}-second-category'                         : { },
         '{{componentId}}-{{sectionId}}-second-available_amount'                 : { },
         '{{componentId}}-{{sectionId}}-second-available_units'                  : { },
         '{{componentId}}-{{sectionId}}-start-date'                              : {
             dateFormat          : "Y-m-d",
-            altFormat           : "Y-m-d",
+            altFormat           : "d-m-Y",
+            allowInput          : true,
             static              : true,
             minDate             : "2000-01-01",
             maxDate             : "today",
@@ -630,7 +631,8 @@ dataCollectionSection =
         },
         '{{componentId}}-{{sectionId}}-end-date'                                : {
             dateFormat          : "Y-m-d",
-            altFormat           : "Y-m-d",
+            altFormat           : "d-m-Y",
+            allowInput          : true,
             static              : true,
             minDate             : "2000-01-01",
             maxDate             : "today",

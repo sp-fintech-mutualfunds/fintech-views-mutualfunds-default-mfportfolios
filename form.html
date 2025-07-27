@@ -766,7 +766,8 @@ dataCollectionSection =
         '{{componentId}}-{{sectionId}}-clone_portfolio_name'                : { },
         '{{componentId}}-{{sectionId}}-portfolio_timeline'                  : {
             dateFormat          : "Y-m-d",
-            altFormat           : "Y-m-d",
+            altFormat           : "d-m-Y",
+            allowInput          : true,
             static              : true,
             maxDate             : "today",
             onChange: function(selectedDates, dateStr, instance) {
@@ -886,7 +887,7 @@ dataCollectionSection =
                                 dataCollectionSectionForm['vars']['investments'][$(e.params.data.element).data()['value']]['latest_value_date'];
                         }
                     } else {
-                        dataCollectionSectionForm['funcs']['getSchemeNav']($(e.params.data.element).data()['value'], 'sell');
+                        dataCollectionSectionForm['funcs']['getSchemeDetails']($(e.params.data.element).data()['value'], 'sell');
                     }
                 });
             }
@@ -929,13 +930,14 @@ dataCollectionSection =
             minimumInputLength : 3,
             afterInit: function() {
                 $('#{{componentId}}-{{sectionId}}-scheme_id').on('select2:select', function(e) {
-                    dataCollectionSectionForm['funcs']['getSchemeNav'](e.params.data.id, 'buy');
+                    dataCollectionSectionForm['funcs']['getSchemeDetails'](e.params.data.id, 'buy');
                 });
             }
         },
         '{{componentId}}-{{sectionId}}-buy-date'                            : {
             dateFormat          : "Y-m-d",
-            altFormat           : "Y-m-d",
+            altFormat           : "d-m-Y",
+            allowInput          : true,
             static              : true,
             maxDate             : "today",
             onChange: function(selectedDates, dateStr, instance) {
@@ -977,7 +979,8 @@ dataCollectionSection =
         },
         '{{componentId}}-{{sectionId}}-sell-date'                           : {
             dateFormat          : "Y-m-d",
-            altFormat           : "Y-m-d",
+            altFormat           : "d-m-Y",
+            allowInput          : true,
             static              : true,
             maxDate             : "today",
             onChange: function(selectedDates, dateStr, instance) {
@@ -998,7 +1001,7 @@ dataCollectionSection =
                             .html(dataCollectionSectionForm['vars']['currencySymbol'] +
                                   dataCollectionSectionForm['vars']['scheme']['navs']['navs'][$('#{{componentId}}-{{sectionId}}-sell-date').val()]['nav']
                             );
-                        var units = dataCollectionSectionForm['vars']['investments'][dataCollectionSectionForm['vars']['scheme']['amfi_code']]['units'];
+                        var units = dataCollectionSectionForm['vars']['investments'][dataCollectionSectionForm['vars']['scheme']['id']]['units'];
 
                         $('#{{componentId}}-{{sectionId}}-sell-available_amount')
                             .html(dataCollectionSectionForm['vars']['currencySymbol'] +
@@ -1036,7 +1039,7 @@ dataCollectionSection =
                     if ($(this)[0].checked === true) {
                         $('#{{componentId}}-{{sectionId}}-sell-units').attr('disabled', true);
                         $('#{{componentId}}-{{sectionId}}-sell-units').val(
-                            dataCollectionSectionForm['vars']['investments'][dataCollectionSectionForm['vars']['scheme']['amfi_code']]['units']
+                            dataCollectionSectionForm['vars']['investments'][dataCollectionSectionForm['vars']['scheme']['id']]['units']
                         );
                         $('#{{componentId}}-{{sectionId}}-sell-units').removeClass('is-invalid');
 
@@ -1057,8 +1060,8 @@ dataCollectionSection =
         '{{componentId}}-{{sectionId}}-sell-available_units'                : { },
         '{{componentId}}-{{sectionId}}-buy-amc_transaction_id'              : { },
         '{{componentId}}-{{sectionId}}-sell-amc_transaction_id'             : { },
-        '{{componentId}}-{{sectionId}}-buy-amfi_code'                       : { },
-        '{{componentId}}-{{sectionId}}-sell-amfi_code'                      : { },
+        '{{componentId}}-{{sectionId}}-buy-scheme_id'                       : { },
+        '{{componentId}}-{{sectionId}}-sell-scheme_id'                      : { },
         '{{componentId}}-{{sectionId}}-buy-isin'                            : { },
         '{{componentId}}-{{sectionId}}-sell-isin'                           : { },
         '{{componentId}}-{{sectionId}}-buy-latest_nav'                      : { },
@@ -1192,12 +1195,12 @@ dataCollectionSectionForm['funcs']['processTransaction'] = function(task, update
     }
 }
 
-dataCollectionSectionForm['funcs']['getSchemeNav'] = function(id, task = null, taskId = null, view = false, update = false) {
+dataCollectionSectionForm['funcs']['getSchemeDetails'] = function(id, task = null, taskId = null, view = false, update = false) {
     var postData = { };
     postData[$('#security-token').attr('name')] = $('#security-token').val();
     postData['id'] = id;
 
-    $.post('{{links.url("mf/schemes/getSchemeNav")}}', postData, function(response) {
+    $.post('{{links.url("mf/schemes/getSchemeDetails")}}', postData, function(response) {
         if (response.tokenKey && response.token) {
             $("#security-token").attr("name", response.tokenKey);
             $("#security-token").val(response.token);
@@ -1231,44 +1234,41 @@ dataCollectionSectionForm['funcs']['processSchemeNav'] = function(scheme, task =
     if (scheme.isin) {
         $('#{{componentId}}-{{sectionId}}-' + task + '-isin').html(scheme.isin);
     }
-    if (scheme.navs && scheme.navs.latest_nav) {
+    if (scheme.latest_nav) {
         $('#{{componentId}}-{{sectionId}}-' + task + '-latest_nav').html(
-            dataCollectionSectionForm['vars']['currencySymbol'] + scheme.navs.latest_nav
+            dataCollectionSectionForm['vars']['currencySymbol'] + scheme.latest_nav
         );
     }
-    if (scheme.navs && scheme.navs.last_updated) {
-        $('#{{componentId}}-{{sectionId}}-' + task + '-latest_nav_date').html(scheme.navs.last_updated);
+    if (scheme.navs_last_updated) {
+        $('#{{componentId}}-{{sectionId}}-' + task + '-latest_nav_date').html(scheme.navs_last_updated);
     }
 
-    if (scheme.navs &&
-        scheme.navs.navs &&
-        Object.keys(scheme.navs.navs).length > 0
-    ) {
-        $('#{{componentId}}-{{sectionId}}-' + task + '-first_nav_date').html(Object.keys(scheme.navs.navs)[0]);
+    if (scheme) {
+        $('#{{componentId}}-{{sectionId}}-' + task + '-first_nav_date').html(scheme.start_date);
         if (dataCollectionSectionForm['vars']['mode'] === 'transact') {
-            dataCollectionSection['{{componentId}}-{{sectionId}}-' + task + '-date']['flatpickr'].config.minDate = Object.keys(scheme.navs.navs)[0];
-            dataCollectionSection['{{componentId}}-{{sectionId}}-' + task + '-date']['flatpickr'].config.maxDate = scheme.navs.last_updated;
+            dataCollectionSection['{{componentId}}-{{sectionId}}-' + task + '-date']['flatpickr'].config.minDate = scheme.start_date;
+            dataCollectionSection['{{componentId}}-{{sectionId}}-' + task + '-date']['flatpickr'].config.maxDate = scheme.navs_last_updated;
         }
         if (dataCollectionSectionForm['vars']['mode'] === 'strategies') {
             if (dataCollectionSection['{{componentId}}-{{sectionId}}-start-date']) {
-                dataCollectionSection['{{componentId}}-{{sectionId}}-start-date']['flatpickr'].config.minDate = Object.keys(scheme.navs.navs)[0];
-                dataCollectionSection['{{componentId}}-{{sectionId}}-start-date']['flatpickr'].config.maxDate = scheme.navs.last_updated;
+                dataCollectionSection['{{componentId}}-{{sectionId}}-start-date']['flatpickr'].config.minDate = scheme.start_date;
+                dataCollectionSection['{{componentId}}-{{sectionId}}-start-date']['flatpickr'].config.maxDate = scheme.navs_last_updated;
             }
             if (dataCollectionSection['{{componentId}}-{{sectionId}}-end-date']) {
-                dataCollectionSection['{{componentId}}-{{sectionId}}-end-date']['flatpickr'].config.minDate = Object.keys(scheme.navs.navs)[0];
-                dataCollectionSection['{{componentId}}-{{sectionId}}-end-date']['flatpickr'].config.maxDate = scheme.navs.last_updated;
+                dataCollectionSection['{{componentId}}-{{sectionId}}-end-date']['flatpickr'].config.minDate = scheme.start_date;
+                dataCollectionSection['{{componentId}}-{{sectionId}}-end-date']['flatpickr'].config.maxDate = scheme.navs_last_updated;
             }
             if (dataCollectionSection['{{componentId}}-{{sectionId}}-investment_date']) {
-                dataCollectionSection['{{componentId}}-{{sectionId}}-investment_date']['flatpickr'].config.minDate = Object.keys(scheme.navs.navs)[0];
-                dataCollectionSection['{{componentId}}-{{sectionId}}-investment_date']['flatpickr'].config.maxDate = scheme.navs.last_updated;
+                dataCollectionSection['{{componentId}}-{{sectionId}}-investment_date']['flatpickr'].config.minDate = scheme.start_date;
+                dataCollectionSection['{{componentId}}-{{sectionId}}-investment_date']['flatpickr'].config.maxDate = scheme.navs_last_updated;
             }
             if (dataCollectionSection['{{componentId}}-{{sectionId}}-buy_dates']) {
-                dataCollectionSection['{{componentId}}-{{sectionId}}-buy_dates']['flatpickr'].config.minDate = Object.keys(scheme.navs.navs)[0];
-                dataCollectionSection['{{componentId}}-{{sectionId}}-buy_dates']['flatpickr'].config.maxDate = scheme.navs.last_updated;
+                dataCollectionSection['{{componentId}}-{{sectionId}}-buy_dates']['flatpickr'].config.minDate = scheme.start_date;
+                dataCollectionSection['{{componentId}}-{{sectionId}}-buy_dates']['flatpickr'].config.maxDate = scheme.navs_last_updated;
             }
             if (dataCollectionSection['{{componentId}}-{{sectionId}}-sell_dates']) {
-                dataCollectionSection['{{componentId}}-{{sectionId}}-sell_dates']['flatpickr'].config.minDate = Object.keys(scheme.navs.navs)[0];
-                dataCollectionSection['{{componentId}}-{{sectionId}}-sell_dates']['flatpickr'].config.maxDate = scheme.navs.last_updated;
+                dataCollectionSection['{{componentId}}-{{sectionId}}-sell_dates']['flatpickr'].config.minDate = scheme.start_date;
+                dataCollectionSection['{{componentId}}-{{sectionId}}-sell_dates']['flatpickr'].config.maxDate = scheme.navs_last_updated;
             }
         }
         $('#{{componentId}}-{{sectionId}}-' + task + '-import').attr('disabled', false);
@@ -1404,10 +1404,10 @@ dataCollectionSectionForm['funcs']['processSchemeNav'] = function(scheme, task =
             } else if (task === 'sell') {
                 $('#{{componentId}}-{{sectionId}}-sell-available_amount').html(
                     dataCollectionSectionForm['vars']['currencySymbol'] +
-                    dataCollectionSectionForm['vars']['investments'][scheme['amfi_code']]['latest_value']
+                    dataCollectionSectionForm['vars']['investments'][scheme['id']]['latest_value']
                 );
                 $('#{{componentId}}-{{sectionId}}-sell-available_units').html(
-                    dataCollectionSectionForm['vars']['investments'][scheme['amfi_code']]['units']
+                    dataCollectionSectionForm['vars']['investments'][scheme['id']]['units']
                 );
             }
         }
@@ -1536,7 +1536,7 @@ dataCollectionSectionForm['funcs']['calculateSellUnits'] = function() {
         var units = (parseFloat($('#{{componentId}}-{{sectionId}}-sell-amount').val().replace(/,/g, '')) / nav).toFixed(3);
         $('#{{componentId}}-{{sectionId}}-sell-units').val(units);
 
-        if (units > dataCollectionSectionForm['vars']['investments'][dataCollectionSectionForm['vars']['scheme']['amfi_code']]['units']) {
+        if (units > dataCollectionSectionForm['vars']['investments'][dataCollectionSectionForm['vars']['scheme']['id']]['units']) {
             if ($('#{{componentId}}-{{sectionId}}-transaction_id').val() === '') {
                 $('#{{componentId}}-{{sectionId}}-sell-units').addClass('is-invalid');
                 $('#{{componentId}}-{{sectionId}}-sell-amount').addClass('is-invalid');
@@ -1561,7 +1561,7 @@ dataCollectionSectionForm['funcs']['calculateSellAmount'] = function() {
         $('#{{componentId}}-{{sectionId}}-sell-amount').val(amount);
 
         if (parseFloat(amount) >
-            (nav * dataCollectionSectionForm['vars']['investments'][dataCollectionSectionForm['vars']['scheme']['amfi_code']]['units']).toFixed(2)
+            (nav * dataCollectionSectionForm['vars']['investments'][dataCollectionSectionForm['vars']['scheme']['id']]['units']).toFixed(2)
         ) {
             if ($('#{{componentId}}-{{sectionId}}-transaction_id').val() === '') {
                 $('#{{componentId}}-{{sectionId}}-sell-units').addClass('is-invalid');
@@ -2368,13 +2368,13 @@ dataCollectionSectionForm['funcs']['init'] = function() {
                 );
                 $('#{{componentId}}-{{sectionId}}-scheme_id').append(newOption).val(dataCollectionSectionForm['vars']['transactions'][id]['scheme']['id']).trigger('change');
 
-                dataCollectionSectionForm['funcs']['getSchemeNav'](dataCollectionSectionForm['vars']['transactions'][id]['scheme']['id'], 'buy', id, true);
+                dataCollectionSectionForm['funcs']['getSchemeDetails'](dataCollectionSectionForm['vars']['transactions'][id]['scheme']['id'], 'buy', id, true);
             } else if (dataCollectionSectionForm['vars']['transactions'][id]['type'] === 'sell') {
                 $('#{{componentId}}-{{sectionId}}-sell_transaction_id').attr('disabled', true);
                 $('#{{componentId}}-{{sectionId}}-sell_transaction_id')
-                    .val(dataCollectionSectionForm['vars']['investments'][dataCollectionSectionForm['vars']['transactions'][id]['amfi_code']]['id']).trigger('change');
+                    .val(dataCollectionSectionForm['vars']['investments'][dataCollectionSectionForm['vars']['transactions'][id]['scheme_id']]['id']).trigger('change');
 
-                dataCollectionSectionForm['funcs']['getSchemeNav'](dataCollectionSectionForm['vars']['transactions'][id]['scheme']['id'], 'sell', id, true);
+                dataCollectionSectionForm['funcs']['getSchemeDetails'](dataCollectionSectionForm['vars']['transactions'][id]['scheme']['id'], 'sell', id, true);
             }
 
             $('#{{componentId}}-{{sectionId}}-details').val(dataCollectionSectionForm['vars']['transactions'][id]['details']);
@@ -2409,7 +2409,7 @@ dataCollectionSectionForm['funcs']['init'] = function() {
                 $('#{{componentId}}-{{sectionId}}-buy-import').attr('disabled', false);
                 $('#{{componentId}}-{{sectionId}}-buy-import').attr('hidden', false);
 
-                dataCollectionSectionForm['funcs']['getSchemeNav'](dataCollectionSectionForm['vars']['transactions'][id]['scheme']['id'], 'buy', id, false, true);
+                dataCollectionSectionForm['funcs']['getSchemeDetails'](dataCollectionSectionForm['vars']['transactions'][id]['scheme']['id'], 'buy', id, false, true);
             } else {
                 paginatedPNotify('error', {text : 'Cannot edit closed or transaction that has units sold!'});
 
@@ -2464,22 +2464,22 @@ dataCollectionSectionForm['funcs']['init'] = function() {
             e.preventDefault();
 
             var idArr = $(this)[0].id.split('-');
-            var amfi_code = idArr[idArr.length - 1];
+            var schemeId = idArr[idArr.length - 1];
 
-            if (dataCollectionSectionForm['vars']['investments'][amfi_code]) {
-                $('#{{componentId}}-{{sectionId}}-amc_id').val(dataCollectionSectionForm['vars']['investments'][amfi_code]['amc_id']).trigger('change');
+            if (dataCollectionSectionForm['vars']['investments'][schemeId]) {
+                $('#{{componentId}}-{{sectionId}}-amc_id').val(dataCollectionSectionForm['vars']['investments'][schemeId]['amc_id']).trigger('change');
                 $('#{{componentId}}-{{sectionId}}-amc_id').attr('disabled', true);
 
                 $('#{{componentId}}-{{sectionId}}-scheme_id').attr('disabled', true);
                 var newOption = new Option(
-                    dataCollectionSectionForm['vars']['investments'][amfi_code]['scheme']['name'],
-                    dataCollectionSectionForm['vars']['investments'][amfi_code]['scheme_id'],
+                    dataCollectionSectionForm['vars']['investments'][schemeId]['scheme']['name'],
+                    dataCollectionSectionForm['vars']['investments'][schemeId]['scheme_id'],
                     false,
                     false
                 );
-                $('#{{componentId}}-{{sectionId}}-scheme_id').append(newOption).val(dataCollectionSectionForm['vars']['investments'][amfi_code]['scheme_id']).trigger('change');
+                $('#{{componentId}}-{{sectionId}}-scheme_id').append(newOption).val(dataCollectionSectionForm['vars']['investments'][schemeId]['scheme_id']).trigger('change');
 
-                dataCollectionSectionForm['funcs']['getSchemeNav'](dataCollectionSectionForm['vars']['investments'][amfi_code]['scheme_id'], 'buy', null, false, true);
+                dataCollectionSectionForm['funcs']['getSchemeDetails'](dataCollectionSectionForm['vars']['investments'][schemeId]['scheme_id'], 'buy', null, false, true);
 
                 dataCollectionSectionForm['funcs']['enableBuySell']('buyInvestment');
             } else {
@@ -2497,13 +2497,13 @@ dataCollectionSectionForm['funcs']['init'] = function() {
             e.preventDefault();
 
             var idArr = $(this)[0].id.split('-');
-            var amfi_code = idArr[idArr.length - 1];
+            var schemeId = idArr[idArr.length - 1];
 
-            if (dataCollectionSectionForm['vars']['investments'][amfi_code]) {
-                $('#{{componentId}}-{{sectionId}}-sell_transaction_id').val(dataCollectionSectionForm['vars']['investments'][amfi_code]['scheme_id']).trigger('change');
+            if (dataCollectionSectionForm['vars']['investments'][schemeId]) {
+                $('#{{componentId}}-{{sectionId}}-sell_transaction_id').val(dataCollectionSectionForm['vars']['investments'][schemeId]['scheme_id']).trigger('change');
                 $('#{{componentId}}-{{sectionId}}-sell_transaction_id').attr('disabled', true);
 
-                dataCollectionSectionForm['funcs']['getSchemeNav'](dataCollectionSectionForm['vars']['investments'][amfi_code]['scheme_id'], 'sell', null, false, true);
+                dataCollectionSectionForm['funcs']['getSchemeDetails'](dataCollectionSectionForm['vars']['investments'][schemeId]['scheme_id'], 'sell', null, false, true);
 
                 dataCollectionSectionForm['funcs']['enableBuySell']('sellInvestment');
             } else {
