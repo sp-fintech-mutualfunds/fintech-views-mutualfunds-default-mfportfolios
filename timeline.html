@@ -26,6 +26,7 @@
             {% if portfolio['start_date'] == portfolio['timelineDate'] %}
                 {% set nextDisabled = false %}
             {% else %}
+                {# {{trace([portfolio['end_date'], portfolio['timelineDate']])}} #}
                 {% if portfolio['end_date'] is defined and portfolio['end_date'] == portfolio['timelineDate'] %}
                     {% set previousDisabled = false %}
                 {% elseif portfolio['end_date'] is not defined %}

@@ -1,5 +1,5 @@
 {% set weeklyDays = ['1'] %}
-{% set monthlyMonths = ['1'] %}
+{% set monthlyMonths = ['1','2','3','4','5','6','7','8','9','10','11','12'] %}
 {% set monthlyDay = '1' %}
 <form data-validateon="section" id="{{componentId}}-{{sectionId}}-form">
     <fieldset id="{{componentId}}-{{sectionId}}-fieldset">
@@ -25,12 +25,6 @@
                             'fieldBazScan'                   : true,
                             'fieldRadioButtons'              :
                                 [
-                                    'daily' :
-                                        [
-                                            'title'          : 'Daily',
-                                            'type'           : 'danger',
-                                            'dataValue'      : 'daily'
-                                        ],
                                     'weekly' :
                                         [
                                             'title'          : 'Weekly',
@@ -42,23 +36,11 @@
                                             'title'          : 'Monthly',
                                             'type'           : 'primary',
                                             'dataValue'      : 'monthly'
-                                        ],
-                                    'transactions' :
-                                        [
-                                            'title'          : 'Transactions',
-                                            'type'           : 'success',
-                                            'dataValue'      : 'transactions'
                                         ]
                                 ],
-                            'fieldRadioChecked'              : 'transactions'
+                            'fieldRadioChecked'              : 'monthly'
                         ]
                     )}}
-                </div>
-                <div class="col schedules" id="{{componentId}}-{{sectionId}}-daily" hidden>
-                    <div class="callout callout-info">
-                        <h5>Daily</h5>
-                        <p>Timeline will be created for everyday since the start of portfolio.</p>
-                    </div>
                 </div>
                 <div class="col schedules" id="{{componentId}}-{{sectionId}}-weekly" hidden>
                     <div class="row mb-2">
@@ -190,12 +172,6 @@
                         <p>Timeline will be created for the month(s) of <span class="text-info" id="{{componentId}}-{{sectionId}}-monthly-months-span">January</span> on day <span class="text-info" id="{{componentId}}-{{sectionId}}-monthly-day-span"> 1 </span> of the month.</p>
                     </div>
                 </div>
-                <div class="col schedules" id="{{componentId}}-{{sectionId}}-transactions">
-                    <div class="callout callout-info">
-                        <h5>Transactions</h5>
-                        <p>Timeline will be created for the days of transactions.</p>
-                    </div>
-                </div>
             </div>
             <div class="row">
                 <div class="col">
@@ -238,15 +214,17 @@
                         'buttonType'                    : 'button',
                         'buttons'                       :
                             [
-                                'generate-timeline'       : [
-                                    'title'     : 'Generate Timeline',
-                                    'hidden'    : false
+                                'generate-timeline'     : [
+                                    'title'             : 'Generate Timeline',
+                                    'hidden'            : false,
+                                    'icon'              : 'cog fa-spin',
+                                    'iconHidden'        : true
                                 ],
                                 'access-timeline'       : [
-                                    'title'     : 'Access Timeline',
-                                    'type'      : 'success',
-                                    'hidden'    : true,
-                                    'url'       : url
+                                    'title'             : 'Access Timeline',
+                                    'type'              : 'success',
+                                    'hidden'            : true,
+                                    'url'               : url
                                 ]
                             ]
                     ]
@@ -318,10 +296,7 @@ dataCollectionSectionForm['funcs'] = { };
                     function processSchedules() {
                         dataCollectionSectionForm['vars']['mode'] = $('#{{componentId}}-{{sectionId}}-mode').find('input[type=radio]:checked').data('value');
 
-                        if ($('#{{componentId}}-{{sectionId}}-mode').find('input[type=radio]:checked').data('value') == 'daily') {
-                            $('.schedules').attr('hidden', true);
-                            $('#{{componentId}}-{{sectionId}}-daily').attr('hidden', false);
-                        } else if ($('#{{componentId}}-{{sectionId}}-mode').find('input[type=radio]:checked').data('value') == 'weekly') {
+                        if ($('#{{componentId}}-{{sectionId}}-mode').find('input[type=radio]:checked').data('value') == 'weekly') {
                             $('.schedules').attr('hidden', true);
                             $('#{{componentId}}-{{sectionId}}-weekly').attr('hidden', false);
 
@@ -364,9 +339,6 @@ dataCollectionSectionForm['funcs'] = { };
                                     }
                                 }
                             });
-                        } else if ($('#{{componentId}}-{{sectionId}}-mode').find('input[type=radio]:checked').data('value') == 'transactions') {
-                            $('.schedules').attr('hidden', true);
-                            $('#{{componentId}}-{{sectionId}}-transactions').attr('hidden', false);
                         }
                     }
 
@@ -409,6 +381,8 @@ dataCollectionSectionForm['funcs'] = { };
                     BazProgress.buildProgressBar($('#timeline-progress'), false, true, true, true);
 
                     $('#{{componentId}}-{{sectionId}}-generate-timeline').click(function() {
+                        // $(this).children('i').attr('hidden', false);
+                        // $(this).attr('disabled', true);
                         dataCollectionSectionForm['funcs']['processTimeline']();
                     });
                 }
@@ -478,9 +452,7 @@ dataCollectionSectionForm['funcs']['processTimeline'] = function() {
 
                 return;
             }
-        }
-
-        if (dataCollectionSectionForm['vars']['schedule'] === 'monthly') {
+        } else if (dataCollectionSectionForm['vars']['schedule'] === 'monthly') {
             if ($('#{{componentId}}-{{sectionId}}-monthly_months').val().length === 0) {
                 paginatedPNotify('error', {
                     text : 'Please select monthly timeline months'
@@ -519,6 +491,7 @@ dataCollectionSectionForm['funcs']['processTimeline'] = function() {
         }
 
         if (response.responseCode == 0) {
+            $('#{{componentId}}-{{sectionId}}-generate-timeline').attr('hidden', true);
             $('#{{componentId}}-{{sectionId}}-access-timeline').attr('hidden', false);
             $('#{{componentId}}-{{sectionId}}-access-timeline').off();
             $('#{{componentId}}-{{sectionId}}-access-timeline').click(function(e) {

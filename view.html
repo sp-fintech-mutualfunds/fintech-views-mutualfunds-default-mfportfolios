@@ -24,6 +24,14 @@
     {% endif %}
     {% if mode == 'timeline' %}
         {% set title = title ~ ' - Timeline mode' %}
+        {% if timelineNeedsGeneration is defined and timelineNeedsGeneration == true %}
+            {% set title = title ~ ' - Recalculation from : ' %}
+            {% if portfolio['timeline']['recalculate_from_date'] %}
+                {% set title = title ~ portfolio['timeline']['recalculate_from_date'] %}
+            {% else  %}
+                {% set title = title ~ portfolio['start_date'] %}
+            {% endif %}
+        {% endif %}
         {% set cardType = 'info' %}
     {% endif %}
     {% if mode == 'strategies' %}

@@ -442,9 +442,7 @@
             </div>
             <hr>
         {% endif %}
-        {% if mode == 'timeline' %}
-            {# {% include 'portfolios/timelinechart.html' %} #}
-        {% endif %}
+        {% include 'portfolios/timelinechart.html' %}
         {% if mode != 'strategies' %}
             {% if portfolio['transactions'] is defined and portfolio['transactions']|length > 0 %}
                 <div class="row">
@@ -796,8 +794,7 @@ dataCollectionSection =
                         $(thisButton).children('i').removeClass('fa-forward-fast').addClass('fa-spin fa-cog');
                         postData['timelineDate'] = dataCollectionSectionForm['vars']['today'];
                     }
-                    //eslint-disable-next-line
-                    console.log(postData);
+
                     dataCollectionSectionForm['funcs']['browseTimeline'](postData, thisButton);
                 });
             }

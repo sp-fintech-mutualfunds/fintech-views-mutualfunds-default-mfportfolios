@@ -1,7 +1,7 @@
-<!-- htmlhint tag-pair:false --><!-- htmlmin:ignore -->
+<!-- htmlhint tag-pair:false -->
 {% set timelineButtons = [] %}
-{% if schemeNavChunks is defined %}
-    {% if schemeNavChunks['week'] is defined and schemeNavChunks['week']|length > 0 %}
+{% if portfolioPerformancesChunks is defined %}
+    {% if portfolioPerformancesChunks['week'] is defined and portfolioPerformancesChunks['week']|length > 0 %}
         {% set timelineButtons = array_merge(timelineButtons,
             [
                 'week' : [
@@ -13,7 +13,7 @@
             ]
         ) %}
     {% endif %}
-    {% if schemeNavChunks['month'] is defined and schemeNavChunks['month']|length > 0 %}
+    {% if portfolioPerformancesChunks['month'] is defined and portfolioPerformancesChunks['month']|length > 0 %}
         {% set timelineButtons = array_merge(timelineButtons,
             [
                 'month' : [
@@ -24,7 +24,7 @@
             ]
         ) %}
     {% endif %}
-    {% if schemeNavChunks['threeMonth'] is defined and schemeNavChunks['threeMonth']|length > 0 %}
+    {% if portfolioPerformancesChunks['threeMonth'] is defined and portfolioPerformancesChunks['threeMonth']|length > 0 %}
         {% set timelineButtons = array_merge(timelineButtons,
             [
                 'threeMonth' : [
@@ -35,7 +35,7 @@
             ]
         ) %}
     {% endif %}
-    {% if schemeNavChunks['sixMonth'] is defined and schemeNavChunks['sixMonth']|length > 0 %}
+    {% if portfolioPerformancesChunks['sixMonth'] is defined and portfolioPerformancesChunks['sixMonth']|length > 0 %}
         {% set timelineButtons = array_merge(timelineButtons,
             [
                 'sixMonth' : [
@@ -46,7 +46,7 @@
             ]
         ) %}
     {% endif %}
-    {% if schemeNavChunks['year'] is defined and schemeNavChunks['year']|length > 0 %}
+    {% if portfolioPerformancesChunks['year'] is defined and portfolioPerformancesChunks['year']|length > 0 %}
         {% set timelineButtons = array_merge(timelineButtons,
             [
                 'year' : [
@@ -57,7 +57,7 @@
             ]
         ) %}
     {% endif %}
-    {% if schemeNavChunks['threeYear'] is defined and schemeNavChunks['threeYear'] == true %}
+    {% if portfolioPerformancesChunks['threeYear'] is defined and portfolioPerformancesChunks['threeYear'] == true %}
         {% set timelineButtons = array_merge(timelineButtons,
             [
                 'threeYear' : [
@@ -68,7 +68,7 @@
             ]
         ) %}
     {% endif %}
-    {% if schemeNavChunks['fiveYear'] is defined and schemeNavChunks['fiveYear'] == true %}
+    {% if portfolioPerformancesChunks['fiveYear'] is defined and portfolioPerformancesChunks['fiveYear'] == true %}
         {% set timelineButtons = array_merge(timelineButtons,
             [
                 'fiveYear' : [
@@ -79,7 +79,7 @@
             ]
         ) %}
     {% endif %}
-    {% if schemeNavChunks['tenYear'] is defined and schemeNavChunks['tenYear'] == true %}
+    {% if portfolioPerformancesChunks['tenYear'] is defined and portfolioPerformancesChunks['tenYear'] == true %}
         {% set timelineButtons = array_merge(timelineButtons,
             [
                 'tenYear' : [
@@ -134,7 +134,7 @@
                 'fieldType'                      : 'flatpickr',
                 'fieldFlatpickrClearButton'      : true,
                 'fieldHelp'                      : true,
-                'fieldHelpTooltipContent'        : 'Investment Date',
+                'fieldHelpTooltipContent'        : 'Date Range',
                 'fieldRequired'                  : true,
                 'fieldHidden'                    : true,
                 'fieldBazScan'                   : true,
@@ -848,4 +848,3 @@ setTimeout(function(){
     });
 }, 1000);
 </script>
-<!-- htmlmin:ignore -->
