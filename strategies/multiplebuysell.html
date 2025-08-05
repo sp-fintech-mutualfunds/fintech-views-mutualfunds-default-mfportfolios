@@ -725,7 +725,7 @@ dataCollectionSection =
                     dataCollectionSectionForm['vars']['multiplebuysellTransactionsTable'] = $('#{{componentId}}-{{sectionId}}-multiplebuysell-transactions-table').DataTable({
                         columns:
                             [
-                                {data: 'id', orderable: false, visible: false},
+                                {data: 'scheme_id', orderable: false, visible: false},
                                 {data: 'date', orderable: false},
                                 {data: 'type', orderable: false},
                                 {data: 'scheme', orderable: false},
@@ -772,8 +772,12 @@ dataCollectionSection =
                 for (var investment in dataCollectionSectionForm['vars']['portfolio']['investments']) {
                     dataCollectionSectionForm['vars']['multiplebuysellTransactions'][investment] = { };
                     dataCollectionSectionForm['vars']['multiplebuysellTransactions'][investment]['transactions_value'] = 0;
-                    dataCollectionSectionForm['vars']['multiplebuysellTransactions'][investment]['available_value'] =
-                        parseFloat(dataCollectionSectionForm['vars']['portfolio']['investments'][investment]['latest_value'].replace(/,/g, ''));
+                    if (dataCollectionSectionForm['vars']['portfolio']['investments'][investment]['latest_value']) {
+                        dataCollectionSectionForm['vars']['multiplebuysellTransactions'][investment]['available_value'] =
+                            parseFloat(dataCollectionSectionForm['vars']['portfolio']['investments'][investment]['latest_value'].replace(/,/g, ''));
+                    } else {
+                        dataCollectionSectionForm['vars']['multiplebuysellTransactions'][investment]['available_value'] = 0;
+                    }
                 }
 
                 $('#{{componentId}}-{{sectionId}}-buy-multiple, #{{componentId}}-{{sectionId}}-sell-multiple').off();
@@ -854,7 +858,8 @@ dataCollectionSection =
                                 buyObj['amount'] = buyAmountsArr[index];
                             }
                             buyObj['action'] = '<button class="btn btn-xs btn-danger removeMultipleBuySellTransaction"><i class="fa fa-trash"></i></button>';
-
+                            //eslint-disable-next-line
+                            console.log(buyObj);
                             dataCollectionSectionForm['vars']['multiplebuysellTransactionsTable'].row.add(buyObj);
 
                             // rowsId++;
@@ -918,7 +923,7 @@ dataCollectionSection =
                             sellObj['scheme_id'] = schemeId;
                             sellObj['date'] = date;
                             sellObj['type'] = 'SELL';
-                            sellObj['scheme'] = $('#{{componentId}}-{{sectionId}}-sell_transaction_id').text().trim();
+                            sellObj['scheme'] = $('#{{componentId}}-{{sectionId}}-sell_transaction_id').select2('data')[0].text;
                             if (sellDatesArr.length !== sellAmountsArr.length) {
                                 sellObj['amount'] = sellAmountsArr[0];
                             } else {

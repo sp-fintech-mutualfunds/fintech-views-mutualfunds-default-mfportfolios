@@ -241,6 +241,7 @@ dataCollectionSection =
 
                     var postData = { };
                     postData[$('#security-token').attr('name')] = $('#security-token').val();
+                    postData['investmentSrouce'] = dataCollectionSectionForm['vars']['source'];
                     postData['portfolio_id'] = $('#{{componentId}}-{{sectionId}}-id').val();
                     postData['strategy_id'] = $('#{{componentId}}-{{sectionId}}-strategies').val();
                     postData['amc_id'] = $('#{{componentId}}-{{sectionId}}-amc_id').val();

@@ -70,8 +70,8 @@
 )}}
 <script>
 /*global paginatedPNotify BazProgress BazContentFields BazHelpers BazContentLoader Pace BazCore Swal Chart */
+$('body').off('sectionWithListingLoaded');
 $('body').on('sectionWithListingLoaded', function() {
-    $('body').off('sectionWithListingLoaded');
     $(document).ready(function() {
         function reload() {
             BazContentLoader.loadAjax($('#{{componentId}}-listing-portfolios-link'), {
@@ -95,6 +95,7 @@ $('body').on('sectionWithListingLoaded', function() {
             var id = $(this).parents('tr')[0].id;
             var url = $(this).attr('href').split('/q/')[0];
 
+            $(this).off();
             $(this).click(function() {
                 paginatedPNotify('info', {text : 'Cloning, please wait...'});
                 var postData = { };

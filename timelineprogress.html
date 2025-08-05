@@ -1,12 +1,11 @@
-{% set weeklyHidden = 'hidden' %}
-{% set weeklyDays = ['2'] %}
-{% set monthlyHidden = 'hidden' %}
-{% set monthlyMonths = ['1','2','3','4','5','6','7','8','9','10','11','12'] %}
+{% set weeklyDays = ['1'] %}
+{% set monthlyMonths = ['1'] %}
 {% set monthlyDay = '1' %}
 <form data-validateon="section" id="{{componentId}}-{{sectionId}}-form">
     <fieldset id="{{componentId}}-{{sectionId}}-fieldset">
-        {% set generateHidden = false %}
-        {% if timeline['recalculate'] is not defined or timeline['recalculate'] == false %}
+{#         {% set generateHidden = false %}
+        {% if timeline['recalculate'] is not defined or timeline['recalculate'] == false %} #}
+
             <div class="row vdivide mt-3">
                 <div class="col-md-3">
                     {{adminltetags.useTag('fields',
@@ -26,16 +25,22 @@
                             'fieldBazScan'                   : true,
                             'fieldRadioButtons'              :
                                 [
+                                    'daily' :
+                                        [
+                                            'title'          : 'Daily',
+                                            'type'           : 'danger',
+                                            'dataValue'      : 'daily'
+                                        ],
                                     'weekly' :
                                         [
                                             'title'          : 'Weekly',
-                                            'type'           : 'danger',
+                                            'type'           : 'warning',
                                             'dataValue'      : 'weekly'
                                         ],
                                     'monthly' :
                                         [
                                             'title'          : 'Monthly',
-                                            'type'           : 'warning',
+                                            'type'           : 'primary',
                                             'dataValue'      : 'monthly'
                                         ],
                                     'transactions' :
@@ -49,7 +54,32 @@
                         ]
                     )}}
                 </div>
-                <div class="col schedules" id="{{componentId}}-{{sectionId}}-weekly" {{weeklyHidden}}>
+                <div class="col schedules" id="{{componentId}}-{{sectionId}}-daily" hidden>
+                    <div class="callout callout-info">
+                        <h5>Daily</h5>
+                        <p>Timeline will be created for everyday since the start of portfolio.</p>
+                    </div>
+                </div>
+                <div class="col schedules" id="{{componentId}}-{{sectionId}}-weekly" hidden>
+                    <div class="row mb-2">
+                        <div class="col">
+                            {{adminltetags.useTag('buttons',
+                                [
+                                    'componentId'           : componentId,
+                                    'sectionId'             : sectionId,
+                                    'buttonType'            : 'button',
+                                    'buttons'               :
+                                        [
+                                            'select_all_days' : [
+                                                'title'                   : 'Select All',
+                                                'position'                : 'right',
+                                                'size'                    : 'sm'
+                                            ]
+                                        ]
+                                ]
+                            )}}
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col">
                             {{adminltetags.useTag('fields',
@@ -82,7 +112,26 @@
                         <p>Timeline will be created for the day(s) of <span class="text-info" id="{{componentId}}-{{sectionId}}-weekly-days-span">Monday</span>.</p>
                     </div>
                 </div>
-                <div class="col schedules" id="{{componentId}}-{{sectionId}}-monthly" {{monthlyHidden}}>
+                <div class="col schedules" id="{{componentId}}-{{sectionId}}-monthly" hidden>
+                    <div class="row mb-2">
+                        <div class="col">
+                            {{adminltetags.useTag('buttons',
+                                [
+                                    'componentId'           : componentId,
+                                    'sectionId'             : sectionId,
+                                    'buttonType'            : 'button',
+                                    'buttons'               :
+                                        [
+                                            'select_all_months' : [
+                                                'title'                   : 'Select All',
+                                                'position'                : 'right',
+                                                'size'                    : 'sm'
+                                            ]
+                                        ]
+                                ]
+                            )}}
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col">
                             {{adminltetags.useTag('fields',
@@ -153,9 +202,9 @@
                     <small class="text-info">Note: Timeline is also generated for first date of transactions and latest NAV available date.</small>
                 </div>
             </div>
-        {% else %}
+{#         {% else %}
             {% set generateHidden = true %}
-        {% endif %}
+        {% endif %} #}
         <div class="row mt-3">
             <div class="col">
                 {{adminltetags.useTag('fields',
@@ -191,7 +240,7 @@
                             [
                                 'generate-timeline'       : [
                                     'title'     : 'Generate Timeline',
-                                    'hidden'    : generateHidden
+                                    'hidden'    : false
                                 ],
                                 'access-timeline'       : [
                                     'title'     : 'Access Timeline',
@@ -240,26 +289,26 @@ dataCollectionSectionForm['vars'] = { };
 dataCollectionSectionForm['vars']['portfolio'] = JSON.parse('{{portfolio}}');
 dataCollectionSectionForm['vars']['timeline'] = JSON.parse('{{timeline}}');
 dataCollectionSectionForm['funcs'] = { };
-if (dataCollectionSectionForm['vars']['timeline']['recalculate'] == true) {
+// if (dataCollectionSectionForm['vars']['timeline']['recalculate'] == true) {
     dataCollectionSection =
         $.extend(dataCollectionSection, {
             '{{componentId}}-{{sectionId}}-timeline_progress'               : {
                 afterInit: function() {
                     BazProgress.buildProgressBar($('#timeline-progress'), false, true, true, true);
-                    dataCollectionSectionForm['funcs']['processTimeline']();
+                    // dataCollectionSectionForm['funcs']['processTimeline']();
                 }
             },
-            '{{componentId}}-{{sectionId}}-form'                            : {
-                rules: {
-                },
-                messages: {
-                }
-            }
-        });
+//             '{{componentId}}-{{sectionId}}-form'                            : {
+//                 rules: {
+//                 },
+//                 messages: {
+//                 }
+//             }
+//         });
 
-} else {
-    dataCollectionSection =
-        $.extend(dataCollectionSection, {
+// } else {
+//     dataCollectionSection =
+//         $.extend(dataCollectionSection, {
             '{{componentId}}-{{sectionId}}-mode'               : {
                 afterInit: function() {
                     $('#{{componentId}}-{{sectionId}}-mode').click(function() {
@@ -269,7 +318,10 @@ if (dataCollectionSectionForm['vars']['timeline']['recalculate'] == true) {
                     function processSchedules() {
                         dataCollectionSectionForm['vars']['mode'] = $('#{{componentId}}-{{sectionId}}-mode').find('input[type=radio]:checked').data('value');
 
-                        if ($('#{{componentId}}-{{sectionId}}-mode').find('input[type=radio]:checked').data('value') == 'weekly') {
+                        if ($('#{{componentId}}-{{sectionId}}-mode').find('input[type=radio]:checked').data('value') == 'daily') {
+                            $('.schedules').attr('hidden', true);
+                            $('#{{componentId}}-{{sectionId}}-daily').attr('hidden', false);
+                        } else if ($('#{{componentId}}-{{sectionId}}-mode').find('input[type=radio]:checked').data('value') == 'weekly') {
                             $('.schedules').attr('hidden', true);
                             $('#{{componentId}}-{{sectionId}}-weekly').attr('hidden', false);
 
@@ -320,6 +372,40 @@ if (dataCollectionSectionForm['vars']['timeline']['recalculate'] == true) {
 
                     processSchedules();
 
+                    var selectAllMonths = false;
+                    var selectAllDays = false;
+
+                    $('#{{componentId}}-{{sectionId}}-select_all_months, #{{componentId}}-{{sectionId}}-select_all_days').off();
+                    $('#{{componentId}}-{{sectionId}}-select_all_months, #{{componentId}}-{{sectionId}}-select_all_days').click(function(e) {
+                        e.preventDefault();
+
+                        if ($(this)[0].id === '{{componentId}}-{{sectionId}}-select_all_months') {
+                            if (selectAllMonths === true) {
+                                $('#{{componentId}}-{{sectionId}}-monthly_months').val(null).trigger('change');
+                                $('#{{componentId}}-{{sectionId}}-select_all_months').html('SELECT ALL');
+                                $('#{{componentId}}-{{sectionId}}-monthly-months-span').html('X');
+                                selectAllMonths = false;
+                            } else {
+                                $('#{{componentId}}-{{sectionId}}-monthly_months').val(['1','2','3','4','5','6','7','8','9','10','11','12']).trigger('change');
+                                $('#{{componentId}}-{{sectionId}}-select_all_months').html('SELECT NONE');
+
+                                selectAllMonths = true;
+                            }
+                        } else if ($(this)[0].id === '{{componentId}}-{{sectionId}}-select_all_days') {
+                            if (selectAllDays === true) {
+                                $('#{{componentId}}-{{sectionId}}-weekly_days').val(null).trigger('change');
+                                $('#{{componentId}}-{{sectionId}}-select_all_days').html('SELECT ALL');
+                                $('#{{componentId}}-{{sectionId}}-weekly-days-span').html('X');
+                                selectAllDays = false;
+                            } else {
+                                $('#{{componentId}}-{{sectionId}}-weekly_days').val(['1','2','3','4','5']).trigger('change');
+                                $('#{{componentId}}-{{sectionId}}-select_all_days').html('SELECT NONE');
+
+                                selectAllDays = true;
+                            }
+                        }
+                    });
+
                     BazProgress.buildProgressBar($('#timeline-progress'), false, true, true, true);
 
                     $('#{{componentId}}-{{sectionId}}-generate-timeline').click(function() {
@@ -327,8 +413,12 @@ if (dataCollectionSectionForm['vars']['timeline']['recalculate'] == true) {
                     });
                 }
             },
-            '{{componentId}}-{{sectionId}}-weekly_days'                     : { },
-            '{{componentId}}-{{sectionId}}-monthly_months'                  : { },
+            '{{componentId}}-{{sectionId}}-weekly_days'                     : {
+                placeholder: 'SELECT DAYS'
+            },
+            '{{componentId}}-{{sectionId}}-monthly_months'                  : {
+                placeholder: 'SELECT MONTHS'
+            },
             '{{componentId}}-{{sectionId}}-monthly_day'                     : { },
             '{{componentId}}-{{sectionId}}-form'                            : {
                 rules: {
@@ -337,7 +427,7 @@ if (dataCollectionSectionForm['vars']['timeline']['recalculate'] == true) {
                 }
             }
         });
-}
+// }
 // dataCollectionSectionForm['funcs']['init'] = function() {
     //Auto timeline calculation from the recalculate date.
     // var swalSound = window['dataCollection'].env.sounds.swalSound;

@@ -321,9 +321,9 @@
                 {% set importNav = false %}
                 {% if mode == 'transact' %}
                     {% if portfolio['investments']|length > 0 %}
-                        {% set recalculate = true %}
                         {% for investment in portfolio['investments'] %}
                             {% if investment['status'] == 'open' %}
+                                {% set recalculate = true %}
                                 {% set sell = true %}
                                 {% set importNav = true %}
                                 {% break %}
@@ -342,6 +342,16 @@
                                 ]
                             )
                         %}
+                    {% endif %}
+                    {% if portfolio['transactions']|length > 0 %}
+                        {% for transaction in portfolio['transactions'] %}
+                            {% if transaction['status'] == 'open' %}
+                                {% set recalculate = true %}
+                                {% set sell = true %}
+                                {% set importNav = true %}
+                                {% break %}
+                            {% endif %}
+                        {% endfor %}
                     {% endif %}
                 {% elseif mode == 'timeline' %}
                     {% if portfolio['investments']|length > 0 %}
@@ -644,7 +654,7 @@
         {% set strategies = escaper.js(json_encode(strategies, 16)) %}
         {% set amcs = escaper.js(json_encode(amcs, 16)) %}
         <script>
-/*global paginatedPNotify BazProgress BazContentFields BazHelpers BazContentLoader Pace BazCore dataCollection Swal Chart */
+/*global paginatedPNotify BazProgress BazContentFields BazHelpers BazContentLoader Pace BazCore dataCollection Swal echarts Chart */
 var dataCollectionComponent, dataCollectionSection, dataCollectionSectionForm;
 
 if (!window['dataCollection']['{{componentId}}']) {
@@ -706,49 +716,8 @@ dataCollectionSection =
                     dataCollectionSectionForm['funcs']['applyStrategy']();
                 });
 
-                if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#{{componentId}}-{{sectionId}}-strategies-transactions-table')) {
-                    dataCollectionSectionForm['vars']['strategiesTransactionsTable'] = $('#{{componentId}}-{{sectionId}}-strategies-transactions-table').DataTable({
-                        columns: [
-                            {orderable: false},
-                            {orderable: false},
-                            {orderable: false},
-                            {orderable: false}
-                        ],
-                        order: false,
-                        lengthMenu: [
-                            [20, 50, 100, -1],
-                            [20, 50, 100, 'All']
-                        ],
-                        dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
-                             '<"row mb-1"<"col"tr>>' +
-                             '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
-                        buttons: [
-                            {
-                                extend          : 'collection',
-                                text            : 'Export',
-                                className       : 'btn-sm btn-info',
-                                buttons         : [{
-                                                    text            : 'Excel',
-                                                    title           : 'Export transactions list',
-                                                    extend          : 'excelHtml5',
-                                                    footer          : false,
-                                                    exportOptions   : {
-                                                                        columns: ':visible'
-                                                                    }
-                                                },
-                                                {
-                                                    text            : 'CSV',
-                                                    extend          : 'csvHtml5',
-                                                    fieldSeparator  : ',',
-                                                    exportOptions   : {
-                                                                        columns: ':visible'
-                                                                    }
-                                                }
-                                                ]
-                            }
-                        ]
-                    });
-                }
+                dataCollectionSectionForm['funcs']['initDatatables']('strategies-transactions');
+
                 BazProgress.buildProgressBar($('#strategies-progress'), false, true, true, true);
             }
         },
@@ -827,7 +796,8 @@ dataCollectionSection =
                         $(thisButton).children('i').removeClass('fa-forward-fast').addClass('fa-spin fa-cog');
                         postData['timelineDate'] = dataCollectionSectionForm['vars']['today'];
                     }
-
+                    //eslint-disable-next-line
+                    console.log(postData);
                     dataCollectionSectionForm['funcs']['browseTimeline'](postData, thisButton);
                 });
             }
@@ -952,16 +922,18 @@ dataCollectionSection =
 
                     $('#{{componentId}}-{{sectionId}}-buy-amount').attr('disabled', false);
 
-                    if (dataCollectionSectionForm['vars']['scheme']['navs']['navs'][$('#{{componentId}}-{{sectionId}}-buy-date').val()] &&
-                        dataCollectionSectionForm['vars']['scheme']['navs']['navs'][$('#{{componentId}}-{{sectionId}}-buy-date').val()]['nav']
+                    if (dataCollectionSectionForm['vars']['scheme']['navs']['navs'] &&
+                        dataCollectionSectionForm['vars']['scheme']['navs']['navs'][dateStr]
                     ) {
-                        $('#{{componentId}}-{{sectionId}}-buy-selected_nav')
-                            .html(dataCollectionSectionForm['vars']['currencySymbol'] +
-                                  dataCollectionSectionForm['vars']['scheme']['navs']['navs'][$('#{{componentId}}-{{sectionId}}-buy-date').val()]['nav']
-                            );
-                    } else {
-                        $('#{{componentId}}-{{sectionId}}-buy-selected_nav').html('-');
+                        $('#{{componentId}}-{{sectionId}}-buy-selected_nav').html(
+                            dataCollectionSectionForm['vars']['currencySymbol'] +
+                            dataCollectionSectionForm['vars']['scheme']['navs']['navs'][dateStr]['nav']
+                        );
+
+                        return;
                     }
+
+                    dataCollectionSectionForm['funcs']['getSchemeNavByDate'](dateStr, 'buy');
                 } else {
                     $('#{{componentId}}-{{sectionId}}-buy-amount').attr('disabled', true);
                     $('#{{componentId}}-{{sectionId}}-buy-selected_nav').html('-');
@@ -996,18 +968,19 @@ dataCollectionSection =
                     $('#{{componentId}}-{{sectionId}}-sell-amount').attr('disabled', false);
                     $('#{{componentId}}-{{sectionId}}-sell-units').attr('disabled', false);
                     $('#{{componentId}}-{{sectionId}}-sell_all').attr('disabled', false);
-                    if (dataCollectionSectionForm['vars']['scheme']['navs']['navs'][$('#{{componentId}}-{{sectionId}}-sell-date').val()]['nav']) {
-                        $('#{{componentId}}-{{sectionId}}-sell-selected_nav')
-                            .html(dataCollectionSectionForm['vars']['currencySymbol'] +
-                                  dataCollectionSectionForm['vars']['scheme']['navs']['navs'][$('#{{componentId}}-{{sectionId}}-sell-date').val()]['nav']
-                            );
-                        var units = dataCollectionSectionForm['vars']['investments'][dataCollectionSectionForm['vars']['scheme']['id']]['units'];
 
-                        $('#{{componentId}}-{{sectionId}}-sell-available_amount')
-                            .html(dataCollectionSectionForm['vars']['currencySymbol'] +
-                                  (dataCollectionSectionForm['vars']['scheme']['navs']['navs'][$('#{{componentId}}-{{sectionId}}-sell-date').val()]['nav'] * units).toFixed(2)
-                            );
+                    if (dataCollectionSectionForm['vars']['scheme']['navs']['navs'] &&
+                        dataCollectionSectionForm['vars']['scheme']['navs']['navs'][dateStr]
+                    ) {
+                        $('#{{componentId}}-{{sectionId}}-sell-selected_nav').html(
+                            dataCollectionSectionForm['vars']['currencySymbol'] +
+                            dataCollectionSectionForm['vars']['scheme']['navs']['navs'][dateStr]['nav']
+                        );
+
+                        return;
                     }
+
+                    dataCollectionSectionForm['funcs']['getSchemeNavByDate'](dateStr, 'sell');
                 } else {
                     $('#{{componentId}}-{{sectionId}}-sell-amount').attr('disabled', true);
                     $('#{{componentId}}-{{sectionId}}-sell-units').attr('disabled', true);
@@ -1098,10 +1071,52 @@ dataCollectionSectionForm['vars']['investments'] = JSON.parse('{{investments}}')
 dataCollectionSectionForm['vars']['transactions'] = JSON.parse('{{transactions}}');
 dataCollectionSectionForm['vars']['allocation'] = JSON.parse('{{allocation}}');
 dataCollectionSectionForm['vars']['allocationCharts'] = { };
+
 dataCollectionSectionForm['vars']['amcs'] = JSON.parse('{{amcs}}');
 dataCollectionSectionForm['vars']['currencySymbol'] = '{{currencySymbol}}';
 dataCollectionSectionForm['vars']['sellInput'] = 'amount';
 dataCollectionSectionForm['vars']['scheme'] = { };
+
+dataCollectionSectionForm['funcs']['getSchemeNavByDate'] = function(dateStr, type) {
+    var postData = { };
+    postData[$('#security-token').attr('name')] = $('#security-token').val();
+    if (type === 'buy') {
+        postData['scheme_id'] = $('#{{componentId}}-{{sectionId}}-scheme_id').val();
+    } else if (type === 'sell') {
+        postData['scheme_id'] = $('#{{componentId}}-{{sectionId}}-sell_transaction_id').val();
+    }
+    postData['date'] = dateStr;
+    postData['latest'] = false;
+
+    $.post('{{links.url("mf/schemes/getSchemeNavByDate")}}', postData, function(response) {
+        if (response.tokenKey && response.token) {
+            $('#security-token').attr('name', response.tokenKey);
+            $('#security-token').val(response.token);
+        }
+
+        if (!dataCollectionSectionForm['vars']['scheme']['navs']['navs']) {
+            dataCollectionSectionForm['vars']['scheme']['navs']['navs'] = { };
+        }
+
+        if (response.responseCode == 0) {
+            if (response.responseData.nav && response.responseData.nav['nav']) {
+                $('#{{componentId}}-{{sectionId}}-' + type + '-selected_nav')
+                    .html(dataCollectionSectionForm['vars']['currencySymbol'] +
+                          response.responseData.nav['nav']
+                    );
+
+                dataCollectionSectionForm['vars']['scheme']['navs']['navs'][dateStr] = response.responseData.nav;
+            } else {
+                $('#{{componentId}}-{{sectionId}}-' + type + '-selected_nav').html('-');
+
+                dataCollectionSectionForm['vars']['scheme']['navs']['navs'][dateStr] = { };
+                dataCollectionSectionForm['vars']['scheme']['navs']['navs'][dateStr]['nav'] = 0;
+            }
+        } else {
+            paginatedPNotify('error', {text : response.responseMessage});
+        }
+    }, 'json');
+}
 
 dataCollectionSectionForm['funcs']['processTransaction'] = function(task, update = false, remove = false) {
     var postData = { };
@@ -1199,6 +1214,7 @@ dataCollectionSectionForm['funcs']['getSchemeDetails'] = function(id, task = nul
     var postData = { };
     postData[$('#security-token').attr('name')] = $('#security-token').val();
     postData['id'] = id;
+    postData['navs'] = true;
 
     $.post('{{links.url("mf/schemes/getSchemeDetails")}}', postData, function(response) {
         if (response.tokenKey && response.token) {
@@ -1366,11 +1382,6 @@ dataCollectionSectionForm['funcs']['processSchemeNav'] = function(scheme, task =
             var tbody = '';
             for (var transaction in dataCollectionSectionForm['vars']['transactions'][taskId]['transactions']) {
                 tbody += '<tr>';
-                // tbody += '   <td>';
-                // tbody += '      <span id="transaction-' + taskId + '-' + dataCollectionSectionForm['vars']['transactions'][taskId]['transactions'][transaction]['id'] + '">' +
-                //          dataCollectionSectionForm['vars']['transactions'][taskId]['transactions'][transaction]['id'] +
-                //          '      </span>';
-                // tbody += '   </td>';
                 tbody += '   <td>';
                 tbody += '      <span id="transaction-' + taskId + '-' + dataCollectionSectionForm['vars']['transactions'][taskId]['transactions'][transaction]['date'] + '">' +
                          dataCollectionSectionForm['vars']['transactions'][taskId]['transactions'][transaction]['date'] +
@@ -1705,555 +1716,14 @@ dataCollectionSectionForm['funcs']['calculateCategoriesPercentDiff'] = function(
 dataCollectionSectionForm['funcs']['init'] = function() {
     var swalSound = window['dataCollection'].env.sounds.swalSound;
 
-    function generateChart(by, data, value, type = 'bar') {
-        var datasets = [
-            {
-                label: 'INVESTMENT',
-                data: data.map(row => row['invested_' + value])
-            },
-            {
-                label: 'RETURN',
-                data: data.map(row => row['return_' + value])
-            }
-        ];
-
-        if (type === 'pie') {//We want the return circle to be outside
-            datasets = [
-                {
-                    label: 'RETURN',
-                    data: data.map(row => row['return_' + value])
-                },
-                {
-                    label: 'INVESTMENT',
-                    data: data.map(row => row['invested_' + value])
-                }
-            ];
-        }
-
-        var labels;
-        if (by === 'schemes') {
-            labels = data.map(row => row.scheme_id);
-        } else {
-            labels = data.map(row => row.category.name);
-        }
-        //Start with week data and generate chart
-        dataCollectionSectionForm['vars']['allocationCharts']['by_' + by][value] = new Chart(document.getElementById('allocation-' + by + '-' + value),
-            {
-                type: type,
-                options : {
-                    locale: 'en-IN',
-                    responsive: true,
-                    animation: false,
-                    plugins: {
-                        legend: {
-                            position : 'top'
-                        },
-                        title: {
-                            display: true,
-                            text: 'INVESTMENT vs RETURN (' + value + ')'
-                        }
-                    }
-                },
-                data: {
-                    labels: labels,
-                    datasets: datasets
-                }
-            }
-        );
-    }
-
     setTimeout(function(){
-        if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#{{componentId}}-{{sectionId}}-investments-table')) {
-            var investmentColumns =
-                [
-                    {orderable: true},
-                    {orderable: true},
-                    {orderable: true},
-                    {orderable: true},
-                    {orderable: true},
-                    {orderable: true},
-                    {orderable: true},
-                    {orderable: true},
-                    {orderable: true},
-                    {orderable: true},
-                    {orderable: false}
-                ];
-
-            if (dataCollectionSectionForm['vars']['mode'] === 'timeline') {
-                investmentColumns =
-                    [
-                        {orderable: true},
-                        {orderable: true},
-                        {orderable: true},
-                        {orderable: true},
-                        {orderable: true},
-                        {orderable: true},
-                        {orderable: true},
-                        {orderable: true},
-                        {orderable: true},
-                        {orderable: false}
-                    ];
-            }
-
-            $('#{{componentId}}-{{sectionId}}-investments-table').DataTable({
-                columns: investmentColumns,
-                lengthMenu: [
-                    [20, 50, 100, -1],
-                    [20, 50, 100, 'All']
-                ],
-                dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
-                     '<"row mb-1"<"col"tr>>' +
-                     '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
-                buttons: [
-                    {
-                        extend          : 'collection',
-                        text            : 'Export',
-                        className       : 'btn-sm btn-info',
-                        buttons         : [{
-                                            text            : 'Excel',
-                                            title           : 'Export transactions list',
-                                            extend          : 'excelHtml5',
-                                            footer          : false,
-                                            exportOptions   : {
-                                                                columns: ':visible'
-                                                            }
-                                        },
-                                        {
-                                            text            : 'CSV',
-                                            extend          : 'csvHtml5',
-                                            fieldSeparator  : ',',
-                                            exportOptions   : {
-                                                                columns: ':visible'
-                                                            }
-                                        }
-                                        ]
-                    }
-                ]
-            });
-        }
-
-        if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#{{componentId}}-{{sectionId}}-transactions-table')) {
-            var transactionColumns =
-                [
-                    {orderable: false},
-                    {orderable: false},
-                    {orderable: false},
-                    {orderable: false},
-                    {orderable: false},
-                    {orderable: false},
-                    {orderable: false},
-                    {orderable: false},
-                    {orderable: false},
-                    {orderable: false}
-                ];
-
-            if (dataCollectionSectionForm['vars']['mode'] === 'timeline') {
-                transactionColumns =
-                    [
-                        {orderable: false},
-                        {orderable: false},
-                        {orderable: false},
-                        {orderable: false},
-                        {orderable: false},
-                        {orderable: false},
-                        {orderable: false},
-                        {orderable: false},
-                        {orderable: false}
-                    ];
-            }
-            $('#{{componentId}}-{{sectionId}}-transactions-table').DataTable({
-                columns: transactionColumns,
-                order: false,
-                lengthMenu: [
-                    [20, 50, 100, -1],
-                    [20, 50, 100, 'All']
-                ],
-                dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
-                     '<"row mb-1"<"col"tr>>' +
-                     '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
-                buttons: [
-                    {
-                        extend          : 'collection',
-                        text            : 'Export',
-                        className       : 'btn-sm btn-info',
-                        buttons         : [{
-                                            text            : 'Excel',
-                                            title           : 'Export transactions list',
-                                            extend          : 'excelHtml5',
-                                            footer          : false,
-                                            exportOptions   : {
-                                                                columns: ':visible'
-                                                            }
-                                        },
-                                        {
-                                            text            : 'CSV',
-                                            extend          : 'csvHtml5',
-                                            fieldSeparator  : ',',
-                                            exportOptions   : {
-                                                                columns: ':visible'
-                                                            }
-                                        }
-                                        ]
-                    }
-                ]
-            });
-        }
-
-        if (Object.keys(dataCollectionSectionForm['vars']['allocation']).length > 0) {
-            if (dataCollectionSectionForm['vars']['allocation']['by_schemes'] &&
-                Object.keys(dataCollectionSectionForm['vars']['allocation']['by_schemes']).length > 0
-            ) {
-                if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#{{componentId}}-{{sectionId}}-allocation-schemes-table')) {
-                    $('#{{componentId}}-{{sectionId}}-allocation-schemes-table').DataTable({
-                        columns: [
-                            {orderable: true},
-                            {orderable: true},
-                            {orderable: true},
-                            {orderable: true},
-                            {orderable: true},
-                            {orderable: true}
-                        ],
-                        lengthMenu: [
-                            [20, 50, 100, -1],
-                            [20, 50, 100, 'All']
-                        ],
-                        dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
-                             '<"row mb-1"<"col"tr>>' +
-                             '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
-                        buttons: [
-                            {
-                                extend          : 'collection',
-                                text            : 'Export',
-                                className       : 'btn-sm btn-info',
-                                buttons         : [{
-                                                    text            : 'Excel',
-                                                    title           : 'Export transactions list',
-                                                    extend          : 'excelHtml5',
-                                                    footer          : false,
-                                                    exportOptions   : {
-                                                                        columns: ':visible'
-                                                                    }
-                                                },
-                                                {
-                                                    text            : 'CSV',
-                                                    extend          : 'csvHtml5',
-                                                    fieldSeparator  : ',',
-                                                    exportOptions   : {
-                                                                        columns: ':visible'
-                                                                    }
-                                                }
-                                                ]
-                            }
-                        ]
-                    });
-                }
-
-                // var byScehemesData = [];
-                // for (var schemesInitData in dataCollectionSectionForm['vars']['allocation']['by_schemes']) {
-                //     byScehemesData.push(dataCollectionSectionForm['vars']['allocation']['by_schemes'][schemesInitData]);
-                // }
-
-                // (async function() {
-                //     dataCollectionSectionForm['vars']['allocationCharts']['by_schemes'] = { };
-
-                //     var byScehemesCharts = ['amount', 'percent'];
-
-                //     $(byScehemesCharts).each(function(index, value) {
-                //         //Start with week data and generate chart
-                //         dataCollectionSectionForm['vars']['allocationCharts']['by_schemes'][value] = new Chart(document.getElementById('allocation-schemes-' + value),
-                //             {
-                //                 type: 'bar',
-                //                 options : {
-                //                     responsive: true,
-                //                     animation: false,
-                //                     plugins: {
-                //                         legend: {
-                //                             position: 'top'
-                //                         },
-                //                         title: {
-                //                             display: true,
-                //                             text: 'INVESTMENT vs RETURN (' + value + ')'
-                //                         }
-                //                     }
-                //                 },
-                //                 data: {
-                //                     labels: byScehemesData.map(row => row.scheme_id),
-                //                     datasets: [
-                //                         {
-                //                             label: 'INVESTMENT',
-                //                             data: byScehemesData.map(row => row['invested_' + value]),
-                //                         },
-                //                         {
-                //                             label: 'RETURN',
-                //                             data: byScehemesData.map(row => row['return_' + value]),
-                //                         }
-                //                     ]
-                //                 }
-                //             }
-                //         );
-                //     });
-                // })();
-
-                var byScehemesData = [];
-                for (var schemesInitData in dataCollectionSectionForm['vars']['allocation']['by_schemes']) {
-                    byScehemesData.push(dataCollectionSectionForm['vars']['allocation']['by_schemes'][schemesInitData]);
-                }
-
-                (async function() {
-                    dataCollectionSectionForm['vars']['allocationCharts']['by_schemes'] = { };
-
-                    var bySchemesCharts = ['amount', 'percent'];
-
-                    $(bySchemesCharts).each(function(index, value) {
-                        generateChart('schemes', byScehemesData, value);
-                    });
-
-                    $('#{{componentId}}-{{sectionId}}-switch-schemes-chart').click(function() {
-                        var type;
-
-                        if ($('#{{componentId}}-{{sectionId}}-switch-schemes-chart i').hasClass('fa-chart-simple')) {
-                            type = 'bar';
-                            $('#{{componentId}}-{{sectionId}}-switch-schemes-chart i').removeClass('fa-chart-simple').addClass('fa-chart-pie');
-                        } else if ($('#{{componentId}}-{{sectionId}}-switch-schemes-chart i').hasClass('fa-chart-pie')) {
-                            type = 'pie';
-                            $('#{{componentId}}-{{sectionId}}-switch-schemes-chart i').removeClass('fa-chart-pie').addClass('fa-chart-simple');
-                        }
-
-                        $(bySchemesCharts).each(function(index, value) {
-                            dataCollectionSectionForm['vars']['allocationCharts']['by_schemes'][value].destroy();
-
-                            generateChart('schemes', byScehemesData, value, type);
-                        });
-                    });
-                })();
-            }
-        }
-
-        if (Object.keys(dataCollectionSectionForm['vars']['allocation']).length > 0) {
-            if (dataCollectionSectionForm['vars']['allocation']['by_categories'] &&
-                Object.keys(dataCollectionSectionForm['vars']['allocation']['by_categories']).length > 0
-            ) {
-                if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#{{componentId}}-{{sectionId}}-allocation-categories-table')) {
-                    var categoriesTable = $('#{{componentId}}-{{sectionId}}-allocation-categories-table').DataTable({
-                        columns: [
-                            {orderable: true},
-                            {orderable: true},
-                            {orderable: true},
-                            {orderable: true},
-                            {orderable: true},
-                            {orderable: true},
-                            {orderable: true}
-                        ],
-                        lengthMenu: [
-                            [20, 50, 100, -1],
-                            [20, 50, 100, 'All']
-                        ],
-                        select: {
-                            style: 'multi'
-                        },
-                        dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
-                             '<"row mb-1"<"col"tr>>' +
-                             '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
-                        buttons: [
-                            {
-                                extend          : 'collection',
-                                text            : 'Export',
-                                className       : 'btn-sm btn-info',
-                                buttons         : [{
-                                                    text            : 'Excel',
-                                                    title           : 'Export transactions list',
-                                                    extend          : 'excelHtml5',
-                                                    footer          : false,
-                                                    exportOptions   : {
-                                                                        columns: ':visible'
-                                                                    }
-                                                },
-                                                {
-                                                    text            : 'CSV',
-                                                    extend          : 'csvHtml5',
-                                                    fieldSeparator  : ',',
-                                                    exportOptions   : {
-                                                                        columns: ':visible'
-                                                                    }
-                                                }
-                                                ]
-                            }
-                        ]
-                    });
-
-                    categoriesTable.on('select', function(e, dt, type, ix) {
-                        var selected = dt.rows({selected: true});
-
-                        if (selected.count() > 2) {
-                            dt.rows(ix).deselect();
-                        } else if (selected.count() === 2) {
-                            var select1 = dt.rows({selected: true}).data()[0];
-                            var select2 = dt.rows({selected: true}).data()[1];
-
-                            dataCollectionSectionForm['funcs']['calculateCategoriesPercentDiff']('categories', select1, select2);
-                        }
-                    });
-
-                    categoriesTable.on('deselect', function(e, dt, type, ix) {
-                        var deselected = dt.rows({selected: true});
-
-                        if (deselected.count() > 0) {
-                            $('#{{componentId}}-{{sectionId}}-categories_percentage_variance').html('Please select 2 categories...');
-                        }
-                    });
-                }
-
-                var byCategoriesData = [];
-                for (var categoriesInitData in dataCollectionSectionForm['vars']['allocation']['by_categories']) {
-                    byCategoriesData.push(dataCollectionSectionForm['vars']['allocation']['by_categories'][categoriesInitData]);
-                }
-
-                (async function() {
-                    dataCollectionSectionForm['vars']['allocationCharts']['by_categories'] = { };
-
-                    var byCategoriesCharts = ['amount', 'percent'];
-
-                    $(byCategoriesCharts).each(function(index, value) {
-                        generateChart('categories', byCategoriesData, value);
-                    });
-
-                    $('#{{componentId}}-{{sectionId}}-switch-categories-chart').click(function() {
-                        var type;
-
-                        if ($('#{{componentId}}-{{sectionId}}-switch-categories-chart i').hasClass('fa-chart-simple')) {
-                            type = 'bar';
-                            $('#{{componentId}}-{{sectionId}}-switch-categories-chart i').removeClass('fa-chart-simple').addClass('fa-chart-pie');
-                        } else if ($('#{{componentId}}-{{sectionId}}-switch-categories-chart i').hasClass('fa-chart-pie')) {
-                            type = 'pie';
-                            $('#{{componentId}}-{{sectionId}}-switch-categories-chart i').removeClass('fa-chart-pie').addClass('fa-chart-simple');
-                        }
-
-                        $(byCategoriesCharts).each(function(index, value) {
-                            dataCollectionSectionForm['vars']['allocationCharts']['by_categories'][value].destroy();
-
-                            generateChart('categories', byCategoriesData, value, type);
-                        });
-                    });
-                })();
-            }
-        }
-
-        if (Object.keys(dataCollectionSectionForm['vars']['allocation']).length > 0) {
-            if (dataCollectionSectionForm['vars']['allocation']['by_subcategories'] &&
-                Object.keys(dataCollectionSectionForm['vars']['allocation']['by_subcategories']).length > 0
-            ) {
-                if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#{{componentId}}-{{sectionId}}-allocation-subcategories-table')) {
-                    var subcategoriesTable = $('#{{componentId}}-{{sectionId}}-allocation-subcategories-table').DataTable({
-                        columns: [
-                            {orderable: true},
-                            {orderable: true},
-                            {orderable: true},
-                            {orderable: true},
-                            {orderable: true},
-                            {orderable: true},
-                            {orderable: true}
-                        ],
-                        lengthMenu: [
-                            [20, 50, 100, -1],
-                            [20, 50, 100, 'All']
-                        ],
-                        select: {
-                            style: 'multi'
-                        },
-                        dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
-                             '<"row mb-1"<"col"tr>>' +
-                             '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
-                        buttons: [
-                            {
-                                extend          : 'collection',
-                                text            : 'Export',
-                                className       : 'btn-sm btn-info',
-                                buttons         : [{
-                                                    text            : 'Excel',
-                                                    title           : 'Export transactions list',
-                                                    extend          : 'excelHtml5',
-                                                    footer          : false,
-                                                    exportOptions   : {
-                                                                        columns: ':visible'
-                                                                    }
-                                                },
-                                                {
-                                                    text            : 'CSV',
-                                                    extend          : 'csvHtml5',
-                                                    fieldSeparator  : ',',
-                                                    exportOptions   : {
-                                                                        columns: ':visible'
-                                                                    }
-                                                }
-                                                ]
-                            }
-                        ]
-                    });
-
-                    subcategoriesTable.on('select', function(e, dt, type, ix) {
-                        var selected = dt.rows({selected: true});
-
-                        if (selected.count() > 2) {
-                            dt.rows(ix).deselect();
-                        } else if (selected.count() === 2) {
-                            var select1 = dt.rows({selected: true}).data()[0];
-                            var select2 = dt.rows({selected: true}).data()[1];
-
-                            dataCollectionSectionForm['funcs']['calculateCategoriesPercentDiff']('subcategories', select1, select2);
-                        }
-                    });
-
-                    subcategoriesTable.on('deselect', function(e, dt, type, ix) {
-                        var deselected = dt.rows({selected: true});
-
-                        if (deselected.count() > 0) {
-                            $('#{{componentId}}-{{sectionId}}-subcategories_percentage_variance').html('Please select 2 subcategories...');
-                        }
-                    });
-                }
-
-                var bySubcategoriesData = [];
-                for (var subcategoriesInitData in dataCollectionSectionForm['vars']['allocation']['by_subcategories']) {
-                    bySubcategoriesData.push(dataCollectionSectionForm['vars']['allocation']['by_subcategories'][subcategoriesInitData]);
-                }
-
-                (async function() {
-                    dataCollectionSectionForm['vars']['allocationCharts']['by_subcategories'] = { };
-
-                    var bySubcategoriesCharts = ['amount', 'percent'];
-
-                    $(bySubcategoriesCharts).each(function(index, value) {
-                        generateChart('subcategories', bySubcategoriesData, value);
-                    });
-
-                    $('#{{componentId}}-{{sectionId}}-switch-subcategories-chart').click(function() {
-                        var type;
-
-                        if ($('#{{componentId}}-{{sectionId}}-switch-subcategories-chart i').hasClass('fa-chart-simple')) {
-                            type = 'bar';
-                            $('#{{componentId}}-{{sectionId}}-switch-subcategories-chart i').removeClass('fa-chart-simple').addClass('fa-chart-pie');
-                        } else if ($('#{{componentId}}-{{sectionId}}-switch-subcategories-chart i').hasClass('fa-chart-pie')) {
-                            type = 'pie';
-                            $('#{{componentId}}-{{sectionId}}-switch-subcategories-chart i').removeClass('fa-chart-pie').addClass('fa-chart-simple');
-                        }
-
-                        $(bySubcategoriesCharts).each(function(index, value) {
-                            dataCollectionSectionForm['vars']['allocationCharts']['by_subcategories'][value].destroy();
-
-                            generateChart('subcategories', bySubcategoriesData, value, type);
-                        });
-                    });
-                })();
-            }
-        }
+        dataCollectionSectionForm['funcs']['initDatatables']('investments');
+        dataCollectionSectionForm['funcs']['initDatatables']('transactions');
+        dataCollectionSectionForm['funcs']['initCharts']();
     }, 1000);
 
-    $('#{{componentId}}-{{sectionId}}-buy,' +
-      '#{{componentId}}-{{sectionId}}-sell'
-    ).off();
-    $('#{{componentId}}-{{sectionId}}-buy,' +
-      '#{{componentId}}-{{sectionId}}-sell'
-    ).click(function(e) {
+    $('#{{componentId}}-{{sectionId}}-buy, #{{componentId}}-{{sectionId}}-sell').off();
+    $('#{{componentId}}-{{sectionId}}-buy, #{{componentId}}-{{sectionId}}-sell').click(function(e) {
         e.preventDefault();
 
         if ($(this)[0].id === '{{componentId}}-{{sectionId}}-buy') {
@@ -2523,7 +1993,13 @@ dataCollectionSectionForm['funcs']['init'] = function() {
             var idArr = $(this)[0].id.split('-');
             var schemeId = idArr[idArr.length - 1];
 
-            window.open(dataCollection.env.httpScheme + '://' + dataCollection.env.httpHost + '/' + dataCollection.env.appRoute + '/' + 'mf/schemes/q/id/' + schemeId)
+            $('#{{componentId}}-{{sectionId}}-portfolios-link')
+                .attr(
+                    'href',
+                    dataCollection.env.httpScheme + '://' + dataCollection.env.httpHost + '/' + dataCollection.env.appRoute + '/' + 'mf/schemes/q/id/' + schemeId
+                );
+
+            dataCollectionSectionForm['funcs']['browse']();
         });
     });
 
@@ -2550,6 +2026,558 @@ dataCollectionSectionForm['funcs']['init'] = function() {
     });
 }
 
+dataCollectionSectionForm['funcs']['initDatatables'] = function(type) {
+    if (type === 'investments') {
+        if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#{{componentId}}-{{sectionId}}-investments-table')) {
+            var investmentColumns =
+                [
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: false}
+                ];
+
+            if (dataCollectionSectionForm['vars']['mode'] === 'timeline') {
+                investmentColumns =
+                    [
+                        {orderable: true},
+                        {orderable: true},
+                        {orderable: true},
+                        {orderable: true},
+                        {orderable: true},
+                        {orderable: true},
+                        {orderable: true},
+                        {orderable: true},
+                        {orderable: true},
+                        {orderable: false}
+                    ];
+            }
+
+            $('#{{componentId}}-{{sectionId}}-investments-table').DataTable({
+                columns: investmentColumns,
+                lengthMenu: [
+                    [20, 50, 100, -1],
+                    [20, 50, 100, 'All']
+                ],
+                dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
+                     '<"row mb-1"<"col"tr>>' +
+                     '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
+                buttons: [
+                    {
+                        extend          : 'collection',
+                        text            : 'Export',
+                        className       : 'btn-sm btn-info',
+                        buttons         : [{
+                                            text            : 'Excel',
+                                            title           : 'Export transactions list',
+                                            extend          : 'excelHtml5',
+                                            footer          : false,
+                                            exportOptions   : {
+                                                                columns: ':visible'
+                                                            }
+                                        },
+                                        {
+                                            text            : 'CSV',
+                                            extend          : 'csvHtml5',
+                                            fieldSeparator  : ',',
+                                            exportOptions   : {
+                                                                columns: ':visible'
+                                                            }
+                                        }
+                                        ]
+                    }
+                ]
+            });
+        }
+    }
+
+    if (type === 'transactions') {
+        if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#{{componentId}}-{{sectionId}}-transactions-table')) {
+            var transactionColumns =
+                [
+                    {orderable: false},
+                    {orderable: false},
+                    {orderable: false},
+                    {orderable: false},
+                    {orderable: false},
+                    {orderable: false},
+                    {orderable: false},
+                    {orderable: false},
+                    {orderable: false},
+                    {orderable: false}
+                ];
+
+            if (dataCollectionSectionForm['vars']['mode'] === 'timeline') {
+                transactionColumns =
+                    [
+                        {orderable: false},
+                        {orderable: false},
+                        {orderable: false},
+                        {orderable: false},
+                        {orderable: false},
+                        {orderable: false},
+                        {orderable: false},
+                        {orderable: false},
+                        {orderable: false}
+                    ];
+            }
+            $('#{{componentId}}-{{sectionId}}-transactions-table').DataTable({
+                columns: transactionColumns,
+                order: false,
+                lengthMenu: [
+                    [20, 50, 100, -1],
+                    [20, 50, 100, 'All']
+                ],
+                dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
+                     '<"row mb-1"<"col"tr>>' +
+                     '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
+                buttons: [
+                    {
+                        extend          : 'collection',
+                        text            : 'Export',
+                        className       : 'btn-sm btn-info',
+                        buttons         : [{
+                                            text            : 'Excel',
+                                            title           : 'Export transactions list',
+                                            extend          : 'excelHtml5',
+                                            footer          : false,
+                                            exportOptions   : {
+                                                                columns: ':visible'
+                                                            }
+                                        },
+                                        {
+                                            text            : 'CSV',
+                                            extend          : 'csvHtml5',
+                                            fieldSeparator  : ',',
+                                            exportOptions   : {
+                                                                columns: ':visible'
+                                                            }
+                                        }
+                                        ]
+                    }
+                ]
+            });
+        }
+    }
+
+    if (type === 'strategies-transactions') {
+        if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#{{componentId}}-{{sectionId}}-strategies-transactions-table')) {
+            dataCollectionSectionForm['vars']['strategiesTransactionsTable'] = $('#{{componentId}}-{{sectionId}}-strategies-transactions-table').DataTable({
+                columns: [
+                    {orderable: false},
+                    {orderable: false},
+                    {orderable: false},
+                    {orderable: false}
+                ],
+                order: false,
+                lengthMenu: [
+                    [20, 50, 100, -1],
+                    [20, 50, 100, 'All']
+                ],
+                dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
+                     '<"row mb-1"<"col"tr>>' +
+                     '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
+                buttons: [
+                    {
+                        extend          : 'collection',
+                        text            : 'Export',
+                        className       : 'btn-sm btn-info',
+                        buttons         : [{
+                                            text            : 'Excel',
+                                            title           : 'Export transactions list',
+                                            extend          : 'excelHtml5',
+                                            footer          : false,
+                                            exportOptions   : {
+                                                                columns: ':visible'
+                                                            }
+                                        },
+                                        {
+                                            text            : 'CSV',
+                                            extend          : 'csvHtml5',
+                                            fieldSeparator  : ',',
+                                            exportOptions   : {
+                                                                columns: ':visible'
+                                                            }
+                                        }
+                                        ]
+                    }
+                ]
+            });
+        }
+    }
+
+    if (type === 'allocation-schemes') {
+        if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#{{componentId}}-{{sectionId}}-allocation-schemes-table')) {
+            $('#{{componentId}}-{{sectionId}}-allocation-schemes-table').DataTable({
+                columns: [
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true}
+                ],
+                lengthMenu: [
+                    [20, 50, 100, -1],
+                    [20, 50, 100, 'All']
+                ],
+                dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
+                     '<"row mb-1"<"col"tr>>' +
+                     '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
+                buttons: [
+                    {
+                        extend          : 'collection',
+                        text            : 'Export',
+                        className       : 'btn-sm btn-info',
+                        buttons         : [{
+                                            text            : 'Excel',
+                                            title           : 'Export transactions list',
+                                            extend          : 'excelHtml5',
+                                            footer          : false,
+                                            exportOptions   : {
+                                                                columns: ':visible'
+                                                            }
+                                        },
+                                        {
+                                            text            : 'CSV',
+                                            extend          : 'csvHtml5',
+                                            fieldSeparator  : ',',
+                                            exportOptions   : {
+                                                                columns: ':visible'
+                                                            }
+                                        }
+                                        ]
+                    }
+                ]
+            });
+        }
+    }
+
+    if (type === 'allocation-categories') {
+        if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#{{componentId}}-{{sectionId}}-allocation-categories-table')) {
+            var categoriesTable = $('#{{componentId}}-{{sectionId}}-allocation-categories-table').DataTable({
+                columns: [
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true}
+                ],
+                lengthMenu: [
+                    [20, 50, 100, -1],
+                    [20, 50, 100, 'All']
+                ],
+                select: {
+                    style: 'multi'
+                },
+                dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
+                     '<"row mb-1"<"col"tr>>' +
+                     '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
+                buttons: [
+                    {
+                        extend          : 'collection',
+                        text            : 'Export',
+                        className       : 'btn-sm btn-info',
+                        buttons         : [{
+                                            text            : 'Excel',
+                                            title           : 'Export transactions list',
+                                            extend          : 'excelHtml5',
+                                            footer          : false,
+                                            exportOptions   : {
+                                                                columns: ':visible'
+                                                            }
+                                        },
+                                        {
+                                            text            : 'CSV',
+                                            extend          : 'csvHtml5',
+                                            fieldSeparator  : ',',
+                                            exportOptions   : {
+                                                                columns: ':visible'
+                                                            }
+                                        }
+                                        ]
+                    }
+                ]
+            });
+
+            categoriesTable.on('select', function(e, dt, type, ix) {
+                var selected = dt.rows({selected: true});
+
+                if (selected.count() > 2) {
+                    dt.rows(ix).deselect();
+                } else if (selected.count() === 2) {
+                    var select1 = dt.rows({selected: true}).data()[0];
+                    var select2 = dt.rows({selected: true}).data()[1];
+
+                    dataCollectionSectionForm['funcs']['calculateCategoriesPercentDiff']('categories', select1, select2);
+                }
+            });
+
+            categoriesTable.on('deselect', function(e, dt, type, ix) {
+                var deselected = dt.rows({selected: true});
+
+                if (deselected.count() > 0) {
+                    $('#{{componentId}}-{{sectionId}}-categories_percentage_variance').html('Please select 2 categories...');
+                }
+            });
+        }
+    }
+
+    if (type === 'allocation-subcategories') {
+        if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#{{componentId}}-{{sectionId}}-allocation-subcategories-table')) {
+            var subcategoriesTable = $('#{{componentId}}-{{sectionId}}-allocation-subcategories-table').DataTable({
+                columns: [
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true},
+                    {orderable: true}
+                ],
+                lengthMenu: [
+                    [20, 50, 100, -1],
+                    [20, 50, 100, 'All']
+                ],
+                select: {
+                    style: 'multi'
+                },
+                dom: '<"row mb-1"<"col-md-3 col-xs-12"B><"col-md-3 col-xs-12"l><"col-md-3 col-xs-12"f><"col-md-3 col-xs-12"p>>' +
+                     '<"row mb-1"<"col"tr>>' +
+                     '<"row"<"col-md-6 col-xs-12"i><"col-md-6 col-xs-12"p>>',
+                buttons: [
+                    {
+                        extend          : 'collection',
+                        text            : 'Export',
+                        className       : 'btn-sm btn-info',
+                        buttons         : [{
+                                            text            : 'Excel',
+                                            title           : 'Export transactions list',
+                                            extend          : 'excelHtml5',
+                                            footer          : false,
+                                            exportOptions   : {
+                                                                columns: ':visible'
+                                                            }
+                                        },
+                                        {
+                                            text            : 'CSV',
+                                            extend          : 'csvHtml5',
+                                            fieldSeparator  : ',',
+                                            exportOptions   : {
+                                                                columns: ':visible'
+                                                            }
+                                        }
+                                        ]
+                    }
+                ]
+            });
+
+            subcategoriesTable.on('select', function(e, dt, type, ix) {
+                var selected = dt.rows({selected: true});
+
+                if (selected.count() > 2) {
+                    dt.rows(ix).deselect();
+                } else if (selected.count() === 2) {
+                    var select1 = dt.rows({selected: true}).data()[0];
+                    var select2 = dt.rows({selected: true}).data()[1];
+
+                    dataCollectionSectionForm['funcs']['calculateCategoriesPercentDiff']('subcategories', select1, select2);
+                }
+            });
+
+            subcategoriesTable.on('deselect', function(e, dt, type, ix) {
+                var deselected = dt.rows({selected: true});
+
+                if (deselected.count() > 0) {
+                    $('#{{componentId}}-{{sectionId}}-subcategories_percentage_variance').html('Please select 2 subcategories...');
+                }
+            });
+        }
+    }
+}
+
+dataCollectionSectionForm['funcs']['initCharts'] = function() {
+    if (Object.keys(dataCollectionSectionForm['vars']['allocation']).length > 0) {
+        if (dataCollectionSectionForm['vars']['allocation']['by_schemes'] &&
+            Object.keys(dataCollectionSectionForm['vars']['allocation']['by_schemes']).length > 0
+        ) {
+            dataCollectionSectionForm['funcs']['initDatatables']('allocation-schemes');
+
+            var byScehemesData = [];
+            for (var schemesInitData in dataCollectionSectionForm['vars']['allocation']['by_schemes']) {
+                byScehemesData.push(dataCollectionSectionForm['vars']['allocation']['by_schemes'][schemesInitData]);
+            }
+
+            dataCollectionSectionForm['vars']['allocationCharts']['by_schemes'] = { };
+
+            var bySchemesCharts = ['amount', 'percent'];
+
+            $(bySchemesCharts).each(function(index, value) {
+                dataCollectionSectionForm['vars']['allocationCharts']['by_schemes'][value] = echarts.init(document.getElementById('allocation-schemes-' + value), 'macarons');
+
+                dataCollectionSectionForm['vars']['allocationCharts']['by_schemes'][value].on('rendered', function() {
+                    if (dataCollectionSectionForm['vars']['allocationCharts'] &&
+                        dataCollectionSectionForm['vars']['allocationCharts']['by_schemes'] &&
+                        dataCollectionSectionForm['vars']['allocationCharts']['by_schemes'][value]
+                    ) {
+                        dataCollectionSectionForm['vars']['allocationCharts']['by_schemes'][value].resize({
+                            height: 400
+                        });
+                    }
+                });
+
+                dataCollectionSectionForm['funcs']['generateAllocationCharts']('schemes', byScehemesData, value);
+            });
+        }
+
+        if (dataCollectionSectionForm['vars']['allocation']['by_categories'] &&
+            Object.keys(dataCollectionSectionForm['vars']['allocation']['by_categories']).length > 0
+        ) {
+            dataCollectionSectionForm['funcs']['initDatatables']('allocation-categories');
+
+            var byCategoriesData = [];
+            for (var categoriesInitData in dataCollectionSectionForm['vars']['allocation']['by_categories']) {
+                byCategoriesData.push(dataCollectionSectionForm['vars']['allocation']['by_categories'][categoriesInitData]);
+            }
+
+            dataCollectionSectionForm['vars']['allocationCharts']['by_categories'] = { };
+
+            var byCategoriesCharts = ['amount', 'percent'];
+
+            $(byCategoriesCharts).each(function(index, value) {
+                dataCollectionSectionForm['vars']['allocationCharts']['by_categories'][value] = echarts.init(document.getElementById('allocation-categories-' + value), 'macarons');
+
+                dataCollectionSectionForm['vars']['allocationCharts']['by_categories'][value].on('rendered', function() {
+                    if (dataCollectionSectionForm['vars']['allocationCharts'] &&
+                        dataCollectionSectionForm['vars']['allocationCharts']['by_categories'] &&
+                        dataCollectionSectionForm['vars']['allocationCharts']['by_categories'][value]
+                    ) {
+                        dataCollectionSectionForm['vars']['allocationCharts']['by_categories'][value].resize({
+                            height: 400
+                        });
+                    }
+                });
+
+                dataCollectionSectionForm['funcs']['generateAllocationCharts']('categories', byCategoriesData, value);
+            });
+        }
+
+        if (dataCollectionSectionForm['vars']['allocation']['by_subcategories'] &&
+            Object.keys(dataCollectionSectionForm['vars']['allocation']['by_subcategories']).length > 0
+        ) {
+            dataCollectionSectionForm['funcs']['initDatatables']('allocation-subcategories');
+
+            var bySubcategoriesData = [];
+            for (var subcategoriesInitData in dataCollectionSectionForm['vars']['allocation']['by_subcategories']) {
+                bySubcategoriesData.push(dataCollectionSectionForm['vars']['allocation']['by_subcategories'][subcategoriesInitData]);
+            }
+
+            dataCollectionSectionForm['vars']['allocationCharts']['by_subcategories'] = { };
+
+            var bySubcategoriesCharts = ['amount', 'percent'];
+
+            $(bySubcategoriesCharts).each(function(index, value) {
+                dataCollectionSectionForm['vars']['allocationCharts']['by_subcategories'][value] = echarts.init(document.getElementById('allocation-subcategories-' + value), 'macarons');
+
+                dataCollectionSectionForm['vars']['allocationCharts']['by_subcategories'][value].on('rendered', function() {
+                    if (dataCollectionSectionForm['vars']['allocationCharts'] &&
+                        dataCollectionSectionForm['vars']['allocationCharts']['by_subcategories'] &&
+                        dataCollectionSectionForm['vars']['allocationCharts']['by_subcategories'][value]
+                    ) {
+                        dataCollectionSectionForm['vars']['allocationCharts']['by_subcategories'][value].resize({
+                            height: 400
+                        });
+                    }
+                });
+
+                dataCollectionSectionForm['funcs']['generateAllocationCharts']('subcategories', bySubcategoriesData, value);
+            });
+        }
+    }
+}
+
+dataCollectionSectionForm['funcs']['generateAllocationCharts'] = function(by, data, value, type = 'bar') {
+    var options = {
+        title: {
+            text: 'INVESTMENTS VS RETURNS (' + value.toUpperCase() + ')'
+        },
+        tooltip: {
+            trigger: 'axis',
+            textStyle: {
+                align: 'left'
+            },
+            axisPointer: {
+              type: 'shadow'
+            }
+        },
+        legend: {},
+        xAxis: {
+            name: by.toUpperCase(),
+            nameLocation: 'middle',
+            nameTextStyle: {
+                lineHeight: 50
+            },
+            data: []
+        },
+        yAxis: {
+            name: value.toUpperCase(),
+            nameRotate: 90,
+            nameLocation: "middle",
+            nameTextStyle: {
+                lineHeight: 60,
+            }
+        },
+        series: [
+            {
+                type: type,
+                data: [],
+            }
+        ]
+    }
+
+    var series = [
+        {
+            type: type,
+            name: 'INVESTED',
+            data: data.map(row => row['invested_' + value])
+        },
+        {
+            type: type,
+            name: 'RETURN',
+            data: data.map(row => row['return_' + value])
+        }
+    ];
+
+    var xData = [];
+    var yData = [];
+
+    if (by === 'schemes') {
+        xData = data.map(row => row.scheme_id)
+    } else {
+        xData = data.map(row => row.category.name);
+    }
+
+    options['xAxis']['name'] = by.toUpperCase();
+    options['yAxis']['name'] = value.toUpperCase();
+    if (value === 'amount') {
+        options['yAxis']['nameTextStyle']['lineHeight'] = 100;
+    } else {
+        options['yAxis']['nameTextStyle']['lineHeight'] = 60;
+    }
+    options['xAxis']['data'] = xData;
+    options['series'] = series
+    dataCollectionSectionForm['vars']['allocationCharts']['by_' + by][value].setOption(options);
+}
+
 dataCollectionSectionForm['funcs']['browseTimeline'] = function(postData, thisButton = null) {
     $.post('{{links.url("mf/portfolios/getPortfolioTimelineDateByBrowseAction")}}', postData, function(response) {
         if (response.tokenKey && response.token) {
@@ -2560,9 +2588,9 @@ dataCollectionSectionForm['funcs']['browseTimeline'] = function(postData, thisBu
         if (response.responseCode === 0) {
             if (response.responseData.browse_date) {
                 if (postData['browse']) {
-                    browseToTimelineDate(response.responseData.browse_date, '/browse/' + postData['browse']);
+                    dataCollectionSectionForm['funcs']['browseToTimelineDate'](response.responseData.browse_date, '/browse/' + postData['browse']);
                 } else {
-                    browseToTimelineDate(response.responseData.browse_date);
+                    dataCollectionSectionForm['funcs']['browseToTimelineDate'](response.responseData.browse_date);
                 }
             }
         } else if (response.responseCode === 2) {
@@ -2607,7 +2635,7 @@ dataCollectionSectionForm['funcs']['browseTimeline'] = function(postData, thisBu
                         dateToBrowse = response.responseData.transaction_end_date;
                     }
 
-                    browseToTimelineDate(dateToBrowse);
+                    dataCollectionSectionForm['funcs']['browseToTimelineDate'](dateToBrowse);
                 } else {
                     if (thisButton) {
                         $(thisButton).attr('disabled', false);
@@ -2632,7 +2660,7 @@ dataCollectionSectionForm['funcs']['browseTimeline'] = function(postData, thisBu
     }, 'json');
 }
 
-function browseToTimelineDate(dateToBrowse, additionalUrlString = '/') {
+dataCollectionSectionForm['funcs']['browseToTimelineDate'] = function(dateToBrowse, additionalUrlString = '/') {
     $('#{{componentId}}-{{sectionId}}-portfolios-link')
         .attr(
             'href',
@@ -2663,599 +2691,8 @@ dataCollectionSectionForm['funcs']['browse'] = function() {
     });
 }
 
-dataCollectionSectionForm['funcs']['initChart'] = function() {
-    dataCollectionSectionForm['vars']['performance_chunks'] = JSON.parse('{{performanceChunks}}');
-    if (dataCollectionSectionForm['vars']['performance_chunks'].length === 0) {
-        return;
-    }
-    dataCollectionSectionForm['vars']['actions'] = { };
-    dataCollectionSectionForm['vars']['timelineChart'] = { };
-    dataCollectionSectionForm['vars']['initData'] = [];
-    dataCollectionSectionForm['vars']['initPerformanceData'] = { };
-    dataCollectionSectionForm['vars']['weekData'] = [];
-    dataCollectionSectionForm['vars']['weekPerformanceData'] = { };
-    dataCollectionSectionForm['vars']['monthData'] = [];
-    dataCollectionSectionForm['vars']['monthPerformanceData'] = { };
-    dataCollectionSectionForm['vars']['yearData'] = [];
-    dataCollectionSectionForm['vars']['yearPerformanceData'] = { };
-    dataCollectionSectionForm['vars']['threeYearData'] = [];
-    dataCollectionSectionForm['vars']['threeYearPerformanceData'] = { };
-    dataCollectionSectionForm['vars']['fiveYearData'] = [];
-    dataCollectionSectionForm['vars']['fiveYearPerformanceData'] = { };
-    dataCollectionSectionForm['vars']['tenYearData'] = [];
-    dataCollectionSectionForm['vars']['tenYearPerformanceData'] = { };
-    dataCollectionSectionForm['vars']['allData'] = [];
-    dataCollectionSectionForm['vars']['allPerformanceData'] = { };
-    dataCollectionSectionForm['vars']['dataType'] = 'invested_return_amount';
-    dataCollectionSectionForm['vars']['timeline'] = 'week';
-
-    (async function() {
-        var initDataObj;
-        var dataSets = [];
-
-        initDataObj = dataCollectionSectionForm['vars']['performance_chunks']['all'];
-
-        for (var initData in initDataObj) {
-            dataCollectionSectionForm['vars']['initPerformanceData'] = { };
-            dataCollectionSectionForm['vars']['initPerformanceData']['date'] = initData;
-            dataCollectionSectionForm['vars']['initPerformanceData']['invested_amount'] = initDataObj[initData]['invested_amount'];
-            dataCollectionSectionForm['vars']['initPerformanceData']['return_amount'] = initDataObj[initData]['return_amount'];
-
-            dataCollectionSectionForm['vars']['initData'].push(dataCollectionSectionForm['vars']['initPerformanceData']);
-        }
-
-        if (dataCollectionSectionForm['vars']['performance_chunks']['week']) {
-            dataCollectionSectionForm['vars']['actions']['one-week'] =
-                {
-                    name: "1 WEEK",
-                    handler(chart) {
-                        for (var weekDate in dataCollectionSectionForm['vars']['performance_chunks']['week']) {
-                            dataCollectionSectionForm['vars']['weekPerformanceData'] = { };
-                            dataCollectionSectionForm['vars']['weekPerformanceData']['date'] = weekDate;
-                            if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
-                                dataCollectionSectionForm['vars']['weekPerformanceData']['invested_amount'] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['week'][weekDate]['invested_amount'];
-                                dataCollectionSectionForm['vars']['weekPerformanceData']['return_amount'] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['week'][weekDate]['return_amount'];
-                            } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
-                                dataCollectionSectionForm['vars']['weekPerformanceData'][dataCollectionSectionForm['vars']['dataType']] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['week'][weekDate][dataCollectionSectionForm['vars']['dataType']];
-                            }
-
-                            dataCollectionSectionForm['vars']['weekData'].push(dataCollectionSectionForm['vars']['weekPerformanceData']);
-                        }
-
-                        dataSets = [];
-                        if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
-                            dataSets =
-                                [
-                                    {
-                                        label: 'INVESTED AMOUNT',
-                                        data: dataCollectionSectionForm['vars']['weekData'].map(row => row['invested_amount']),
-                                        pointRadius: 0
-                                    },
-                                    {
-                                        label: 'RETURN AMOUNT',
-                                        data: dataCollectionSectionForm['vars']['weekData'].map(row => row['return_amount']),
-                                        pointRadius: 0
-                                    }
-                                ]
-
-                        } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
-                            dataSets =
-                                [
-                                    {
-                                        label: 'PROFIT/LOSS (WEEK)',
-                                        data: dataCollectionSectionForm['vars']['weekData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
-                                        pointRadius: 0
-                                    }
-                                ];
-                        }
-
-                        chart.data.labels = dataCollectionSectionForm['vars']['weekData'].map(row => row.date);
-                        chart.data.datasets = dataSets;
-                        chart.update();
-                    }
-                };
-        }
-
-        if (dataCollectionSectionForm['vars']['performance_chunks']['month']) {
-            dataCollectionSectionForm['vars']['actions']['one-month'] =
-                {
-                    name: "1 MONTH",
-                    handler(chart) {
-                        for (var monthDate in dataCollectionSectionForm['vars']['performance_chunks']['month']) {
-                            dataCollectionSectionForm['vars']['monthPerformanceData'] = { };
-                            dataCollectionSectionForm['vars']['monthPerformanceData']['date'] = monthDate;
-                            if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
-                                dataCollectionSectionForm['vars']['monthPerformanceData']['invested_amount'] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['month'][monthDate]['invested_amount'];
-                                dataCollectionSectionForm['vars']['monthPerformanceData']['return_amount'] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['month'][monthDate]['return_amount'];
-                            } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
-                                dataCollectionSectionForm['vars']['monthPerformanceData'][dataCollectionSectionForm['vars']['dataType']] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['month'][monthDate][dataCollectionSectionForm['vars']['dataType']];
-                            }
-
-                            dataCollectionSectionForm['vars']['monthData'].push(dataCollectionSectionForm['vars']['monthPerformanceData']);
-                        }
-
-                        dataSets = [];
-                        if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
-                            dataSets =
-                                [
-                                    {
-                                        label: 'INVESTED AMOUNT',
-                                        data: dataCollectionSectionForm['vars']['monthData'].map(row => row['invested_amount']),
-                                        pointRadius: 0
-                                    },
-                                    {
-                                        label: 'RETURN AMOUNT',
-                                        data: dataCollectionSectionForm['vars']['monthData'].map(row => row['return_amount']),
-                                        pointRadius: 0
-                                    }
-                                ]
-
-                        } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
-                            dataSets =
-                                [
-                                    {
-                                        label: 'PROFIT/LOSS (MONTH)',
-                                        data: dataCollectionSectionForm['vars']['monthData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
-                                        pointRadius: 0
-                                    }
-                                ];
-                        }
-
-                        chart.data.labels = dataCollectionSectionForm['vars']['monthData'].map(row => row.date);
-                        chart.data.datasets = dataSets;
-                        chart.update();
-                    }
-                };
-        }
-
-        if (dataCollectionSectionForm['vars']['performance_chunks']['year']) {
-            dataCollectionSectionForm['vars']['actions']['one-year'] =
-                {
-                    name: "1 YEAR",
-                    handler(chart) {
-                        for (var yearDate in dataCollectionSectionForm['vars']['performance_chunks']['year']) {
-                            dataCollectionSectionForm['vars']['yearPerformanceData'] = { };
-                            dataCollectionSectionForm['vars']['yearPerformanceData']['date'] = yearDate;
-                            if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
-                                dataCollectionSectionForm['vars']['yearPerformanceData']['invested_amount'] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['year'][yearDate]['invested_amount'];
-                                dataCollectionSectionForm['vars']['yearPerformanceData']['return_amount'] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['year'][yearDate]['return_amount'];
-                            } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
-                                dataCollectionSectionForm['vars']['yearPerformanceData'][dataCollectionSectionForm['vars']['dataType']] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['year'][yearDate][dataCollectionSectionForm['vars']['dataType']];
-                            }
-
-                            dataCollectionSectionForm['vars']['yearData'].push(dataCollectionSectionForm['vars']['yearPerformanceData']);
-                        }
-
-                        dataSets = [];
-                        if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
-                            dataSets =
-                                [
-                                    {
-                                        label: 'INVESTED AMOUNT',
-                                        data: dataCollectionSectionForm['vars']['yearData'].map(row => row['invested_amount']),
-                                        pointRadius: 0
-                                    },
-                                    {
-                                        label: 'RETURN AMOUNT',
-                                        data: dataCollectionSectionForm['vars']['yearData'].map(row => row['return_amount']),
-                                        pointRadius: 0
-                                    }
-                                ]
-
-                        } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
-                            dataSets =
-                                [
-                                    {
-                                        label: 'PROFIT/LOSS (YEAR)',
-                                        data: dataCollectionSectionForm['vars']['yearData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
-                                        pointRadius: 0
-                                    }
-                                ];
-                        }
-
-                        chart.data.labels = dataCollectionSectionForm['vars']['yearData'].map(row => row.date);
-                        chart.data.datasets = dataSets;
-                        chart.update();
-                    }
-                };
-        }
-
-        if (dataCollectionSectionForm['vars']['performance_chunks']['threeYear']) {
-            dataCollectionSectionForm['vars']['actions']['three-year'] =
-                {
-                    name: "3 YEARS",
-                    handler(chart) {
-                        for (var threeYearDate in dataCollectionSectionForm['vars']['performance_chunks']['threeYear']) {
-                            dataCollectionSectionForm['vars']['threeYearPerformanceData'] = { };
-                            dataCollectionSectionForm['vars']['threeYearPerformanceData']['date'] = threeYearDate;
-                            if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
-                                dataCollectionSectionForm['vars']['threeYearPerformanceData']['invested_amount'] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['threeYear'][threeYearDate]['invested_amount'];
-                                dataCollectionSectionForm['vars']['threeYearPerformanceData']['return_amount'] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['threeYear'][threeYearDate]['return_amount'];
-                            } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
-                                dataCollectionSectionForm['vars']['threeYearPerformanceData'][dataCollectionSectionForm['vars']['dataType']] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['threeYear'][threeYearDate][dataCollectionSectionForm['vars']['dataType']];
-                            }
-
-                            dataCollectionSectionForm['vars']['threeYearData'].push(dataCollectionSectionForm['vars']['threeYearPerformanceData']);
-                        }
-
-                        dataSets = [];
-                        if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
-                            dataSets =
-                                [
-                                    {
-                                        label: 'INVESTED AMOUNT',
-                                        data: dataCollectionSectionForm['vars']['threeYearData'].map(row => row['invested_amount']),
-                                        pointRadius: 0
-                                    },
-                                    {
-                                        label: 'RETURN AMOUNT',
-                                        data: dataCollectionSectionForm['vars']['threeYearData'].map(row => row['return_amount']),
-                                        pointRadius: 0
-                                    }
-                                ]
-
-                        } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
-                            dataSets =
-                                [
-                                    {
-                                        label: 'PROFIT/LOSS (3 YEARS)',
-                                        data: dataCollectionSectionForm['vars']['threeYearData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
-                                        pointRadius: 0
-                                    }
-                                ];
-                        }
-
-                        chart.data.labels = dataCollectionSectionForm['vars']['threeYearData'].map(row => row.date);
-                        chart.data.datasets = dataSets;
-                        chart.update();
-                    }
-                };
-        }
-
-        if (dataCollectionSectionForm['vars']['performance_chunks']['fiveYear']) {
-            dataCollectionSectionForm['vars']['actions']['five-year'] =
-                {
-                    name: "5 YEARS",
-                    handler(chart) {
-                        for (var fiveYearDate in dataCollectionSectionForm['vars']['performance_chunks']['fiveYear']) {
-                            dataCollectionSectionForm['vars']['fiveYearPerformanceData'] = { };
-                            dataCollectionSectionForm['vars']['fiveYearPerformanceData']['date'] = fiveYearDate;
-                            if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
-                                dataCollectionSectionForm['vars']['fiveYearPerformanceData']['invested_amount'] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['fiveYear'][fiveYearDate]['invested_amount'];
-                                dataCollectionSectionForm['vars']['fiveYearPerformanceData']['return_amount'] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['fiveYear'][fiveYearDate]['return_amount'];
-                            } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
-                                dataCollectionSectionForm['vars']['fiveYearPerformanceData'][dataCollectionSectionForm['vars']['dataType']] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['fiveYear'][fiveYearDate][dataCollectionSectionForm['vars']['dataType']];
-                            }
-
-                            dataCollectionSectionForm['vars']['fiveYearData'].push(dataCollectionSectionForm['vars']['fiveYearPerformanceData']);
-                        }
-
-                        dataSets = [];
-                        if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
-                            dataSets =
-                                [
-                                    {
-                                        label: 'INVESTED AMOUNT',
-                                        data: dataCollectionSectionForm['vars']['fiveYearData'].map(row => row['invested_amount']),
-                                        pointRadius: 0
-                                    },
-                                    {
-                                        label: 'RETURN AMOUNT',
-                                        data: dataCollectionSectionForm['vars']['fiveYearData'].map(row => row['return_amount']),
-                                        pointRadius: 0
-                                    }
-                                ]
-
-                        } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
-                            dataSets =
-                                [
-                                    {
-                                        label: 'PROFIT/LOSS (5 YEARS)',
-                                        data: dataCollectionSectionForm['vars']['fiveYearData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
-                                        pointRadius: 0
-                                    }
-                                ];
-                        }
-
-                        chart.data.labels = dataCollectionSectionForm['vars']['fiveYearData'].map(row => row.date);
-                        chart.data.datasets = dataSets;
-                        chart.update();
-                    }
-                };
-        }
-
-        if (dataCollectionSectionForm['vars']['performance_chunks']['tenYear']) {
-            dataCollectionSectionForm['vars']['actions']['ten-year'] =
-                {
-                    name: "10 YEARS",
-                    handler(chart) {
-                        for (var tenYearDate in dataCollectionSectionForm['vars']['performance_chunks']['tenYear']) {
-                            dataCollectionSectionForm['vars']['tenYearPerformanceData'] = { };
-                            dataCollectionSectionForm['vars']['tenYearPerformanceData']['date'] = tenYearDate;
-                            if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
-                                dataCollectionSectionForm['vars']['tenYearPerformanceData']['invested_amount'] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['tenYear'][tenYearDate]['invested_amount'];
-                                dataCollectionSectionForm['vars']['tenYearPerformanceData']['return_amount'] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['tenYear'][tenYearDate]['return_amount'];
-                            } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
-                                dataCollectionSectionForm['vars']['tenYearPerformanceData'][dataCollectionSectionForm['vars']['dataType']] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['tenYear'][tenYearDate][dataCollectionSectionForm['vars']['dataType']];
-                            }
-
-                            dataCollectionSectionForm['vars']['tenYearData'].push(dataCollectionSectionForm['vars']['tenYearPerformanceData']);
-                        }
-
-                        dataSets = [];
-                        if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
-                            dataSets =
-                                [
-                                    {
-                                        label: 'INVESTED AMOUNT',
-                                        data: dataCollectionSectionForm['vars']['tenYearData'].map(row => row['invested_amount']),
-                                        pointRadius: 0
-                                    },
-                                    {
-                                        label: 'RETURN AMOUNT',
-                                        data: dataCollectionSectionForm['vars']['tenYearData'].map(row => row['return_amount']),
-                                        pointRadius: 0
-                                    }
-                                ]
-
-                        } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
-                            dataSets =
-                                [
-                                    {
-                                        label: 'PROFIT/LOSS (10 YEARS)',
-                                        data: dataCollectionSectionForm['vars']['tenYearData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
-                                        pointRadius: 0
-                                    }
-                                ];
-                        }
-
-                        chart.data.labels = dataCollectionSectionForm['vars']['tenYearData'].map(row => row.date);
-                        chart.data.datasets = dataSets;
-                        chart.update();
-                    }
-                };
-        }
-
-        if (dataCollectionSectionForm['vars']['performance_chunks']['all']) {
-            dataCollectionSectionForm['vars']['actions']['all'] =
-                {
-                    name: "ALL",
-                    handler(chart) {
-                        for (var allDate in dataCollectionSectionForm['vars']['performance_chunks']['all']) {
-                            dataCollectionSectionForm['vars']['allPerformanceData'] = { };
-                            dataCollectionSectionForm['vars']['allPerformanceData']['date'] = allDate;
-                            if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
-                                dataCollectionSectionForm['vars']['allPerformanceData']['invested_amount'] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['all'][allDate]['invested_amount'];
-                                dataCollectionSectionForm['vars']['allPerformanceData']['return_amount'] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['all'][allDate]['return_amount'];
-                            } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
-                                dataCollectionSectionForm['vars']['allPerformanceData'][dataCollectionSectionForm['vars']['dataType']] =
-                                    dataCollectionSectionForm['vars']['performance_chunks']['all'][allDate][dataCollectionSectionForm['vars']['dataType']];
-                            }
-
-                            dataCollectionSectionForm['vars']['allData'].push(dataCollectionSectionForm['vars']['allPerformanceData']);
-                        }
-
-                        dataSets = [];
-                        if (dataCollectionSectionForm['vars']['dataType'] === 'invested_return_amount') {
-                            dataSets =
-                                [
-                                    {
-                                        label: 'INVESTED AMOUNT',
-                                        data: dataCollectionSectionForm['vars']['allData'].map(row => row['invested_amount']),
-                                        pointRadius: 0
-                                    },
-                                    {
-                                        label: 'RETURN AMOUNT',
-                                        data: dataCollectionSectionForm['vars']['allData'].map(row => row['return_amount']),
-                                        pointRadius: 0
-                                    }
-                                ]
-
-                        } else if (dataCollectionSectionForm['vars']['dataType'] === 'profit_loss') {
-                            dataSets =
-                                [
-                                    {
-                                        label: 'PROFIT/LOSS (ALL)',
-                                        data: dataCollectionSectionForm['vars']['allData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]),
-                                        pointRadius: 0
-                                    }
-                                ];
-                        }
-
-                        chart.data.labels = dataCollectionSectionForm['vars']['allData'].map(row => row.date);
-                        chart.data.datasets = dataSets;
-                        chart.update();
-                    }
-                };
-        }
-
-        //Start with week data and generate chart
-        dataCollectionSectionForm['vars']['timelineChart'] = new Chart(document.getElementById('timelineChart'),
-            {
-                type: 'line',
-                options : {
-                    animation: false,
-                    interaction: {
-                        mode: 'nearest',
-                        intersect: false
-                    }
-                },
-                data: {
-                    labels: dataCollectionSectionForm['vars']['initData'].map(row => row.date),
-                    datasets: [
-                        {
-                            label: 'INVESTED AMOUNT',
-                            data: dataCollectionSectionForm['vars']['initData'].map(row => row['invested_amount']),
-                            pointRadius: 0
-                        },
-                        {
-                            label: 'RETURN AMOUNT',
-                            data: dataCollectionSectionForm['vars']['initData'].map(row => row['return_amount']),
-                            pointRadius: 0
-                        }
-                    ]
-                },
-                plugins : [
-                    {
-                        afterRender: function(chart, options) {
-                            $('#timeline-buttons').attr('hidden', false);
-                            $('#datatype-buttons').attr('hidden', false);
-                            $('#timeline-loader').attr('hidden', true);
-                            $('#import-loader').attr('hidden', true);
-                            $('#timeline-chart').attr('hidden', false);
-                        }
-                    }
-                ]
-            }
-        );
-    })();
-
-    //Activate All button
-    var timelineChecked = $("input[type='radio'][name='timeline']:checked");
-    var timelineTimeline = $(timelineChecked).data('value');
-    var timelineLabels = $(timelineChecked).parents('.btn-group').children('label');
-    $(timelineLabels).each(function(index, timelineLabel) {
-        $(timelineLabel).removeClass('focus active disabled');
-        $(timelineLabel).css('cursor', 'pointer');
-
-        if ($(timelineLabel).children('input')[0].id === timelineTimeline) {
-            $(timelineLabel).addClass('focus active disabled');
-            $(timelineLabel).css('cursor', 'default');
-        }
-    });
-
-    $("input[type='radio'][name='timeline']:checked").parents('.btn-group').children('label').children('input').off();
-    $("input[type='radio'][name='timeline']:checked").parents('.btn-group').children('label').children('input').click(function() {
-        timelineChecked = $("input[type='radio'][name='timeline']:checked");
-        timelineTimeline = $(timelineChecked).data('value');
-        timelineLabels = $(timelineChecked).parents('.btn-group').children('label');
-
-        $(timelineLabels).each(function(index, timelineLabel) {
-            $(timelineLabel).removeClass('focus active disabled');
-            $(timelineLabel).css('cursor', 'pointer');
-
-            if ($(timelineLabel).children('input')[0].id === timelineTimeline) {
-                $(timelineLabel).addClass('focus active disabled');
-                $(timelineLabel).css('cursor', 'default');
-            }
-        });
-
-        if (timelineTimeline === 'one-week') {
-            dataCollectionSectionForm['vars']['weekData'] = [];
-            dataCollectionSectionForm['vars']['weekPerformanceData'] = { };
-        } else if (timelineTimeline === 'one-month') {
-            dataCollectionSectionForm['vars']['monthData'] = [];
-            dataCollectionSectionForm['vars']['monthPerformanceData'] = { };
-        } else if (timelineTimeline === 'one-year') {
-            dataCollectionSectionForm['vars']['yearData'] = [];
-            dataCollectionSectionForm['vars']['yearPerformanceData'] = { };
-        } else if (timelineTimeline === 'three-year') {
-            dataCollectionSectionForm['vars']['threeYearData'] = [];
-            dataCollectionSectionForm['vars']['threeYearPerformanceData'] = { };
-        } else if (timelineTimeline === 'five-year') {
-            dataCollectionSectionForm['vars']['fiveYearData'] = [];
-            dataCollectionSectionForm['vars']['fiveYearPerformanceData'] = { };
-        } else if (timelineTimeline === 'ten-year') {
-            dataCollectionSectionForm['vars']['tenYearData'] = [];
-            dataCollectionSectionForm['vars']['tenYearPerformanceData'] = { };
-        } else if (timelineTimeline === 'all') {
-            dataCollectionSectionForm['vars']['allData'] = [];
-            dataCollectionSectionForm['vars']['allPerformanceData'] = { };
-        }
-
-        dataCollectionSectionForm['vars']['actions'][timelineTimeline].handler(dataCollectionSectionForm['vars']['timelineChart']);
-    });
-
-    //Activate Return Amount button
-    var datatypeChecked = $("input[type='radio'][name='datatype']:checked");
-    var datatypeDatatype = $(datatypeChecked).data('value');
-    var datatypeLabels = $(datatypeChecked).parents('.btn-group').children('label');
-    $(datatypeLabels).each(function(index, datatypeLabel) {
-        $(datatypeLabel).removeClass('focus active disabled');
-        $(datatypeLabel).css('cursor', 'pointer');
-
-        if ($(datatypeLabel).children('input')[0].id === datatypeDatatype) {
-            $(datatypeLabel).addClass('focus active disabled');
-            $(datatypeLabel).css('cursor', 'default');
-        }
-    });
-
-    $("input[type='radio'][name='datatype']:checked").parents('.btn-group').children('label').children('input').off();
-    $("input[type='radio'][name='datatype']:checked").parents('.btn-group').children('label').children('input').click(function() {
-        datatypeChecked = $("input[type='radio'][name='datatype']:checked");
-        datatypeDatatype = $(datatypeChecked).data('value');
-        datatypeLabels = $(datatypeChecked).parents('.btn-group').children('label');
-
-        $(datatypeLabels).each(function(index, datatypeLabel) {
-            $(datatypeLabel).removeClass('focus active disabled');
-            $(datatypeLabel).css('cursor', 'pointer');
-
-            if ($(datatypeLabel).children('input')[0].id === datatypeDatatype) {
-                $(datatypeLabel).addClass('focus active disabled');
-                $(datatypeLabel).css('cursor', 'default');
-            }
-        });
-
-        dataCollectionSectionForm['vars']['dataType'] = datatypeDatatype;
-
-        $($("input[type='radio'][name='timeline']:checked").parents('.btn-group').children('label')).each(function(index, label) {
-            if ($(label).hasClass('active')) {
-                timelineTimeline = $(label).children('input').data('value');
-            }
-        });
-
-        if (timelineTimeline === 'one-week') {
-            dataCollectionSectionForm['vars']['weekData'] = [];
-            dataCollectionSectionForm['vars']['weekPerformanceData'] = { };
-        } else if (timelineTimeline === 'one-month') {
-            dataCollectionSectionForm['vars']['monthData'] = [];
-            dataCollectionSectionForm['vars']['monthPerformanceData'] = { };
-        } else if (timelineTimeline === 'one-year') {
-            dataCollectionSectionForm['vars']['yearData'] = [];
-            dataCollectionSectionForm['vars']['yearPerformanceData'] = { };
-        } else if (timelineTimeline === 'three-year') {
-            dataCollectionSectionForm['vars']['threeYearData'] = [];
-            dataCollectionSectionForm['vars']['threeYearPerformanceData'] = { };
-        } else if (timelineTimeline === 'five-year') {
-            dataCollectionSectionForm['vars']['fiveYearData'] = [];
-            dataCollectionSectionForm['vars']['fiveYearPerformanceData'] = { };
-        } else if (timelineTimeline === 'ten-year') {
-            dataCollectionSectionForm['vars']['tenYearData'] = [];
-            dataCollectionSectionForm['vars']['tenYearPerformanceData'] = { };
-        } else if (timelineTimeline === 'all') {
-            dataCollectionSectionForm['vars']['allData'] = [];
-            dataCollectionSectionForm['vars']['allPerformanceData'] = { };
-        }
-
-        dataCollectionSectionForm['vars']['actions'][timelineTimeline].handler(dataCollectionSectionForm['vars']['timelineChart']);
-    });
-}
-
 $(document).ready(function() {
     dataCollectionSectionForm['funcs']['init']();
-    if (dataCollectionSectionForm['vars']['mode'] === 'timeline' ) {
-        dataCollectionSectionForm['funcs']['initChart']();
-    }
 });
 </script>
     {% endif %}

@@ -38,6 +38,14 @@
                     ]
                 %}
             {% endif %}
+            {% set investmentButtons['scheme-' ~ schemeId] = [
+                    'title'                   : false,
+                    'size'                    : 'xs',
+                    'icon'                    : 'up-right-from-square',
+                    'buttonAdditionalClass'   : 'schemeInvestment contentAjaxLink',
+                    'type'                    : 'primary'
+                ]
+            %}
         {% endif %}
         {% set investmentsHtml = investmentsHtml ~ '<tr>' ~
         '           <td>' ~ strtoupper(investment['status']) ~ '</td>' ~

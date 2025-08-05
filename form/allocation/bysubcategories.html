@@ -1,25 +1,6 @@
 
 {% set subcategoriesHtml = '' %}
 {% if portfolio['allocation']['by_subcategories'] is defined and portfolio['allocation']['by_subcategories']|length > 0 %}
-    <div class="row">
-        <div class="col">
-            {{adminltetags.useTag('buttons',
-                [
-                    'componentId'           : componentId,
-                    'sectionId'             : sectionId,
-                    'buttonType'            : 'button',
-                    'buttons'               :
-                        [
-                            'switch-subcategories-chart' : [
-                                'title'                   : false,
-                                'size'                    : 'sm',
-                                'icon'                    : 'chart-pie'
-                            ]
-                        ]
-                ]
-            )}}
-        </div>
-    </div>
     {% for subcategories in portfolio['allocation']['by_subcategories'] %}
         {% set returnColor = 'success' %}
         {% if subcategories['return_percent'] < subcategories['invested_percent'] %}
@@ -27,7 +8,7 @@
         {% endif %}
         {% set subcategoriesHtml = subcategoriesHtml ~ '<tr>' ~
         '           <td>' ~ subcategories['category']['id'] ~ '</td>' ~
-        '           <td>' ~ subcategories['category']['name'] ~ '</td>' ~
+        '           <td>' ~ subcategories['category']['name'] ~ ' (' ~ subcategories['category']['parent_id']['name'] ~ ')</td>' ~
         '           <td>' ~ subcategories['invested_amount'] ~ '</td>' ~
         '           <td>' ~ subcategories['invested_percent'] ~ '</td>' ~
         '           <td>' ~ subcategories['return_amount'] ~ '</td>' ~
@@ -36,12 +17,12 @@
         '   </tr>'
         %}
     {% endfor %}
-    <div class="row">
+    <div class="row" id="allocation-subcategories">
         <div class="col">
-            <canvas class="text-center" id="allocation-subcategories-amount" style="max-height:400px;"></canvas>
+            <div class="text-center" id="allocation-subcategories-amount"></div>
         </div>
         <div class="col">
-            <canvas class="text-center" id="allocation-subcategories-percent" style="max-height:400px;"></canvas>
+            <div class="text-center" id="allocation-subcategories-percent"></div>
         </div>
     </div>
     <hr>
@@ -52,7 +33,7 @@
             <thead>
                 <tr>
                     <th class="text-uppercase">Category ID</th>
-                    <th class="text-uppercase">Category</th>
+                    <th class="text-uppercase">Sub Category</th>
                     <th class="text-uppercase">Invested Amount</th>
                     <th class="text-uppercase">Invested %</th>
                     <th class="text-uppercase">Return Amount</th>

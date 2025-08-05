@@ -1,25 +1,6 @@
 
 {% set categoriesHtml = '' %}
 {% if portfolio['allocation']['by_categories'] is defined and portfolio['allocation']['by_categories']|length > 0 %}
-    <div class="row">
-        <div class="col">
-            {{adminltetags.useTag('buttons',
-                [
-                    'componentId'           : componentId,
-                    'sectionId'             : sectionId,
-                    'buttonType'            : 'button',
-                    'buttons'               :
-                        [
-                            'switch-categories-chart' : [
-                                'title'                   : false,
-                                'size'                    : 'sm',
-                                'icon'                    : 'chart-pie'
-                            ]
-                        ]
-                ]
-            )}}
-        </div>
-    </div>
     {% for categories in portfolio['allocation']['by_categories'] %}
         {% set returnColor = 'success' %}
         {% if categories['return_percent'] < categories['invested_percent'] %}
@@ -36,12 +17,12 @@
         '   </tr>'
         %}
     {% endfor %}
-    <div class="row">
+    <div class="row" id="allocation-categories">
         <div class="col">
-            <canvas class="text-center" id="allocation-categories-amount" style="max-height:400px;"></canvas>
+            <div class="text-center" id="allocation-categories-amount"></div>
         </div>
         <div class="col">
-            <canvas class="text-center" id="allocation-categories-percent" style="max-height:400px;"></canvas>
+            <div class="text-center" id="allocation-categories-percent"></div>
         </div>
     </div>
     <hr>

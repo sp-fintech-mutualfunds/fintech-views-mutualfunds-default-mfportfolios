@@ -449,21 +449,11 @@ dataCollectionSection =
 
                                     for (var transaction in response.responseData.transactions) {
                                         var newTransaction = [];
-                                        if (response.responseData.transactions[transaction]['sip'] == true) {
-                                            newTransaction.push(response.responseData.transactions[transaction]['type'].toUpperCase());
-                                            newTransaction.push(response.responseData.transactions[transaction]['date']);
-                                            newTransaction.push(response.responseData.transactions[transaction]['scheme']);
-                                            newTransaction.push(response.responseData.transactions[transaction]['amount']);
-                                        } else {
-                                            if (dataCollectionSectionForm['vars']['trajectory'] &&
-                                                dataCollectionSectionForm['vars']['trajectory'] !== 'no'
-                                            ) {
-                                                newTransaction.push('CHECK VIA TRAJECTORY');
-                                                newTransaction.push(response.responseData.transactions[transaction]['date']);
-                                                newTransaction.push(response.responseData.transactions[transaction]['scheme']);
-                                                newTransaction.push('-');
-                                            }
-                                        }
+
+                                        newTransaction.push(response.responseData.transactions[transaction]['type'].toUpperCase());
+                                        newTransaction.push(response.responseData.transactions[transaction]['date']);
+                                        newTransaction.push(response.responseData.transactions[transaction]['scheme']);
+                                        newTransaction.push(response.responseData.transactions[transaction]['amount']);
 
                                         transactions.push(newTransaction);
                                     }
