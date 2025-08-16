@@ -1,6 +1,6 @@
-<!-- htmlhint tag-pair:false -->
+<!-- htmlhint tag-pair:false --><!-- htmlmin:ignore -->
 {% set timelineButtons = [] %}
-{% if portfolioPerformancesChunks is defined %}
+{% if portfolioPerformancesChunks is defined and portfolioPerformancesChunks != false %}
     {% if portfolioPerformancesChunks['week'] is defined and portfolioPerformancesChunks['week']|length > 0 %}
         {% set timelineButtons = array_merge(timelineButtons,
             [
@@ -104,74 +104,120 @@
             ]
         ]
     ) %}
-{% endif %}
-<div class="row">
-    <div id="timeline-buttons" class="col" hidden>
-        {{adminltetags.useTag('buttons',
-            [
-                'component'                         : component,
-                'componentName'                     : componentName,
-                'componentId'                       : componentId,
-                'sectionId'                         : sectionId,
-                'buttonType'                        : 'ButtonGroup',
-                'buttonId'                          : 'timeline',
-                'groupButtonType'                   : 'radio',
-                'groupRadioButtonChecked'           : 'week',
-                'buttons'                           : timelineButtons
-            ]
-        )}}
-    </div>
-    <div class="col">
-        {{adminltetags.useTag('fields',
-            [
-                'component'                      : component,
-                'componentName'                  : componentName,
-                'componentId'                    : componentId,
-                'sectionId'                      : sectionId,
-                'fieldId'                        : 'date_range',
-                'fieldLabel'                     : false,
-                'fieldPlaceholder'               : 'Date Range',
-                'fieldType'                      : 'flatpickr',
-                'fieldFlatpickrClearButton'      : true,
-                'fieldHelp'                      : true,
-                'fieldHelpTooltipContent'        : 'Date Range',
-                'fieldRequired'                  : true,
-                'fieldHidden'                    : true,
-                'fieldBazScan'                   : true,
-                'fieldBazPostOnCreate'           : false,
-                'fieldBazPostOnUpdate'           : true,
-                'fieldValue'                     : ''
-            ]
-        )}}
-    </div>
-    <div id="datatype-buttons" class="col text-center" hidden>
-        {{adminltetags.useTag('buttons',
-            [
-                'component'                         : component,
-                'componentName'                     : componentName,
-                'componentId'                       : componentId,
-                'sectionId'                         : sectionId,
-                'buttonType'                        : 'ButtonGroup',
-                'buttonId'                          : 'datatype',
-                'groupButtonType'                   : 'radio',
-                'groupRadioButtonChecked'           : 'nav',
-                'buttons'                           :
+    <div class="row">
+        <div id="timeline-buttons" class="col text-center" hidden>
+            {{adminltetags.useTag('buttons',
                 [
-                    'amount' : [
-                        'title'                   : 'AMOUNT',
-                        'type'                    : 'primary',
-                        'value'                   : 'amount'
-                    ],
-                    'diff_percent' : [
-                        'title'                   : 'PERCENT',
-                        'type'                    : 'primary',
-                        'value'                   : 'diff_percent'
-                    ]
+                    'component'                         : component,
+                    'componentName'                     : componentName,
+                    'componentId'                       : componentId,
+                    'sectionId'                         : sectionId,
+                    'buttonType'                        : 'ButtonGroup',
+                    'buttonId'                          : 'timeline',
+                    'groupButtonType'                   : 'radio',
+                    'groupRadioButtonChecked'           : 'week',
+                    'buttons'                           : timelineButtons
                 ]
-            ]
-        )}}
+            )}}
+        </div>
+        <div class="col">
+            {{adminltetags.useTag('fields',
+                [
+                    'component'                      : component,
+                    'componentName'                  : componentName,
+                    'componentId'                    : componentId,
+                    'sectionId'                      : sectionId,
+                    'fieldId'                        : 'date_range',
+                    'fieldLabel'                     : false,
+                    'fieldPlaceholder'               : 'Date Range',
+                    'fieldType'                      : 'flatpickr',
+                    'fieldFlatpickrClearButton'      : true,
+                    'fieldHelp'                      : true,
+                    'fieldHelpTooltipContent'        : 'Date Range',
+                    'fieldRequired'                  : true,
+                    'fieldHidden'                    : true,
+                    'fieldBazScan'                   : true,
+                    'fieldBazPostOnCreate'           : false,
+                    'fieldBazPostOnUpdate'           : true,
+                    'fieldValue'                     : ''
+                ]
+            )}}
+        </div>
+        <div id="charttype-select" class="col" hidden>
+            {{adminltetags.useTag('fields',
+                [
+                    'component'                      : component,
+                    'componentName'                  : componentName,
+                    'componentId'                    : componentId,
+                    'sectionId'                      : sectionId,
+                    'fieldId'                        : 'charttype_select',
+                    'fieldLabel'                     : false,
+                    'fieldType'                      : 'select2',
+                    'fieldHelp'                      : false,
+                    'fieldHelpTooltipContent'        : 'Select chart type',
+                    'fieldRequired'                  : true,
+                    'fieldBazScan'                   : true,
+                    'fieldBazPostOnCreate'           : false,
+                    'fieldBazPostOnUpdate'           : false,
+                    'fieldDataSelect2Options'        :
+                        [
+                            'invested_return'                   : [
+                                'id'                            : 'invested_return',
+                                'name'                          : 'PORTFOLIO INVESTED vs RETURN (' ~ currencySymbol ~ ')'
+                            ],
+                            'profit_loss'                       : [
+                                'id'                            : 'profit_loss',
+                                'name'                          : 'PORTFOLIO PROFIT LOSS (' ~ currencySymbol ~ ')'
+                            ],
+                            'return_percent'                    : [
+                                'id'                            : 'return_percent',
+                                'name'                          : 'PORTFOLIO RETURN (%)'
+                            ],
+                            'xirr'                              : [
+                                'id'                            : 'xirr',
+                                'name'                          : 'PORTFOLIO XIRR (%)'
+                            ],
+                            'investments_return_amount'         : [
+                                'id'                            : 'investments_return_amount',
+                                'name'                          : 'INVESTMENTS RETURN (' ~ currencySymbol ~ ')'
+                            ],
+                            'investments_diff'                  : [
+                                'id'                            : 'investments_diff',
+                                'name'                          : 'INVESTMENTS PROFIT LOSS (' ~ currencySymbol ~ ')'
+                            ],
+                            'investments_xirr'                  : [
+                                'id'                            : 'investments_xirr',
+                                'name'                          : 'INVESTMENTS XIRR (%)'
+                            ]
+                        ],
+                    'fieldDataSelect2OptionsKey'     : 'id',
+                    'fieldDataSelect2OptionsValue'   : 'name',
+                    'fieldDataSelect2OptionsArray'   : true,
+                    'fieldDataSelect2OptionsSelected': 'invested_return'
+                ]
+            )}}
+        </div>
+    </div>
+    <div class="row" id="timeline-chart" hidden>
+        <div class="col">
+            <div id="performancesChart"></div>
+        </div>
+    </div>
+    <div class="row text-center" id="timeline-loader">
+        <div class="col">
+            <i class="fa fa-cog fa-spin"></i> Loading chart...
+        </div>
+    </div>
+{% else %}
+<div class="row text-center m-2" id="{{componentId}}-{{sectionId}}-notimeline">
+    <div class="col">
+        <h6><i class="fa fa-fw fa-info-circle text-info"></i> Charts are only available after timeline is generated.</h6>
     </div>
 </div>
+{% endif %}
+<hr>
+{% set portfolioPerformancesChunks = escaper.js(json_encode(portfolioPerformancesChunks, 16)) %}
+{% set portfolioInvestments = escaper.js(json_encode(portfolioInvestments, 16)) %}
 <script>
 /*global paginatedPNotify BazProgress BazContentFields BazHelpers BazContentLoader Pace BazCore dataCollection echarts dayjs_plugin_minMax dayjs */
 var dataCollectionComponent, dataCollectionSection, dataCollectionSectionForm;
@@ -207,142 +253,80 @@ if (!dataCollectionSectionForm['funcs']) {
     dataCollectionSectionForm['funcs'] = { };
 }
 
-dataCollectionSectionForm['vars']['scheme'] = { };
-dataCollectionSectionForm['vars']['navs_chunks'] = { };
-dataCollectionSectionForm['vars']['trend'] = { };
-dataCollectionSectionForm['vars']['compare'] = '{{compare}}';
-
-if (dataCollectionSectionForm['vars']['compare'] == true) {
-    dataCollectionSectionForm['vars']['dataType'] = 'diff_percent';
-    dataCollectionSectionForm['vars']['dataTypeName'] = 'PERCENT';
-} else {
-    dataCollectionSectionForm['vars']['dataType'] = 'nav';
-    dataCollectionSectionForm['vars']['dataTypeName'] = 'NAV';
-    dataCollectionSectionForm['vars']['scheme'] = JSON.parse('{{scheme}}');
-    dataCollectionSectionForm['vars']['navs_chunks'][dataCollectionSectionForm['vars']['scheme']['id']] = JSON.parse('{{navsChunks}}');
-    dataCollectionSectionForm['vars']['trend'][dataCollectionSectionForm['vars']['scheme']['id']] = dataCollectionSectionForm['vars']['scheme']['trend'];
-}
+dataCollectionSectionForm['vars']['chartType'] = 'invested_return';
+dataCollectionSectionForm['vars']['chartTypeName'] = 'INVESTED vs RETURN';
+dataCollectionSectionForm['vars']['portfolioPerformancesChunks'] = JSON.parse('{{portfolioPerformancesChunks}}');
+dataCollectionSectionForm['vars']['portfolioInvestments'] = JSON.parse('{{portfolioInvestments}}');
 
 dataCollectionSectionForm['vars']['actions'] = { };
-dataCollectionSectionForm['vars']['navsChart'] = { };
-
-// dataCollectionSectionForm['vars']['initData'] = [];
-// dataCollectionSectionForm['vars']['initNavData'] = { };
-// dataCollectionSectionForm['vars']['weekData'] = [];
-// dataCollectionSectionForm['vars']['weekNavData'] = { };
-// dataCollectionSectionForm['vars']['monthData'] = [];
-// dataCollectionSectionForm['vars']['monthNavData'] = { };
-// dataCollectionSectionForm['vars']['threeMonthData'] = [];
-// dataCollectionSectionForm['vars']['threeMonthNavData'] = { };
-// dataCollectionSectionForm['vars']['sixMonthData'] = [];
-// dataCollectionSectionForm['vars']['sixMonthNavData'] = { };
-// dataCollectionSectionForm['vars']['yearData'] = [];
-// dataCollectionSectionForm['vars']['yearNavData'] = { };
-// dataCollectionSectionForm['vars']['threeYearData'] = [];
-// dataCollectionSectionForm['vars']['threeYearNavData'] = { };
-// dataCollectionSectionForm['vars']['fiveYearData'] = [];
-// dataCollectionSectionForm['vars']['fiveYearNavData'] = { };
-// dataCollectionSectionForm['vars']['tenYearData'] = [];
-// dataCollectionSectionForm['vars']['tenYearNavData'] = { };
-// dataCollectionSectionForm['vars']['allData'] = [];
-// dataCollectionSectionForm['vars']['allNavData'] = { };
-// dataCollectionSectionForm['vars']['rangeActive'] = false;
-// dataCollectionSectionForm['vars']['range'] = null;
-// dataCollectionSectionForm['vars']['rangeData'] = [];
-// dataCollectionSectionForm['vars']['rangeNavData'] = { };
+dataCollectionSectionForm['vars']['performancesChart'] = { };
 
 dataCollectionSectionForm['vars']['timeline'] = 'week';
 
-dataCollectionSectionForm['funcs']['initNavChart'] = function(compare = false) {
-    if (Object.keys(dataCollectionSectionForm['vars']['navsChart']).length === 0) {
-        dataCollectionSectionForm['vars']['navsChart'] = echarts.init(document.getElementById('navsChart'), 'macarons');
+dataCollectionSectionForm['funcs']['initPerformancesChart'] = function() {
+    if (!dataCollectionSectionForm['vars']['portfolioPerformancesChunks']) {
+        return false;
     }
 
-    if (compare === true) {
-        dataCollectionSectionForm['vars']['navsChartOptions'] = {
-            title: {
-                text: 'Growth comparison (%)'
-            },
-            tooltip: {
-                trigger: 'axis',
-                axisPointer: {
-                  type: 'cross'
-                }
-            },
-            legend: {},
-            xAxis: {
-                name: 'PERIOD (WEEK)',
-                nameLocation: 'middle',
-                nameTextStyle: {
-                    lineHeight: 50
-                },
-                data: []
-            },
-            yAxis: {
-                name: 'PERCENT',
-                nameRotate: 90,
-                nameLocation: "middle",
-                nameTextStyle: {
-                    lineHeight: 60,
-                }
-            },
-            dataZoom: [
-                {
-                    type: 'inside'
-                }
-            ],
-            series: []
-        }
-    } else {
-        dataCollectionSectionForm['vars']['navsChartOptions'] = {
-            title: {
-                text: 'NAVs for ' + dataCollectionSectionForm['vars']['scheme']['name']
-            },
-            tooltip: {
-                trigger: 'axis',
-                axisPointer: {
-                  type: 'cross'
-                }
-            },
-            legend: {},
-            xAxis: {
-                name: 'PERIOD (WEEK)',
-                nameLocation: 'middle',
-                nameTextStyle: {
-                    lineHeight: 50
-                },
-                data: []
-            },
-            yAxis: {
-                name: 'NAVS',
-                nameRotate: 90,
-                nameLocation: "middle",
-                nameTextStyle: {
-                    lineHeight: 60,
-                }
-            },
-            dataZoom: [
-                {
-                    type: 'inside'
-                }
-            ],
-            series: [
-                {
-                    name: 'NAV',
-                    type: 'line',
-                    data: [],
-                }
-            ]
-        }
+    if (Object.keys(dataCollectionSectionForm['vars']['performancesChart']).length === 0) {
+        dataCollectionSectionForm['vars']['performancesChart'] = echarts.init(document.getElementById('performancesChart'), 'macarons');
     }
 
-    dataCollectionSectionForm['vars']['navsChart'].off('rendered');
-    dataCollectionSectionForm['vars']['navsChart'].on('rendered', function() {
+    dataCollectionSectionForm['vars']['performancesChartOptions'] = {
+        title: {
+            text: 'Performance for ' + dataCollectionSectionForm['vars']['portfolio']['name'],
+            left: 'left'
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross'
+            }
+        },
+        legend: {
+            top: 50,
+            center: 'center'
+        },
+        grid: {
+            top: 80,
+        },
+        xAxis: {
+            name: 'PERIOD (WEEK)',
+            nameLocation: 'middle',
+            nameTextStyle: {
+                lineHeight: 50
+            },
+            data: []
+        },
+        yAxis: {
+            name: 'INVESTED vs RETURN',
+            nameRotate: 90,
+            nameLocation: "middle",
+            nameTextStyle: {
+                lineHeight: 150,
+            }
+        },
+        dataZoom: [
+            {
+                type: 'inside'
+            }
+        ],
+        series: [
+            {
+                name: 'INVESTED vs RETURN',
+                type: 'line',
+                data: [],
+            }
+        ]
+    }
+
+    dataCollectionSectionForm['vars']['performancesChart'].off('rendered');
+    dataCollectionSectionForm['vars']['performancesChart'].on('rendered', function() {
         if (dataCollectionSectionForm['vars'] &&
-            dataCollectionSectionForm['vars']['navsChart']
+            dataCollectionSectionForm['vars']['performancesChart']
         ) {
             if ($('#timeline-chart').width() > 0) {
-                dataCollectionSectionForm['vars']['navsChart'].resize({
+                dataCollectionSectionForm['vars']['performancesChart'].resize({
                     width : $('#timeline-chart').width(),
                     height: 400
                 });
@@ -350,103 +334,167 @@ dataCollectionSectionForm['funcs']['initNavChart'] = function(compare = false) {
         }
 
         $('#timeline-buttons').attr('hidden', false);
-        $('#datatype-buttons').attr('hidden', false);
+        $('#charttype-select').attr('hidden', false);
         $('#timeline-loader').attr('hidden', true);
-        $('#import-loader').attr('hidden', true);
         $('#timeline-chart').attr('hidden', false);
-        $('#navs-table').attr('hidden', false);
     });
 
-    if (Object.keys(dataCollectionSectionForm['vars']['navs_chunks']).length > 0) {
-        dataCollectionSectionForm['vars']['navsChartOptions']['series'] = [];
-        dataCollectionSectionForm['vars']['navsChart'].setOption({series: []}, {replaceMerge: ['series']})
-
+    if (Object.keys(dataCollectionSectionForm['vars']['portfolioPerformancesChunks']).length > 0) {
+        dataCollectionSectionForm['vars']['performancesChartOptions']['series'] = [];
         dataCollectionSectionForm['vars']['timeline'] = 'week';
 
         $.each(['week', 'month', 'threeMonth', 'sixMonth', 'year', 'threeYear', 'fiveYear', 'tenYear', 'all', 'range'], function(index, time) {
             if (!dataCollectionSectionForm['vars']['actions'][time]) {
                 dataCollectionSectionForm['vars']['actions'][time] = function() {
+                    dataCollectionSectionForm['vars']['performancesChart'].setOption({series: []}, {replaceMerge: ['series']});
+
+                    var orders = [];
+
                     if (time === 'range') {
-                        dataCollectionSectionForm['vars']['navsChartOptions']['xAxis']['name'] = 'PERIOD RANGE (' + dataCollectionSectionForm['vars']['range'] + ')';
+                        dataCollectionSectionForm['vars']['performancesChartOptions']['xAxis']['name'] = 'PERIOD RANGE (' + dataCollectionSectionForm['vars']['range'] + ')';
                     } else {
-                        dataCollectionSectionForm['vars']['navsChartOptions']['xAxis']['name'] = 'PERIOD (' + time.toUpperCase() + ')';
+                        dataCollectionSectionForm['vars']['performancesChartOptions']['xAxis']['name'] = 'PERIOD (' + time.toUpperCase() + ')';
                     }
-                    dataCollectionSectionForm['vars']['navsChartOptions']['yAxis']['name'] = dataCollectionSectionForm['vars']['dataTypeName'];
-                    dataCollectionSectionForm['vars']['navsChartOptions']['xAxis']['data'] = [];
 
-                    $.each(dataCollectionSectionForm['vars']['navs_chunks'], function(schemeId, chunks) {
-                        dataCollectionSectionForm['vars'][time + 'Data'] = [];
-                        dataCollectionSectionForm['vars']['navsChartOptions']['series'][schemeId] = { };
-                        dataCollectionSectionForm['vars']['navsChartOptions']['series'][schemeId]['type'] = 'line';
+                    dataCollectionSectionForm['vars']['performancesChartOptions']['yAxis']['name'] = dataCollectionSectionForm['vars']['chartTypeName'];
+                    dataCollectionSectionForm['vars']['performancesChartOptions']['xAxis']['data'] = [];
 
-                        for (var date in chunks[time]) {
-                            dataCollectionSectionForm['vars'][time + 'NavData'] = { };
-                            dataCollectionSectionForm['vars'][time + 'NavData']['date'] = date;
+                    dataCollectionSectionForm['vars'][time + 'Data'] = [];
 
-                            if (time === 'all') {
-                                if (dataCollectionSectionForm['vars']['dataType'] === 'diff') {
-                                    dataCollectionSectionForm['vars'][time + 'NavData'][dataCollectionSectionForm['vars']['dataType']] =
-                                        chunks[time][date]['diff_since_inception'];
-                                } else if (dataCollectionSectionForm['vars']['dataType'] === 'diff_percent') {
-                                    dataCollectionSectionForm['vars'][time + 'NavData'][dataCollectionSectionForm['vars']['dataType']] =
-                                        chunks[time][date]['diff_percent_since_inception'];
-                                } else {
-                                    dataCollectionSectionForm['vars'][time + 'NavData'][dataCollectionSectionForm['vars']['dataType']] =
-                                        chunks[time][date][dataCollectionSectionForm['vars']['dataType']];
-                                }
-                            } else {
-                                dataCollectionSectionForm['vars'][time + 'NavData'][dataCollectionSectionForm['vars']['dataType']] =
-                                    chunks[time][date][dataCollectionSectionForm['vars']['dataType']];
-                            }
+                    for (var date in dataCollectionSectionForm['vars']['portfolioPerformancesChunks'][time]) {
+                        dataCollectionSectionForm['vars'][time + 'ChunkData'] = { };
+                        dataCollectionSectionForm['vars'][time + 'ChunkData']['date'] = date;
 
-                            dataCollectionSectionForm['vars'][time + 'Data'].push(dataCollectionSectionForm['vars'][time + 'NavData']);
-                        }
+                        dataCollectionSectionForm['vars'][time + 'ChunkData'] =
+                            dataCollectionSectionForm['vars']['portfolioPerformancesChunks'][time][date];
 
-                        if (compare) {
-                            dataCollectionSectionForm['vars']['navsChartOptions']['series'][schemeId]['name'] = dataCollectionSectionForm['vars']['compareSchemes'][schemeId]['name'];
+                        dataCollectionSectionForm['vars'][time + 'Data'].push(dataCollectionSectionForm['vars'][time + 'ChunkData']);
+
+                        if (dataCollectionSectionForm['vars']['portfolioPerformancesChunks'][time][date]['orders']) {
+                            orders.push({'orders': dataCollectionSectionForm['vars']['portfolioPerformancesChunks'][time][date]['orders']});
                         } else {
-                            dataCollectionSectionForm['vars']['navsChartOptions']['series'][schemeId]['name'] = dataCollectionSectionForm['vars']['dataTypeName'];
+                            orders.push({});
+                        }
+                    }
+
+                    delete(dataCollectionSectionForm['vars']['performancesChartOptions']['series']);
+
+                    dataCollectionSectionForm['vars']['performancesChartOptions']['series'] = [];
+
+                    if (dataCollectionSectionForm['vars']['chartType'] === 'invested_return') {
+                        $.each([{'name':'INVESTED','data':'invested_amount'},{'name':'RETURN','data':'return_amount'}], function(index, chartLine) {
+                            dataCollectionSectionForm['vars']['performancesChartOptions']['series'][index] = { };
+                            dataCollectionSectionForm['vars']['performancesChartOptions']['series'][index]['type'] = 'line';
+                            dataCollectionSectionForm['vars']['performancesChartOptions']['series'][index]['name'] = chartLine.name;
+
+                            dataCollectionSectionForm['vars']['performancesChartOptions']['series'][index]['data'] =
+                                dataCollectionSectionForm['vars'][time + 'Data'].map(row => row[chartLine.data]);
+
+                            dataCollectionSectionForm['vars']['performancesChartOptions']['series'][index]['symbol'] =
+                                function (data, params) {
+                                    if (orders[params.dataIndex]['orders']) {
+                                        for (var order in orders[params.dataIndex]['orders']) {
+                                            if (orders[params.dataIndex]['orders'][order]['type'] === 'buy') {
+                                                return 'triangle';
+                                            }
+                                        }
+                                    }
+
+                                    return 'emptyCircle';
+                                };
+                            dataCollectionSectionForm['vars']['performancesChartOptions']['series'][index]['symbolSize'] =
+                                function (data, params) {
+                                    if (orders[params.dataIndex]['orders']) {
+                                        for (var order in orders[params.dataIndex]['orders']) {
+                                            if (orders[params.dataIndex]['orders'][order]['type'] === 'buy') {
+                                                return 10;
+                                            }
+                                        }
+                                    }
+
+                                    return 4;
+                                };
+                        });
+                    } else if (dataCollectionSectionForm['vars']['chartType'] === 'investments_return_amount' ||
+                               dataCollectionSectionForm['vars']['chartType'] === 'investments_diff' ||
+                               dataCollectionSectionForm['vars']['chartType'] === 'investments_xirr'
+                    ) {
+                        var dataType;
+
+                        if (dataCollectionSectionForm['vars']['chartType'] === 'investments_return_amount') {
+                            dataType = 'return_amount';
+                        } else if (dataCollectionSectionForm['vars']['chartType'] === 'investments_diff') {
+                            dataType = 'diff';
+                        } else if (dataCollectionSectionForm['vars']['chartType'] === 'investments_xirr') {
+                            dataType = 'xirr';
                         }
 
-                        dataCollectionSectionForm['vars']['navsChartOptions']['series'][schemeId]['data'] = dataCollectionSectionForm['vars'][time + 'Data'].map(row => row[dataCollectionSectionForm['vars']['dataType']]);
-                        if (dataCollectionSectionForm['vars']['navsChartOptions']['xAxis']['data'].length === 0) {
-                            dataCollectionSectionForm['vars']['navsChartOptions']['xAxis']['data'] = dataCollectionSectionForm['vars'][time + 'Data'].map(row => row.date);
-                        }
+                        $.each(dataCollectionSectionForm['vars']['portfolioInvestments'], function(index, schemeName) {
+                            dataCollectionSectionForm['vars']['performancesChartOptions']['series'][index] = { };
+                            dataCollectionSectionForm['vars']['performancesChartOptions']['series'][index]['type'] = 'line';
+                            dataCollectionSectionForm['vars']['performancesChartOptions']['series'][index]['name'] = schemeName;
 
-                        if (compare === true) {
-                            dataCollectionSectionForm['vars']['scheme'] = dataCollectionSectionForm['vars']['compareSchemes'][schemeId];
-                        }
-                    });
+                            dataCollectionSectionForm['vars']['performancesChartOptions']['series'][index]['data'] =
+                                dataCollectionSectionForm['vars'][time + 'Data'].map(row => row['investments'][index][dataType]);
 
-                    dataCollectionSectionForm['vars']['navsChart'].setOption(dataCollectionSectionForm['vars']['navsChartOptions']);
+                            dataCollectionSectionForm['vars']['performancesChartOptions']['series'][index]['symbol'] =
+                                function (data, params) {
+                                    if (orders[params.dataIndex]['orders']) {
+                                        for (var order in orders[params.dataIndex]['orders']) {
+                                            if (orders[params.dataIndex]['orders'][order]['scheme_id'] == index) {
+                                                return 'triangle';
+                                            }
+                                        }
+                                    }
 
-                    dataCollectionSectionForm['funcs']['popluateTrendTable'](time);
+                                    return 'emptyCircle';
+                                };
+                            dataCollectionSectionForm['vars']['performancesChartOptions']['series'][index]['symbolSize'] =
+                                function (data, params) {
+                                    if (orders[params.dataIndex]['orders']) {
+                                        for (var order in orders[params.dataIndex]['orders']) {
+                                            if (orders[params.dataIndex]['orders'][order]['scheme_id'] == index) {
+                                                return 10;
+                                            }
+                                        }
+                                    }
+
+                                    return 4;
+                                };
+                            dataCollectionSectionForm['vars']['performancesChartOptions']['series'][index]['symbolRotate'] =
+                                function (data, params) {
+                                    if (orders[params.dataIndex]['orders']) {
+                                        for (var order in orders[params.dataIndex]['orders']) {
+                                            if (orders[params.dataIndex]['orders'][order]['type'] === 'sell' &&
+                                                orders[params.dataIndex]['orders'][order]['scheme_id'] == index
+                                            ) {
+                                                return 180;
+                                            }
+                                        }
+                                    }
+
+                                    return 0;
+                                };
+                        });
+                    } else {
+                        dataCollectionSectionForm['vars']['performancesChartOptions']['series'][0] = { };
+                        dataCollectionSectionForm['vars']['performancesChartOptions']['series'][0]['type'] = 'line';
+                        dataCollectionSectionForm['vars']['performancesChartOptions']['series'][0]['name'] = dataCollectionSectionForm['vars']['chartTypeName'];
+
+                        dataCollectionSectionForm['vars']['performancesChartOptions']['series'][0]['data'] =
+                            dataCollectionSectionForm['vars'][time + 'Data'].map(row => row[dataCollectionSectionForm['vars']['chartType']]);
+                    }
+
+                    if (dataCollectionSectionForm['vars']['performancesChartOptions']['xAxis']['data'].length === 0) {
+                        dataCollectionSectionForm['vars']['performancesChartOptions']['xAxis']['data'] = dataCollectionSectionForm['vars'][time + 'Data'].map(row => row.date);
+                    }
+
+                    dataCollectionSectionForm['vars']['performancesChart'].setOption(dataCollectionSectionForm['vars']['performancesChartOptions']);
                 }
             }
         });
 
         dataCollectionSectionForm['vars']['actions']['week']();
-
-        // dataCollectionSectionForm['vars']['actions']['range'] = function() {
-        //     dataCollectionSectionForm['vars']['rangeData'] = [];
-
-        //     for (var rangeDate in chunks['range']) {
-        //         dataCollectionSectionForm['vars']['rangeNavData'] = { };
-        //         dataCollectionSectionForm['vars']['rangeNavData']['date'] = rangeDate;
-        //         dataCollectionSectionForm['vars']['rangeNavData'][dataCollectionSectionForm['vars']['dataType']] =
-        //             chunks['range'][rangeDate][dataCollectionSectionForm['vars']['dataType']];
-
-        //         dataCollectionSectionForm['vars']['rangeData'].push(dataCollectionSectionForm['vars']['rangeNavData']);
-        //     }
-
-        //     dataCollectionSectionForm['vars']['navsChartOptions']['xAxis']['name'] = 'PERIOD RANGE (' + dataCollectionSectionForm['vars']['range'] + ')'
-        //     dataCollectionSectionForm['vars']['navsChartOptions']['xAxis']['data'] = dataCollectionSectionForm['vars']['rangeData'].map(row => row.date);
-        //     dataCollectionSectionForm['vars']['navsChartOptions']['yAxis']['name'] = dataCollectionSectionForm['vars']['dataTypeName'];
-        //     dataCollectionSectionForm['vars']['navsChartOptions']['series'][schemeId]['name'] = dataCollectionSectionForm['vars']['dataTypeName'];
-        //     dataCollectionSectionForm['vars']['navsChartOptions']['series'][schemeId]['data'] = dataCollectionSectionForm['vars']['rangeData'].map(row => row[dataCollectionSectionForm['vars']['dataType']]);
-        //     // dataCollectionSectionForm['vars']['navsChart'].setOption(dataCollectionSectionForm['vars']['navsChartOptions']);
-        //     dataCollectionSectionForm['funcs']['popluateTrendTable']('range', schemeId);
-        // }
 
         //Activate Timeline buttons
         var timelineChecked = $("input[type='radio'][name='timeline']:checked");
@@ -489,217 +537,152 @@ dataCollectionSectionForm['funcs']['initNavChart'] = function(compare = false) {
                 return;
             }
 
-            $.each(dataCollectionSectionForm['vars']['navs_chunks'], function(schemeId, chunks) {
-                if (timelineTimeline === 'week') {
+            if (timelineTimeline === 'week') {
+                dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
+            } else if (timelineTimeline === 'month') {
+                if (typeof dataCollectionSectionForm['vars']['portfolioPerformancesChunks']['month'] === 'boolean') {
+                    dataCollectionSectionForm['funcs']['getPortfolioPerformancesChunks'](timelineTimeline);
+                } else {
                     dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
-                } else if (timelineTimeline === 'month') {
-                    if (typeof dataCollectionSectionForm['vars']['navs_chunks'][schemeId]['month'] === 'boolean') {
-                        dataCollectionSectionForm['vars']['scheme']['id'] = schemeId;
-                        dataCollectionSectionForm['funcs']['getSchemeNavChunks'](timelineTimeline);
-                    } else {
-                        dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
-                    }
-                } else if (timelineTimeline === 'threeMonth') {
-                    if (typeof dataCollectionSectionForm['vars']['navs_chunks'][schemeId]['threeMonth'] === 'boolean') {
-                        dataCollectionSectionForm['vars']['scheme']['id'] = schemeId;
-                        dataCollectionSectionForm['funcs']['getSchemeNavChunks'](timelineTimeline);
-                    } else {
-                        dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
-                    }
-                } else if (timelineTimeline === 'sixMonth') {
-                    if (typeof dataCollectionSectionForm['vars']['navs_chunks'][schemeId]['sixMonth'] === 'boolean') {
-                        dataCollectionSectionForm['vars']['scheme']['id'] = schemeId;
-                        dataCollectionSectionForm['funcs']['getSchemeNavChunks'](timelineTimeline);
-                    } else {
-                        dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
-                    }
-                } else if (timelineTimeline === 'year') {
-                    if (typeof dataCollectionSectionForm['vars']['navs_chunks'][schemeId]['year'] === 'boolean') {
-                        dataCollectionSectionForm['vars']['scheme']['id'] = schemeId;
-                        dataCollectionSectionForm['funcs']['getSchemeNavChunks'](timelineTimeline);
-                    } else {
-                        dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
-                    }
-                } else if (timelineTimeline === 'threeYear') {
-                    if (typeof dataCollectionSectionForm['vars']['navs_chunks'][schemeId]['threeYear'] === 'boolean') {
-                        dataCollectionSectionForm['vars']['scheme']['id'] = schemeId;
-                        dataCollectionSectionForm['funcs']['getSchemeNavChunks'](timelineTimeline);
-                    } else {
-                        dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
-                    }
-                } else if (timelineTimeline === 'fiveYear') {
-                    if (typeof dataCollectionSectionForm['vars']['navs_chunks'][schemeId]['fiveYear'] === 'boolean') {
-                        dataCollectionSectionForm['vars']['scheme']['id'] = schemeId;
-                        dataCollectionSectionForm['funcs']['getSchemeNavChunks'](timelineTimeline);
-                    } else {
-                        dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
-                    }
-                } else if (timelineTimeline === 'tenYear') {
-                    if (typeof dataCollectionSectionForm['vars']['navs_chunks'][schemeId]['tenYear'] === 'boolean') {
-                        dataCollectionSectionForm['vars']['scheme']['id'] = schemeId;
-                        dataCollectionSectionForm['funcs']['getSchemeNavChunks'](timelineTimeline);
-                    } else {
-                        dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
-                    }
-                } else if (timelineTimeline === 'all') {
-                    if (typeof dataCollectionSectionForm['vars']['navs_chunks'][schemeId]['all'] === 'boolean') {
-                        dataCollectionSectionForm['vars']['scheme']['id'] = schemeId;
-                        dataCollectionSectionForm['funcs']['getSchemeNavChunks'](timelineTimeline);
-                    } else {
-                        dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
-                    }
                 }
-            });
+            } else if (timelineTimeline === 'threeMonth') {
+                if (typeof dataCollectionSectionForm['vars']['portfolioPerformancesChunks']['threeMonth'] === 'boolean') {
+                    dataCollectionSectionForm['funcs']['getPortfolioPerformancesChunks'](timelineTimeline);
+                } else {
+                    dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
+                }
+            } else if (timelineTimeline === 'sixMonth') {
+                if (typeof dataCollectionSectionForm['vars']['portfolioPerformancesChunks']['sixMonth'] === 'boolean') {
+                    dataCollectionSectionForm['funcs']['getPortfolioPerformancesChunks'](timelineTimeline);
+                } else {
+                    dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
+                }
+            } else if (timelineTimeline === 'year') {
+                if (typeof dataCollectionSectionForm['vars']['portfolioPerformancesChunks']['year'] === 'boolean') {
+                    dataCollectionSectionForm['funcs']['getPortfolioPerformancesChunks'](timelineTimeline);
+                } else {
+                    dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
+                }
+            } else if (timelineTimeline === 'threeYear') {
+                if (typeof dataCollectionSectionForm['vars']['portfolioPerformancesChunks']['threeYear'] === 'boolean') {
+                    dataCollectionSectionForm['funcs']['getPortfolioPerformancesChunks'](timelineTimeline);
+                } else {
+                    dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
+                }
+            } else if (timelineTimeline === 'fiveYear') {
+                if (typeof dataCollectionSectionForm['vars']['portfolioPerformancesChunks']['fiveYear'] === 'boolean') {
+                    dataCollectionSectionForm['funcs']['getPortfolioPerformancesChunks'](timelineTimeline);
+                } else {
+                    dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
+                }
+            } else if (timelineTimeline === 'tenYear') {
+                if (typeof dataCollectionSectionForm['vars']['portfolioPerformancesChunks']['tenYear'] === 'boolean') {
+                    dataCollectionSectionForm['funcs']['getPortfolioPerformancesChunks'](timelineTimeline);
+                } else {
+                    dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
+                }
+            } else if (timelineTimeline === 'all') {
+                if (typeof dataCollectionSectionForm['vars']['portfolioPerformancesChunks']['all'] === 'boolean') {
+                    dataCollectionSectionForm['funcs']['getPortfolioPerformancesChunks'](timelineTimeline);
+                } else {
+                    dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
+                }
+            }
         });
 
-        //Activate Datatype (nav, diff, percent) buttons
-        if (dataCollectionSectionForm['vars']['compare'] == false &&
-            $("input[type='radio'][name='datatype']:checked").length > 0
-        ) {
-            var datatypeChecked = $("input[type='radio'][name='datatype']:checked");
-            var datatypeDatatype = $(datatypeChecked).data('value');
-            var datatypeLabels = $(datatypeChecked).parents('.btn-group').children('label');
-            $(datatypeLabels).each(function(index, datatypeLabel) {
-                $(datatypeLabel).removeClass('focus active disabled');
-                $(datatypeLabel).css('cursor', 'pointer');
+        //Activate Datatype select
+        $('#{{componentId}}-{{sectionId}}-charttype_select').on('select2:select', function(e) {
+            dataCollectionSectionForm['vars']['chartType'] = e.params.data.id;
+            dataCollectionSectionForm['vars']['chartTypeName'] = e.params.data.text;
 
-                if ($(datatypeLabel).children('input')[0].id === datatypeDatatype) {
-                    $(datatypeLabel).addClass('focus active disabled');
-                    $(datatypeLabel).css('cursor', 'default');
+            if (dataCollectionSectionForm['vars']['rangeActive'] === true) {
+                dataCollectionSectionForm['vars']['actions']['range']();
+
+                return;
+            }
+
+            $($("input[type='radio'][name='timeline']:checked").parents('.btn-group').children('label')).each(function(index, label) {
+                if ($(label).hasClass('active')) {
+                    timelineTimeline = $(label).children('input').data('value');
                 }
             });
 
-            $("input[type='radio'][name='datatype']:checked").parents('.btn-group').children('label').children('input').off();
-            $("input[type='radio'][name='datatype']:checked").parents('.btn-group').children('label').children('input').click(function() {
-                datatypeChecked = $("input[type='radio'][name='datatype']:checked");
-                datatypeDatatype = $(datatypeChecked).data('value');
-                if (datatypeDatatype === 'nav') {
-                    dataCollectionSectionForm['vars']['dataTypeName'] = 'NAV';
-                } else if (datatypeDatatype === 'diff') {
-                    dataCollectionSectionForm['vars']['dataTypeName'] = 'DIFF';
-                } else if (datatypeDatatype === 'diff_percent') {
-                    dataCollectionSectionForm['vars']['dataTypeName'] = 'PERCENT';
-                }
-                datatypeLabels = $(datatypeChecked).parents('.btn-group').children('label');
-
-                $(datatypeLabels).each(function(index, datatypeLabel) {
-                    $(datatypeLabel).removeClass('focus active disabled');
-                    $(datatypeLabel).css('cursor', 'pointer');
-
-                    if ($(datatypeLabel).children('input')[0].id === datatypeDatatype) {
-                        $(datatypeLabel).addClass('focus active disabled');
-                        $(datatypeLabel).css('cursor', 'default');
-                    }
-                });
-
-                dataCollectionSectionForm['vars']['dataType'] = datatypeDatatype;
-
-                if (dataCollectionSectionForm['vars']['rangeActive'] === true) {
-                    dataCollectionSectionForm['vars']['actions']['range']();
-
-                    return;
-                }
-
-                $($("input[type='radio'][name='timeline']:checked").parents('.btn-group').children('label')).each(function(index, label) {
-                    if ($(label).hasClass('active')) {
-                        timelineTimeline = $(label).children('input').data('value');
-                    }
-                });
-
-                if (timelineTimeline === 'week') {
+            if (timelineTimeline === 'week') {
+                dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
+            } else if (timelineTimeline === 'month') {
+                if (typeof dataCollectionSectionForm['vars']['portfolioPerformancesChunks']['month'] === 'boolean') {
+                    dataCollectionSectionForm['funcs']['getPortfolioPerformancesChunks'](timelineTimeline);
+                } else {
                     dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
-                } else if (timelineTimeline === 'month') {
-                    if (typeof dataCollectionSectionForm['vars']['navs_chunks']['month'] === 'boolean') {
-                        dataCollectionSectionForm['funcs']['getSchemeNavChunks'](timelineTimeline);
-                    } else {
-                        dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
-                    }
-                } else if (timelineTimeline === 'threeMonth') {
-                    if (typeof dataCollectionSectionForm['vars']['navs_chunks']['threeMonth'] === 'boolean') {
-                        dataCollectionSectionForm['funcs']['getSchemeNavChunks'](timelineTimeline);
-                    } else {
-                        dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
-                    }
-                } else if (timelineTimeline === 'sixMonth') {
-                    if (typeof dataCollectionSectionForm['vars']['navs_chunks']['sixMonth'] === 'boolean') {
-                        dataCollectionSectionForm['funcs']['getSchemeNavChunks'](timelineTimeline);
-                    } else {
-                        dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
-                    }
-                } else if (timelineTimeline === 'year') {
-                    if (typeof dataCollectionSectionForm['vars']['navs_chunks']['year'] === 'boolean') {
-                        dataCollectionSectionForm['funcs']['getSchemeNavChunks'](timelineTimeline);
-                    } else {
-                        dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
-                    }
-                } else if (timelineTimeline === 'threeYear') {
-                    if (typeof dataCollectionSectionForm['vars']['navs_chunks']['threeYear'] === 'boolean') {
-                        dataCollectionSectionForm['funcs']['getSchemeNavChunks'](timelineTimeline);
-                    } else {
-                        dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
-                    }
-                } else if (timelineTimeline === 'fiveYear') {
-                    if (typeof dataCollectionSectionForm['vars']['navs_chunks']['fiveYear'] === 'boolean') {
-                        dataCollectionSectionForm['funcs']['getSchemeNavChunks'](timelineTimeline);
-                    } else {
-                        dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
-                    }
-                } else if (timelineTimeline === 'tenYear') {
-                    if (typeof dataCollectionSectionForm['vars']['navs_chunks']['tenYear'] === 'boolean') {
-                        dataCollectionSectionForm['funcs']['getSchemeNavChunks'](timelineTimeline);
-                    } else {
-                        dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
-                    }
-                } else if (timelineTimeline === 'all') {
-                    if (typeof dataCollectionSectionForm['vars']['navs_chunks']['all'] === 'boolean') {
-                        dataCollectionSectionForm['funcs']['getSchemeNavChunks'](timelineTimeline);
-                    } else {
-                        dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
-                    }
-                } else if (timelineTimeline === 'range') {
-                    return;
                 }
-            });
-        }
+            } else if (timelineTimeline === 'threeMonth') {
+                if (typeof dataCollectionSectionForm['vars']['portfolioPerformancesChunks']['threeMonth'] === 'boolean') {
+                    dataCollectionSectionForm['funcs']['getPortfolioPerformancesChunks'](timelineTimeline);
+                } else {
+                    dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
+                }
+            } else if (timelineTimeline === 'sixMonth') {
+                if (typeof dataCollectionSectionForm['vars']['portfolioPerformancesChunks']['sixMonth'] === 'boolean') {
+                    dataCollectionSectionForm['funcs']['getPortfolioPerformancesChunks'](timelineTimeline);
+                } else {
+                    dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
+                }
+            } else if (timelineTimeline === 'year') {
+                if (typeof dataCollectionSectionForm['vars']['portfolioPerformancesChunks']['year'] === 'boolean') {
+                    dataCollectionSectionForm['funcs']['getPortfolioPerformancesChunks'](timelineTimeline);
+                } else {
+                    dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
+                }
+            } else if (timelineTimeline === 'threeYear') {
+                if (typeof dataCollectionSectionForm['vars']['portfolioPerformancesChunks']['threeYear'] === 'boolean') {
+                    dataCollectionSectionForm['funcs']['getPortfolioPerformancesChunks'](timelineTimeline);
+                } else {
+                    dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
+                }
+            } else if (timelineTimeline === 'fiveYear') {
+                if (typeof dataCollectionSectionForm['vars']['portfolioPerformancesChunks']['fiveYear'] === 'boolean') {
+                    dataCollectionSectionForm['funcs']['getPortfolioPerformancesChunks'](timelineTimeline);
+                } else {
+                    dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
+                }
+            } else if (timelineTimeline === 'tenYear') {
+                if (typeof dataCollectionSectionForm['vars']['portfolioPerformancesChunks']['tenYear'] === 'boolean') {
+                    dataCollectionSectionForm['funcs']['getPortfolioPerformancesChunks'](timelineTimeline);
+                } else {
+                    dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
+                }
+            } else if (timelineTimeline === 'all') {
+                if (typeof dataCollectionSectionForm['vars']['portfolioPerformancesChunks']['all'] === 'boolean') {
+                    dataCollectionSectionForm['funcs']['getPortfolioPerformancesChunks'](timelineTimeline);
+                } else {
+                    dataCollectionSectionForm['vars']['actions'][timelineTimeline]();
+                }
+            } else if (timelineTimeline === 'range') {
+                return;
+            }
+        });
     }
 }
 
-dataCollectionSectionForm['funcs']['getSchemeNavChunks'] = function(chunksize, range = null, getTrendData = false) {
+dataCollectionSectionForm['funcs']['getPortfolioPerformancesChunks'] = function(chunksize, range = null) {
     var postData = { };
     postData[$('#security-token').attr('name')] = $('#security-token').val();
-    postData['scheme_id'] = dataCollectionSectionForm['vars']['scheme']['id'];
+    postData['portfolio_id'] = dataCollectionSectionForm['vars']['portfolio']['id'];
     postData['chunk_size'] = chunksize;
     if (chunksize === 'range' && range) {
         range = range.split(' to ');
         postData['range'] = range;
     }
 
-    if (dataCollectionSectionForm['vars']['compare'] == true) {
-        postData['start_date'] = dataCollectionSectionForm['vars']['compareSchemesParams']['start_date'];
-        postData['end_date'] = dataCollectionSectionForm['vars']['compareSchemesParams']['end_date'];
-    }
-
-    $.post('{{links.url("mf/schemes/getSchemeNavChunks")}}', postData, function(response) {
+    $.post('{{links.url("mf/portfolios/getPortfolioPerformancesChunks")}}', postData, function(response) {
         if (response.responseCode == 0 && response.responseData.chunks[chunksize]) {
-            if (getTrendData) {
-                dataCollectionSectionForm['vars']['trend'][chunksize] = response.responseData.trend;
-                dataCollectionSectionForm['funcs']['popluateTrendTable'](chunksize);
+            if (chunksize === 'all') {
+                dataCollectionSectionForm['vars']['portfolioPerformancesChunks'] = response.responseData.chunks[chunksize];
             } else {
-                if (chunksize === 'all') {
-                    if (dataCollectionSectionForm['vars']['compare'] == true) {
-                        dataCollectionSectionForm['vars']['navs_chunks'][postData['scheme_id']][chunksize] = response.responseData.chunks[chunksize];
-                        dataCollectionSectionForm['vars']['trend'][postData['scheme_id']][chunksize] = response.responseData.trend;
-                    } else {
-                        dataCollectionSectionForm['vars']['navs_chunks'][postData['scheme_id']] = response.responseData.chunks[chunksize];
-                        dataCollectionSectionForm['vars']['trend'][postData['scheme_id']][chunksize] = response.responseData.trend;
-                    }
-                } else {
-                    dataCollectionSectionForm['vars']['navs_chunks'][postData['scheme_id']][chunksize] = response.responseData.chunks[chunksize];
-                    dataCollectionSectionForm['vars']['trend'][postData['scheme_id']][chunksize] = response.responseData.trend;
-                }
-
-                dataCollectionSectionForm['vars']['actions'][chunksize]();
+                dataCollectionSectionForm['vars']['portfolioPerformancesChunks'][chunksize] = response.responseData.chunks[chunksize];
             }
+
+            dataCollectionSectionForm['vars']['actions'][chunksize]();
         } else {
             paginatedPNotify('error', response.responseMessage);
         }
@@ -711,140 +694,11 @@ dataCollectionSectionForm['funcs']['getSchemeNavChunks'] = function(chunksize, r
     }, 'json');
 }
 
-dataCollectionSectionForm['funcs']['popluateTrendTable'] = function(trend) {
-    //eslint-disable-next-line
-    console.log(trend);
-    $('#trend-days').html('Trend days (' + dataCollectionSectionForm['vars']['trend'][dataCollectionSectionForm['vars']['scheme']['id']][trend]['totalDays'] + ')');
-
-    var trendHtml = '';
-
-    $.each(dataCollectionSectionForm['vars']['trend'], function(scheme, trends) {
-        if (dataCollectionSectionForm['vars']['trend'][scheme][trend]) {
-            trendHtml += '<tr id="trend-' + scheme + '">';
-
-            if (dataCollectionSectionForm['vars']['compare'] == true) {
-                trendHtml += '<td>' + dataCollectionSectionForm['vars']['compareSchemes'][scheme]['name'] + '</td>';
-            }
-
-            if (dataCollectionSectionForm['vars']['trend'][scheme][trend]['up']) {
-                trendHtml += '<td>' + dataCollectionSectionForm['vars']['trend'][scheme][trend]['up'] + '</td>';
-            } else {
-                trendHtml += '<td>-</td>';
-            }
-            if (dataCollectionSectionForm['vars']['trend'][scheme][trend]['down']) {
-                trendHtml += '<td>' + dataCollectionSectionForm['vars']['trend'][scheme][trend]['down'] + '</td>';
-            } else {
-                trendHtml += '<td>-</td>';
-            }
-            if (dataCollectionSectionForm['vars']['trend'][scheme][trend]['neutral']) {
-                trendHtml += '<td>' + dataCollectionSectionForm['vars']['trend'][scheme][trend]['neutral'] + '</td>';
-            } else {
-                trendHtml += '<td>-</td>';
-            }
-            if (dataCollectionSectionForm['vars']['trend'][scheme][trend]['minus5']) {
-                trendHtml += '<td>' + dataCollectionSectionForm['vars']['trend'][scheme][trend]['minus5'] + '</td>';
-            } else {
-                trendHtml += '<td>-</td>';
-            }
-            if (dataCollectionSectionForm['vars']['trend'][scheme][trend]['minus5tominus4']) {
-                trendHtml += '<td>' + dataCollectionSectionForm['vars']['trend'][scheme][trend]['minus5tominus4'] + '</td>';
-            } else {
-                trendHtml += '<td>-</td>';
-            }
-            if (dataCollectionSectionForm['vars']['trend'][scheme][trend]['minus4tominus3']) {
-                trendHtml += '<td>' + dataCollectionSectionForm['vars']['trend'][scheme][trend]['minus4tominus3'] + '</td>';
-            } else {
-                trendHtml += '<td>-</td>';
-            }
-            if (dataCollectionSectionForm['vars']['trend'][scheme][trend]['minus3tominus2']) {
-                trendHtml += '<td>' + dataCollectionSectionForm['vars']['trend'][scheme][trend]['minus3tominus2'] + '</td>';
-            } else {
-                trendHtml += '<td>-</td>';
-            }
-            if (dataCollectionSectionForm['vars']['trend'][scheme][trend]['minus2tominus1']) {
-                trendHtml += '<td>' + dataCollectionSectionForm['vars']['trend'][scheme][trend]['minus2tominus1'] + '</td>';
-            } else {
-                trendHtml += '<td>-</td>';
-            }
-            if (dataCollectionSectionForm['vars']['trend'][scheme][trend]['minus1to0']) {
-                trendHtml += '<td>' + dataCollectionSectionForm['vars']['trend'][scheme][trend]['minus1to0'] + '</td>';
-            } else {
-                trendHtml += '<td>-</td>';
-            }
-            if (dataCollectionSectionForm['vars']['trend'][scheme][trend][0]) {
-                trendHtml += '<td>' + dataCollectionSectionForm['vars']['trend'][scheme][trend][0] + '</td>';
-            } else {
-                trendHtml += '<td>-</td>';
-            }
-            if (dataCollectionSectionForm['vars']['trend'][scheme][trend]['0to1']) {
-                trendHtml += '<td>' + dataCollectionSectionForm['vars']['trend'][scheme][trend]['0to1'] + '</td>';
-            } else {
-                trendHtml += '<td>-</td>';
-            }
-            if (dataCollectionSectionForm['vars']['trend'][scheme][trend]['1to2']) {
-                trendHtml += '<td>' + dataCollectionSectionForm['vars']['trend'][scheme][trend]['1to2'] + '</td>';
-            } else {
-                trendHtml += '<td>-</td>';
-            }
-            if (dataCollectionSectionForm['vars']['trend'][scheme][trend]['2to3']) {
-                trendHtml += '<td>' + dataCollectionSectionForm['vars']['trend'][scheme][trend]['2to3'] + '</td>';
-            } else {
-                trendHtml += '<td>-</td>';
-            }
-            if (dataCollectionSectionForm['vars']['trend'][scheme][trend]['3to4']) {
-                trendHtml += '<td>' + dataCollectionSectionForm['vars']['trend'][scheme][trend]['3to4'] + '</td>';
-            } else {
-                trendHtml += '<td>-</td>';
-            }
-            if (dataCollectionSectionForm['vars']['trend'][scheme][trend]['4to5']) {
-                trendHtml += '<td>' + dataCollectionSectionForm['vars']['trend'][scheme][trend]['4to5'] + '</td>';
-            } else {
-                trendHtml += '<td>-</td>';
-            }
-            if (dataCollectionSectionForm['vars']['trend'][scheme][trend]['plus5']) {
-                trendHtml += '<td>' + dataCollectionSectionForm['vars']['trend'][scheme][trend]['plus5'] + '</td>';
-            } else {
-                trendHtml += '<td>-</td>';
-            }
-
-            trendHtml += '</tr>';
-        }
-    });
-
-    $('#{{componentId}}-{{sectionId}}-trends-table tbody').html(trendHtml);
-    // } else {
-    //     dataCollectionSectionForm['funcs']['getSchemeNavChunks'](trend, null, null, true);
-    //     dataCollectionSectionForm['vars']['scheme']['id'] = schemeId;
-
-        // $('#{{componentId}}-{{sectionId}}-trends-table tbody').html('');
-    // }
-}
-
-dataCollectionSectionForm['funcs']['browse'] = function(url) {
-    $('#{{componentId}}-{{sectionId}}-navs-link').attr('href', url);
-
-    BazContentLoader.loadAjax($('#{{componentId}}-{{sectionId}}-navs-link'), {
-        ajaxBefore                      : function () {
-                                            Pace.restart();
-                                            $("#baz-content").empty();
-                                            $("#loader").attr('hidden', false);
-                                        },
-        ajaxFinished                    : function () {
-                                            BazCore.updateBreadcrumb();
-                                            $("#loader").attr('hidden', true);
-                                        },
-        ajaxError                       : function () {
-                                            $("#loader").attr('hidden', true);
-                                            BazCore.updateBreadcrumb();
-                                        }
-    });
-}
-
 setTimeout(function(){
     $(document).ready(function() {
-        if (dataCollectionSectionForm['vars']['compare'] == false) {
-            dataCollectionSectionForm['funcs']['initNavChart']();
-        }
+        dataCollectionSectionForm['funcs']['initPerformancesChart']();
     });
 }, 1000);
+
 </script>
+<!-- htmlmin:ignore -->

@@ -499,6 +499,10 @@ dataCollectionSectionForm['funcs']['processTimeline'] = function() {
 
                 dataCollectionSectionForm['funcs']['browse']();
             });
+        } else {
+            paginatedPNotify('error', {
+                text : response.responseMessage
+            });
         }
     }, 'json');
 }

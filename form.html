@@ -1045,7 +1045,29 @@ dataCollectionSection =
         '{{componentId}}-{{sectionId}}-transactions'                        : { },
         '{{componentId}}-{{sectionId}}-categories_percentage_variance'      : { },
         '{{componentId}}-{{sectionId}}-subcategories_percentage_variance'   : { },
-        '{{componentId}}-{{sectionId}}-form' : {
+        '{{componentId}}-{{sectionId}}-date_range'                          : {
+            dateFormat          : "Y-m-d",
+            altFormat           : "d-m-Y",
+            allowInput          : true,
+            static              : true,
+            mode                : 'range',
+            minDate             : "2000-01-01",
+            maxDate             : "today",
+            onChange: function(selectedDates, dateStr, instance) {
+                if (dateStr.includes('to')) {
+                    dataCollectionSectionForm['funcs']['getPortfolioPerformancesChunks']('range', dateStr);
+                    dataCollectionSectionForm['vars']['rangeActive'] = true;
+                    dataCollectionSectionForm['vars']['range'] = dateStr;
+                }
+            },
+            afterInit: function() {
+                dataCollectionSection['{{componentId}}-{{sectionId}}-date_range']['flatpickr'].config.minDate = dataCollectionSectionForm['vars']['portfolio']['start_date'];
+            }
+        },
+        '{{componentId}}-{{sectionId}}-charttype_select'                    : {
+            placeholder: 'SELECT CHART TYPE'
+        },
+        '{{componentId}}-{{sectionId}}-form'                                : {
             rules: {
             },
             messages: {
@@ -1432,7 +1454,7 @@ dataCollectionSectionForm['funcs']['importNavs'] = function(thisButton, postData
         return;
     }
 
-    $.post('{{links.url("mf/extractdata/getAllNavData")}}', postData, function(response) {
+    $.post('{{links.url("mf/tools/extractdata/getAllNavData")}}', postData, function(response) {
         if ($(thisButton)[0].id !== '{{componentId}}-{{sectionId}}-importInvestmentNavs') {
             $(thisButton).removeClass('disabled');
             $(thisButton).children('i').attr('hidden', true);
@@ -2422,7 +2444,8 @@ dataCollectionSectionForm['funcs']['initCharts'] = function() {
                 dataCollectionSectionForm['vars']['allocationCharts']['by_schemes'][value] = echarts.init(document.getElementById('allocation-schemes-' + value), 'macarons');
 
                 dataCollectionSectionForm['vars']['allocationCharts']['by_schemes'][value].on('rendered', function() {
-                    if (dataCollectionSectionForm['vars']['allocationCharts'] &&
+                    if (dataCollectionSectionForm['vars'] &&
+                        dataCollectionSectionForm['vars']['allocationCharts'] &&
                         dataCollectionSectionForm['vars']['allocationCharts']['by_schemes'] &&
                         dataCollectionSectionForm['vars']['allocationCharts']['by_schemes'][value]
                     ) {
@@ -2454,7 +2477,8 @@ dataCollectionSectionForm['funcs']['initCharts'] = function() {
                 dataCollectionSectionForm['vars']['allocationCharts']['by_categories'][value] = echarts.init(document.getElementById('allocation-categories-' + value), 'macarons');
 
                 dataCollectionSectionForm['vars']['allocationCharts']['by_categories'][value].on('rendered', function() {
-                    if (dataCollectionSectionForm['vars']['allocationCharts'] &&
+                    if (dataCollectionSectionForm['vars'] &&
+                        dataCollectionSectionForm['vars']['allocationCharts'] &&
                         dataCollectionSectionForm['vars']['allocationCharts']['by_categories'] &&
                         dataCollectionSectionForm['vars']['allocationCharts']['by_categories'][value]
                     ) {
@@ -2486,7 +2510,8 @@ dataCollectionSectionForm['funcs']['initCharts'] = function() {
                 dataCollectionSectionForm['vars']['allocationCharts']['by_subcategories'][value] = echarts.init(document.getElementById('allocation-subcategories-' + value), 'macarons');
 
                 dataCollectionSectionForm['vars']['allocationCharts']['by_subcategories'][value].on('rendered', function() {
-                    if (dataCollectionSectionForm['vars']['allocationCharts'] &&
+                    if (dataCollectionSectionForm['vars'] &&
+                        dataCollectionSectionForm['vars']['allocationCharts'] &&
                         dataCollectionSectionForm['vars']['allocationCharts']['by_subcategories'] &&
                         dataCollectionSectionForm['vars']['allocationCharts']['by_subcategories'][value]
                     ) {

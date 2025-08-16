@@ -12,7 +12,6 @@
                 {% if str_contains(investment['xirr'], '-') or str_contains(investment['diff'], '-') %}
                     {% set textColor = 'danger' %}
                 {% endif %}
-                {% set latestValue = '<span class="text-' ~ textColor ~ '">' ~ investment['latest_value'] ~ ' (' ~ investment['diff'] ~ '/' ~ investment['xirr'] ~ '%)</span>' %}
                 {% set diff = '<span class="text-' ~ textColor ~ '">' ~ investment['diff'] ~ '</span>' %}
                 {% set xirr = '<span class="text-' ~ textColor ~ '">' ~ investment['xirr'] ~ '</span>' %}
             {% endif %}
@@ -49,7 +48,7 @@
         {% endif %}
         {% set investmentsHtml = investmentsHtml ~ '<tr>' ~
         '           <td>' ~ strtoupper(investment['status']) ~ '</td>' ~
-        '           <td>' ~ investment['scheme']['name'] ~ '</td>' ~
+        '           <td>' ~ investment['scheme']['name'] ~ ' (' ~ investment['scheme']['id'] ~ ')</td>' ~
         '           <td>' ~ investment['units'] ~ '</td>' ~
         '           <td>' ~ investment['latest_nav'] ~ '</td>' ~
         '           <td>' ~ investment['amount'] ~ '</td>' ~
