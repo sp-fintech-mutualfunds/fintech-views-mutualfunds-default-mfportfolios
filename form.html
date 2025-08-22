@@ -442,8 +442,8 @@
             </div>
             <hr>
         {% endif %}
-        {% include 'portfolios/timelinechart.html' %}
         {% if mode != 'strategies' %}
+            {% include 'portfolios/timelinechart.html' %}
             {% if portfolio['transactions'] is defined and portfolio['transactions']|length > 0 %}
                 <div class="row">
                     <div class="col">
@@ -1402,6 +1402,11 @@ dataCollectionSectionForm['funcs']['processSchemeNav'] = function(scheme, task =
             for (var transaction in dataCollectionSectionForm['vars']['transactions'][taskId]['transactions']) {
                 tbody += '<tr>';
                 tbody += '   <td>';
+                tbody += '      <span id="transaction-' + taskId + '-' + dataCollectionSectionForm['vars']['transactions'][taskId]['transactions'][transaction]['id'] + '">' +
+                         dataCollectionSectionForm['vars']['transactions'][taskId]['transactions'][transaction]['id'] +
+                         '      </span>';
+                tbody += '   </td>';
+                tbody += '   <td>';
                 tbody += '      <span id="transaction-' + taskId + '-' + dataCollectionSectionForm['vars']['transactions'][taskId]['transactions'][transaction]['date'] + '">' +
                          dataCollectionSectionForm['vars']['transactions'][taskId]['transactions'][transaction]['date'] +
                          '      </span>';
@@ -1409,6 +1414,11 @@ dataCollectionSectionForm['funcs']['processSchemeNav'] = function(scheme, task =
                 tbody += '   <td>';
                 tbody += '      <span id="transaction-' + taskId + '-' + dataCollectionSectionForm['vars']['transactions'][taskId]['transactions'][transaction]['units'] + '">' +
                          dataCollectionSectionForm['vars']['transactions'][taskId]['transactions'][transaction]['units'] +
+                         '      </span>';
+                tbody += '   </td>';
+                tbody += '   <td>';
+                tbody += '      <span id="transaction-' + taskId + '-' + dataCollectionSectionForm['vars']['transactions'][taskId]['transactions'][transaction]['returns']['nav'] + '">' +
+                         dataCollectionSectionForm['vars']['transactions'][taskId]['transactions'][transaction]['returns']['nav'] +
                          '      </span>';
                 tbody += '   </td>';
                 tbody += '   <td>';
@@ -1420,7 +1430,11 @@ dataCollectionSectionForm['funcs']['processSchemeNav'] = function(scheme, task =
             }
 
             $('#{{componentId}}-{{sectionId}}-' + task + '-transactions-table tbody').html(tbody);
-            $('.' + task + '-transactions').children('label').html(task.toUpperCase() + ' TRANSACTIONS');
+            if (task === 'buy') {
+                $('.' + task + '-transactions').children('label').html('SELL TRANSACTIONS');
+            } else if (task ==='sell') {
+                $('.' + task + '-transactions').children('label').html('BUY TRANSACTIONS');
+            }
             $('#' + task + '-transactions-div').attr('hidden', false);
         }
 
@@ -2130,12 +2144,16 @@ dataCollectionSectionForm['funcs']['initDatatables'] = function(type) {
                     {orderable: false},
                     {orderable: false},
                     {orderable: false},
+                    {orderable: false},
+                    {orderable: false},
                     {orderable: false}
                 ];
 
             if (dataCollectionSectionForm['vars']['mode'] === 'timeline') {
                 transactionColumns =
                     [
+                        {orderable: false},
+                        {orderable: false},
                         {orderable: false},
                         {orderable: false},
                         {orderable: false},

@@ -263,6 +263,8 @@ dataCollectionSectionForm['vars']['performancesChart'] = { };
 
 dataCollectionSectionForm['vars']['timeline'] = 'week';
 
+dataCollectionSectionForm['vars']['portfolioOrders'] = [];
+
 dataCollectionSectionForm['funcs']['initPerformancesChart'] = function() {
     if (!dataCollectionSectionForm['vars']['portfolioPerformancesChunks']) {
         return false;
@@ -279,6 +281,26 @@ dataCollectionSectionForm['funcs']['initPerformancesChart'] = function() {
         },
         tooltip: {
             trigger: 'axis',
+            formatter: function(params) {
+                let html = `<div class="row"><div class="col">${params[0].name}</div></div>`;
+                html += '<div class="row"><div class="col">';
+                params.forEach(item => {
+                    if (item.seriesType === 'line') {
+                        html += `<div class="row"><div class="col">${item.marker} ${item.seriesName}</div><div class="col text-right">${item.value}</div></div>`;
+                    }
+                });
+                html += '</div></div><br>';
+
+                if (dataCollectionSectionForm['vars']['portfolioOrders'][params[0].dataIndex]['orders']) {
+                    html += `<div class="row"><div class="col">ORDERS</div></div>`;
+                    $.each(dataCollectionSectionForm['vars']['portfolioOrders'][params[0].dataIndex]['orders'], function(index, order) {
+                        html += `<div class="row"><div class="col">${order.scheme_id}</div><div class="col">${order.type.toUpperCase()}</div><div class="col text-right">${order.amount}</div></div>`;
+                    });
+                    html += '</div></div>';
+                }
+
+                return html;
+            },
             axisPointer: {
                 type: 'cross'
             }
@@ -348,7 +370,7 @@ dataCollectionSectionForm['funcs']['initPerformancesChart'] = function() {
                 dataCollectionSectionForm['vars']['actions'][time] = function() {
                     dataCollectionSectionForm['vars']['performancesChart'].setOption({series: []}, {replaceMerge: ['series']});
 
-                    var orders = [];
+                    dataCollectionSectionForm['vars']['portfolioOrders'] = [];
 
                     if (time === 'range') {
                         dataCollectionSectionForm['vars']['performancesChartOptions']['xAxis']['name'] = 'PERIOD RANGE (' + dataCollectionSectionForm['vars']['range'] + ')';
@@ -371,9 +393,9 @@ dataCollectionSectionForm['funcs']['initPerformancesChart'] = function() {
                         dataCollectionSectionForm['vars'][time + 'Data'].push(dataCollectionSectionForm['vars'][time + 'ChunkData']);
 
                         if (dataCollectionSectionForm['vars']['portfolioPerformancesChunks'][time][date]['orders']) {
-                            orders.push({'orders': dataCollectionSectionForm['vars']['portfolioPerformancesChunks'][time][date]['orders']});
+                            dataCollectionSectionForm['vars']['portfolioOrders'].push({'orders': dataCollectionSectionForm['vars']['portfolioPerformancesChunks'][time][date]['orders']});
                         } else {
-                            orders.push({});
+                            dataCollectionSectionForm['vars']['portfolioOrders'].push({});
                         }
                     }
 
@@ -392,24 +414,16 @@ dataCollectionSectionForm['funcs']['initPerformancesChart'] = function() {
 
                             dataCollectionSectionForm['vars']['performancesChartOptions']['series'][index]['symbol'] =
                                 function (data, params) {
-                                    if (orders[params.dataIndex]['orders']) {
-                                        for (var order in orders[params.dataIndex]['orders']) {
-                                            if (orders[params.dataIndex]['orders'][order]['type'] === 'buy') {
-                                                return 'triangle';
-                                            }
-                                        }
+                                    if (dataCollectionSectionForm['vars']['portfolioOrders'][params.dataIndex]['orders']) {
+                                        return 'diamond';
                                     }
 
                                     return 'emptyCircle';
                                 };
                             dataCollectionSectionForm['vars']['performancesChartOptions']['series'][index]['symbolSize'] =
                                 function (data, params) {
-                                    if (orders[params.dataIndex]['orders']) {
-                                        for (var order in orders[params.dataIndex]['orders']) {
-                                            if (orders[params.dataIndex]['orders'][order]['type'] === 'buy') {
-                                                return 10;
-                                            }
-                                        }
+                                    if (dataCollectionSectionForm['vars']['portfolioOrders'][params.dataIndex]['orders']) {
+                                        return 10;
                                     }
 
                                     return 4;
@@ -439,41 +453,19 @@ dataCollectionSectionForm['funcs']['initPerformancesChart'] = function() {
 
                             dataCollectionSectionForm['vars']['performancesChartOptions']['series'][index]['symbol'] =
                                 function (data, params) {
-                                    if (orders[params.dataIndex]['orders']) {
-                                        for (var order in orders[params.dataIndex]['orders']) {
-                                            if (orders[params.dataIndex]['orders'][order]['scheme_id'] == index) {
-                                                return 'triangle';
-                                            }
-                                        }
+                                    if (dataCollectionSectionForm['vars']['portfolioOrders'][params.dataIndex]['orders']) {
+                                        return 'diamond';
                                     }
 
                                     return 'emptyCircle';
                                 };
                             dataCollectionSectionForm['vars']['performancesChartOptions']['series'][index]['symbolSize'] =
                                 function (data, params) {
-                                    if (orders[params.dataIndex]['orders']) {
-                                        for (var order in orders[params.dataIndex]['orders']) {
-                                            if (orders[params.dataIndex]['orders'][order]['scheme_id'] == index) {
-                                                return 10;
-                                            }
-                                        }
+                                    if (dataCollectionSectionForm['vars']['portfolioOrders'][params.dataIndex]['orders']) {
+                                        return 10;
                                     }
 
                                     return 4;
-                                };
-                            dataCollectionSectionForm['vars']['performancesChartOptions']['series'][index]['symbolRotate'] =
-                                function (data, params) {
-                                    if (orders[params.dataIndex]['orders']) {
-                                        for (var order in orders[params.dataIndex]['orders']) {
-                                            if (orders[params.dataIndex]['orders'][order]['type'] === 'sell' &&
-                                                orders[params.dataIndex]['orders'][order]['scheme_id'] == index
-                                            ) {
-                                                return 180;
-                                            }
-                                        }
-                                    }
-
-                                    return 0;
                                 };
                         });
                     } else {
@@ -483,6 +475,23 @@ dataCollectionSectionForm['funcs']['initPerformancesChart'] = function() {
 
                         dataCollectionSectionForm['vars']['performancesChartOptions']['series'][0]['data'] =
                             dataCollectionSectionForm['vars'][time + 'Data'].map(row => row[dataCollectionSectionForm['vars']['chartType']]);
+
+                        dataCollectionSectionForm['vars']['performancesChartOptions']['series'][0]['symbol'] =
+                            function (data, params) {
+                                if (dataCollectionSectionForm['vars']['portfolioOrders'][params.dataIndex]['orders']) {
+                                    return 'diamond';
+                                }
+
+                                return 'emptyCircle';
+                            };
+                        dataCollectionSectionForm['vars']['performancesChartOptions']['series'][0]['symbolSize'] =
+                            function (data, params) {
+                                if (dataCollectionSectionForm['vars']['portfolioOrders'][params.dataIndex]['orders']) {
+                                    return 10;
+                                }
+
+                                return 4;
+                            };
                     }
 
                     if (dataCollectionSectionForm['vars']['performancesChartOptions']['xAxis']['data'].length === 0) {

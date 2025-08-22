@@ -26,6 +26,7 @@
         '           <td>' ~ transaction['date'] ~ '</td>' ~
         '           <td>' ~ strtoupper(transaction['type']) ~ '</td>' ~
         '           <td>' ~ strtoupper(transaction['status']) ~ '</td>' ~
+        '           <td>' ~ transaction['strategy_id'] ~ '</td>' ~
         '           <td>' ~ transaction['scheme']['name'] ~ '</td>'
         %}
         {% if transaction['type'] == 'buy' and transaction['units_sold'] > 0 %}
@@ -38,6 +39,7 @@
             %}
         {% endif %}
         {% set transactionsHtml = transactionsHtml ~
+        '           <td>' ~ transaction['nav'] ~ '</td>' ~
         '           <td>' ~ transaction['amount'] ~ ' (' ~ transaction['available_amount'] ~ ')</td>' ~
         '           <td>' ~ transaction['latest_value_date'] ~ '</td>' ~
         '           <td>' ~ latestValue ~ '</td>' %}
@@ -147,8 +149,10 @@
                     <th class="text-uppercase">DATE</th>
                     <th class="text-uppercase">TYPE</th>
                     <th class="text-uppercase">Status</th>
+                    <th class="text-uppercase">Strategy</th>
                     <th class="text-uppercase">SCHEME</th>
                     <th class="text-uppercase">UNITS (Sold)</th>
+                    <th class="text-uppercase">NAV</th>
                     <th class="text-uppercase">{{ currencySymbol }} AMOUNT (available)</th>
                     <th class="text-uppercase">Latest Value/Close Date</th>
                     <th class="text-uppercase">{{ currencySymbol }} Latest Value (Diff/Xirr)</th>
